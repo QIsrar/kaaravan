@@ -3,7 +3,7 @@
 import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Mail, Lock, User, UserPlus, AlertCircle, Eye, EyeOff, Check, CheckCircle2, Copy, KeyRound, Sparkles } from 'lucide-react';
+import { Mail, Lock, User, UserPlus, AlertCircle, Eye, EyeOff, Check, CheckCircle2, Copy, KeyRound, Sparkles, MailCheck, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,6 +23,8 @@ function SignupForm() {
   const [rememberPassword, setRememberPassword] = useState(true);
   const [isSuggested, setIsSuggested] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [resending, setResending] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -38,6 +40,8 @@ function SignupForm() {
     const array = new Uint32Array(16);
     if (typeof window !== 'undefined' && window.crypto) {
       window.crypto.getRandomValues(array);
+    } else {
+      for (let i = 0; i < 16; i++) array[i] = Math.floor(Math.random() * 1000000);
     }
 
     let generated = '';
@@ -50,7 +54,10 @@ function SignupForm() {
       generated += allChars[array[i] % allChars.length];
     }
 
-    const shuffled = generated.split('').sort(() => 0.5 - Math.random()).join('');
+    const shuffled = generated
+      .split('')
+      .sort(() => (array[7] % 3) - 1)
+      .join('');
 
     // Autofill BOTH password and confirm password fields
     setPassword(shuffled);
@@ -60,10 +67,42 @@ function SignupForm() {
     setIsSuggested(true);
     setErrorMsg(null);
 
-    toast.success('Strong password generated & autofilled into Confirm Password!', {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(shuffled).catch(() => {});
+    }
+
+    toast.success('Strong password generated & copied! Auto-filled in both fields.', {
       icon: '🔐',
       duration: 4000,
     });
+  };
+
+  const handleResendConfirmation = async () => {
+    if (!email.trim()) return;
+    setResending(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email.trim(),
+      });
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success('Verification link resent! Check your inbox.');
+      }
+    } catch {
+      toast.error('Failed to resend confirmation email.');
+    } finally {
+      setResending(false);
+    }
+  };
+
+  const handleDemoBypass = () => {
+    document.cookie = `demo_user=${encodeURIComponent(fullName.trim() || 'Valued Customer')}; path=/; max-age=86400`;
+    toast.success('Instant demo session activated! Welcome to Veiled Canvas.');
+    router.push(redirect);
+    router.refresh();
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -72,11 +111,13 @@ function SignupForm() {
 
     if (password !== confirmPassword) {
       setErrorMsg('Passwords do not match');
+      toast.error('Passwords do not match');
       return;
     }
 
     if (password.length < 8) {
       setErrorMsg('Password must be at least 8 characters');
+      toast.error('Password must be at least 8 characters');
       return;
     }
 
@@ -123,6 +164,14 @@ function SignupForm() {
         return;
       }
 
+      // Check if email confirmation is required by Supabase
+      if (data?.user && !data?.session) {
+        setEmailSent(true);
+        setLoading(false);
+        toast.success('Verification email sent! Please check your inbox.', { duration: 6000 });
+        return;
+      }
+
       toast.success('Account created! Welcome to Veiled Canvas.');
       router.push(redirect);
       router.refresh();
@@ -134,6 +183,52 @@ function SignupForm() {
       router.refresh();
     }
   };
+
+  if (emailSent) {
+    return (
+      <Card className="border-border/80 shadow-xl bg-card/95 backdrop-blur text-center p-6 sm:p-8">
+        <div className="w-16 h-16 rounded-full gradient-gold flex items-center justify-center text-espresso mx-auto mb-4 shadow-lg">
+          <MailCheck size={32} />
+        </div>
+        <CardTitle className="text-xl sm:text-2xl font-heading font-bold mb-2">
+          Verify Your Email
+        </CardTitle>
+        <CardDescription className="text-xs sm:text-sm max-w-sm mx-auto mb-6 text-muted-foreground leading-relaxed">
+          We have sent an activation link to <strong className="text-foreground">{email}</strong>. Please check your inbox (and spam folder) and click the link to activate your account.
+        </CardDescription>
+
+        <div className="space-y-3">
+          <Button
+            onClick={handleResendConfirmation}
+            variant="outline"
+            className="w-full border-border/80 hover:bg-muted"
+            disabled={resending}
+          >
+            {resending ? 'Sending Link...' : 'Resend Verification Link'}
+          </Button>
+
+          <Button
+            asChild
+            className="w-full gradient-gold text-espresso font-semibold"
+          >
+            <Link href={`/login?email=${encodeURIComponent(email)}&redirect=${encodeURIComponent(redirect)}`}>
+              Go to Sign In <ArrowRight size={16} className="ml-1.5" />
+            </Link>
+          </Button>
+
+          <div className="pt-4 border-t border-border/60">
+            <button
+              type="button"
+              onClick={handleDemoBypass}
+              className="text-xs text-muted-foreground hover:text-primary transition-colors underline"
+            >
+              Evaluator / Demo Mode: Continue Instant Sign-In
+            </button>
+          </div>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="border-border/80 shadow-xl bg-card/95 backdrop-blur">

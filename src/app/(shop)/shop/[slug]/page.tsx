@@ -12,6 +12,9 @@ import { useUIStore } from '@/stores/ui-store';
 import { formatPrice } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/use-auth';
+import { useWishlistStore } from '@/stores/wishlist-store';
 
 function isLightColor(hex: string): boolean {
   const clean = hex.replace('#', '');
@@ -236,6 +239,53 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
     openCart();
   };
 
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
+  const { isInWishlist, toggleItem } = useWishlistStore();
+  const inWishlist = isInWishlist(product.slug);
+
+  const handleToggleWishlist = () => {
+    if (!isAuthenticated) {
+      toast.error('Please sign in to save items to your wishlist', { icon: '🔒' });
+      router.push(`/login?redirect=${encodeURIComponent(`/shop/${product.slug}`)}`);
+      return;
+    }
+
+    const added = toggleItem({
+      id: product.id,
+      slug: product.slug,
+      title: product.title,
+      price: totalPrice,
+      image: currentImage,
+      categoryName: product.categoryName,
+    });
+
+    if (added) {
+      toast.success('Added to your wishlist ❤️');
+    } else {
+      toast('Removed from your wishlist', { icon: '🤍' });
+    }
+  };
+
+  const handleShare = async () => {
+    if (typeof window !== 'undefined') {
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: product.title,
+            text: product.description,
+            url: window.location.href,
+          });
+        } else if (navigator.clipboard) {
+          await navigator.clipboard.writeText(window.location.href);
+          toast.success('Product link copied to clipboard!');
+        }
+      } catch {
+        // user cancelled share
+      }
+    }
+  };
+
   return (
     <div className="pt-20 lg:pt-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
@@ -412,10 +462,33 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                 <ShoppingBag size={18} className="mr-2" />
                 {inStock ? 'Add to Cart' : 'Out of Stock'}
               </Button>
-              <Button variant="outline" size="lg" className="h-13 w-13">
-                <Heart size={18} />
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={handleToggleWishlist}
+                className={`h-13 w-13 transition-colors ${
+                  inWishlist
+                    ? 'border-rose-400 bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:border-rose-800'
+                    : 'hover:text-rose-500 hover:border-rose-300'
+                }`}
+                title={inWishlist ? 'Remove from wishlist' : 'Save to wishlist'}
+                aria-label="Wishlist"
+              >
+                <Heart
+                  size={18}
+                  className={`transition-transform duration-200 active:scale-125 ${
+                    inWishlist ? 'fill-rose-500 text-rose-500' : ''
+                  }`}
+                />
               </Button>
-              <Button variant="outline" size="lg" className="h-13 w-13">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={handleShare}
+                className="h-13 w-13 hover:text-primary transition-colors"
+                title="Share piece"
+                aria-label="Share"
+              >
                 <Share2 size={18} />
               </Button>
             </div>

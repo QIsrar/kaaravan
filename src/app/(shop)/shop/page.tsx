@@ -4,7 +4,7 @@ import { useState, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Star, ShoppingBag, SlidersHorizontal, X } from 'lucide-react';
+import { Star, ShoppingBag, SlidersHorizontal, X, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +14,9 @@ import { useCartStore, type CartItem } from '@/stores/cart-store';
 import { useUIStore } from '@/stores/ui-store';
 import { formatPrice } from '@/lib/utils';
 import toast from 'react-hot-toast';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/use-auth';
+import { useWishlistStore } from '@/stores/wishlist-store';
 
 /* ============================================================================
    Mock data — In production, this comes from Supabase via server components
@@ -181,9 +183,40 @@ const products = [
    Product Card
    ============================================================================ */
 function ProductCard({ product }: { product: typeof products[0] }) {
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
+  const { isInWishlist, toggleItem } = useWishlistStore();
+  const isWishlisted = isInWishlist(product.slug);
+
   const addItem = useCartStore((s) => s.addItem);
   const openCart = useUIStore((s) => s.openCart);
   const firstVariant = product.variants[0];
+
+  const handleToggleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!isAuthenticated) {
+      toast.error('Please sign in to save items to your wishlist', { icon: '🔒' });
+      router.push(`/login?redirect=${encodeURIComponent('/shop')}`);
+      return;
+    }
+
+    const added = toggleItem({
+      id: product.id,
+      slug: product.slug,
+      title: product.title,
+      price: product.basePrice,
+      image: product.image,
+      categoryName: product.categorySlug,
+    });
+
+    if (added) {
+      toast.success(`${product.title} added to wishlist ❤️`);
+    } else {
+      toast(`${product.title} removed from wishlist`, { icon: '🤍' });
+    }
+  };
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -210,7 +243,7 @@ function ProductCard({ product }: { product: typeof products[0] }) {
 
   return (
     <Link href={`/shop/${product.slug}`}>
-      <Card className="group hover-lift border-0 overflow-hidden cursor-pointer h-full">
+      <Card className="group hover-lift border-0 overflow-hidden cursor-pointer h-full relative">
         {/* Image area */}
         <div className="relative aspect-[3/4] bg-muted overflow-hidden">
           <Image
@@ -227,6 +260,26 @@ function ProductCard({ product }: { product: typeof products[0] }) {
               {product.badge}
             </Badge>
           )}
+
+          {/* Floating Wishlist Heart Button */}
+          <button
+            type="button"
+            onClick={handleToggleWishlist}
+            className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 shadow-md backdrop-blur-md z-10 ${
+              isWishlisted
+                ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/80 border border-rose-300 dark:border-rose-800'
+                : 'bg-black/30 hover:bg-black/60 text-white border border-white/20'
+            }`}
+            title={isWishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
+            aria-label="Wishlist"
+          >
+            <Heart
+              size={15}
+              className={`transition-transform duration-200 active:scale-125 ${
+                isWishlisted ? 'fill-rose-500 text-rose-500' : ''
+              }`}
+            />
+          </button>
 
           {/* Quick add desktop hover */}
           <motion.div

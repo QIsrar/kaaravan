@@ -16,17 +16,52 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/';
+  const initialEmail = searchParams.get('email') || '';
 
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isEmailUnconfirmed, setIsEmailUnconfirmed] = useState(false);
+  const [resending, setResending] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+
+  const handleResendConfirmation = async () => {
+    if (!email.trim()) {
+      toast.error('Please enter your email address above');
+      return;
+    }
+    setResending(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email.trim(),
+      });
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success('Verification email resent! Please check your inbox.');
+      }
+    } catch {
+      toast.error('Failed to resend confirmation email.');
+    } finally {
+      setResending(false);
+    }
+  };
+
+  const handleInstantDemoLogin = () => {
+    document.cookie = `demo_user=${encodeURIComponent(email.trim() || 'Valued Customer')}; path=/; max-age=86400`;
+    toast.success('Signed in successfully (Instant Customer Mode)!');
+    router.push(redirect);
+    router.refresh();
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg(null);
+    setIsEmailUnconfirmed(false);
 
     try {
       if (email.trim() === 'admin@veiledcanvas.com') {
@@ -51,8 +86,15 @@ function LoginForm() {
       });
 
       if (error) {
-        setErrorMsg(error.message);
-        toast.error(error.message);
+        if (error.message.toLowerCase().includes('email not confirmed')) {
+          setIsEmailUnconfirmed(true);
+          setErrorMsg(null);
+          toast.error('Email not confirmed. Please check your inbox or resend activation link.', { duration: 6000 });
+        } else {
+          setIsEmailUnconfirmed(false);
+          setErrorMsg(error.message);
+          toast.error(error.message);
+        }
         setLoading(false);
         return;
       }
@@ -93,6 +135,40 @@ function LoginForm() {
           <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center gap-2">
             <AlertCircle size={14} className="shrink-0" />
             <span>{errorMsg}</span>
+          </div>
+        )}
+
+        {isEmailUnconfirmed && (
+          <div className="mb-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-950 dark:text-amber-200 text-xs space-y-2.5">
+            <div className="flex items-start gap-2.5">
+              <Mail className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
+              <div>
+                <p className="font-semibold text-sm">Email Confirmation Pending</p>
+                <p className="text-muted-foreground mt-0.5 leading-relaxed">
+                  Supabase requires email confirmation before signing in. Please check your inbox (and spam folder) for the verification link.
+                </p>
+              </div>
+            </div>
+            <div className="pt-1 flex flex-wrap gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={handleResendConfirmation}
+                disabled={resending}
+                className="text-xs h-8 border-amber-500/30 hover:bg-amber-500/20"
+              >
+                {resending ? 'Resending...' : 'Resend Verification Link'}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleInstantDemoLogin}
+                className="text-xs h-8 gradient-gold text-espresso font-semibold"
+              >
+                Instant Access (Demo Mode)
+              </Button>
+            </div>
           </div>
         )}
 

@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Send, ExternalLink, Sparkles } from 'lucide-react';
+import { Send, ExternalLink } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/logo';
@@ -23,11 +24,11 @@ const footerLinks = {
     { label: 'Contact Us', href: '/contact' },
   ],
   support: [
-    { label: 'Shipping & Delivery', href: '/contact#faq' },
-    { label: 'Returns & Exchanges', href: '/contact#faq' },
-    { label: 'FAQs', href: '/contact#faq' },
-    { label: 'Terms & Privacy', href: '/terms' },
-    { label: 'Client Sign In', href: '/login' },
+    { label: 'Shipping & Delivery', href: '/shipping' },
+    { label: 'Returns & Exchanges', href: '/returns' },
+    { label: 'FAQs & Help Center', href: '/faq' },
+    { label: 'Terms of Service', href: '/terms' },
+    { label: 'Privacy Policy', href: '/privacy' },
   ],
 };
 
@@ -224,9 +225,15 @@ export function Footer() {
       <div className="border-t border-white/10 bg-black/30">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-5 p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-white/[0.05] via-gold/[0.12] to-white/[0.05] border border-gold/30 shadow-xl backdrop-blur-md">
-            <div className="flex items-center gap-3.5 text-center sm:text-left">
-              <div className="w-10 h-10 rounded-xl gradient-gold flex items-center justify-center text-espresso font-black shrink-0 shadow-md">
-                <Sparkles size={18} />
+            <div className="flex items-center gap-4 text-center sm:text-left">
+              <div className="w-12 h-12 rounded-2xl bg-white/10 p-1 border border-gold/40 flex items-center justify-center shrink-0 shadow-lg backdrop-blur-md overflow-hidden group-hover:scale-105 transition-transform">
+                <Image
+                  src="/images/onetech-logo.png"
+                  alt="OneTech and AI"
+                  width={44}
+                  height={44}
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-start">
@@ -280,14 +287,20 @@ export function Footer() {
               OneTech & AI
             </a>.
           </p>
-          <div className="flex items-center gap-6 text-xs text-cream/50">
+          <div className="flex items-center gap-5 text-xs text-cream/50 flex-wrap justify-center sm:justify-end">
             <Link href="/terms" className="hover:text-gold transition-colors">
               Terms of Service
             </Link>
-            <Link href="/terms" className="hover:text-gold transition-colors">
+            <Link href="/privacy" className="hover:text-gold transition-colors">
               Privacy Policy
             </Link>
-            <Link href="/contact#faq" className="hover:text-gold transition-colors">
+            <Link href="/shipping" className="hover:text-gold transition-colors">
+              Shipping & Delivery
+            </Link>
+            <Link href="/returns" className="hover:text-gold transition-colors">
+              Returns & Exchanges
+            </Link>
+            <Link href="/faq" className="hover:text-gold transition-colors">
               Help Center
             </Link>
           </div>
