@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { Logo } from '@/components/ui/logo';
 
 export default function AuthLayout({
   children,
@@ -16,15 +17,8 @@ export default function AuthLayout({
           <ArrowLeft size={14} className="mr-1.5" />
           Back to Veiled Canvas
         </Link>
-        <div className="text-center mb-6">
-          <Link href="/">
-            <span className="font-heading text-3xl font-bold tracking-tight text-foreground">
-              Veiled <span className="text-primary">Canvas</span>
-            </span>
-          </Link>
-          <p className="text-xs text-muted-foreground mt-1.5 uppercase tracking-widest">
-            Where Modesty Meets Artistry
-          </p>
+        <div className="text-center mb-6 flex justify-center">
+          <Logo href="/" size="lg" showSubtitle />
         </div>
       </div>
 

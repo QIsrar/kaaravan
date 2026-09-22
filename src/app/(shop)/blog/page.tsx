@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Clock, Tag, Search, ArrowRight, Calendar } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -24,6 +25,7 @@ const blogPosts = [
     tags: ['hijab', 'summer', 'styling'],
     readTime: 6,
     publishedAt: '2025-06-15',
+    image: '/images/blog_1.jpg',
   },
   {
     slug: 'ethics-behind-our-supply-chain',
@@ -34,6 +36,7 @@ const blogPosts = [
     tags: ['ethics', 'sustainability'],
     readTime: 8,
     publishedAt: '2025-05-20',
+    image: '/images/blog_2.jpg',
   },
   {
     slug: 'modest-fashion-workplace-guide',
@@ -44,6 +47,7 @@ const blogPosts = [
     tags: ['workwear', 'professional'],
     readTime: 10,
     publishedAt: '2025-04-10',
+    image: '/images/blog_3.jpg',
   },
   {
     slug: 'caring-for-premium-fabrics',
@@ -54,6 +58,7 @@ const blogPosts = [
     tags: ['fabric care', 'maintenance'],
     readTime: 5,
     publishedAt: '2025-03-05',
+    image: '/images/blog_4.jpg',
   },
   {
     slug: 'spring-2025-collection-preview',
@@ -64,6 +69,7 @@ const blogPosts = [
     tags: ['spring', 'new collection', '2025'],
     readTime: 7,
     publishedAt: '2025-02-28',
+    image: '/images/blog_5.jpg',
   },
 ];
 
@@ -114,12 +120,21 @@ export default function BlogPage() {
               <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="mb-12">
                 <Link href={`/blog/${featured.slug}`}>
                   <Card className="overflow-hidden hover-lift border-0 group">
-                    <div className="aspect-[2/1] bg-gradient-to-br from-primary/10 to-gold/10 flex items-center justify-center">
-                      <div className="text-center">
-                        <Badge className="mb-3">{featured.category}</Badge>
-                        <h2 className="font-heading text-2xl lg:text-3xl font-bold group-hover:text-primary transition-colors px-8">
-                          {featured.title}
-                        </h2>
+                    <div className="relative aspect-[2/1] bg-muted overflow-hidden">
+                      <Image
+                        src={featured.image}
+                        alt={featured.title}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                        priority
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent flex items-end p-6">
+                        <div>
+                          <Badge className="mb-2 bg-primary/90 text-white border-0">{featured.category}</Badge>
+                          <h2 className="font-heading text-2xl lg:text-3xl font-bold text-white group-hover:text-gold transition-colors">
+                            {featured.title}
+                          </h2>
+                        </div>
                       </div>
                     </div>
                     <CardContent className="p-6">
@@ -153,9 +168,19 @@ export default function BlogPage() {
                   transition={{ delay: i * 0.1 }}
                 >
                   <Link href={`/blog/${post.slug}`}>
-                    <Card className="h-full hover-lift border-0 group overflow-hidden">
-                      <div className="aspect-[3/2] bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
-                        <Badge variant="secondary">{post.category}</Badge>
+                    <Card className="h-full hover-lift border-0 group overflow-hidden bg-card shadow-sm">
+                      <div className="relative aspect-[3/2] bg-muted overflow-hidden">
+                        <Image
+                          src={post.image}
+                          alt={post.title}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                        />
+                        <div className="absolute top-3 left-3">
+                          <Badge variant="secondary" className="bg-black/50 text-white backdrop-blur-xs border-0">
+                            {post.category}
+                          </Badge>
+                        </div>
                       </div>
                       <CardContent className="p-5">
                         <h3 className="font-heading font-semibold text-lg mb-2 group-hover:text-primary transition-colors line-clamp-2">

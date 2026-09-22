@@ -2,6 +2,7 @@
 
 import { useState, useMemo, Suspense } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Star, ShoppingBag, SlidersHorizontal, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -43,6 +44,7 @@ const products = [
     rating: 5,
     reviewCount: 3,
     categorySlug: 'hijabs-scarves',
+    image: '/images/collection_hijabs.jpg',
     variants: [
       { id: 'c1000001-0001', colorName: 'Dusty Rose', colorHex: '#D4A0A0', sku: 'CHF-DR-001', stockQuantity: 45, additionalPrice: 0, images: [] },
       { id: 'c1000001-0002', colorName: 'Sage Green', colorHex: '#9CAF88', sku: 'CHF-SG-001', stockQuantity: 32, additionalPrice: 0, images: [] },
@@ -59,6 +61,7 @@ const products = [
     rating: 5,
     reviewCount: 2,
     categorySlug: 'hijabs-scarves',
+    image: '/images/prod_modal_silk.jpg',
     variants: [
       { id: 'c1000002-0001', colorName: 'Black', colorHex: '#1A1A1A', sku: 'JCH-BK-001', stockQuantity: 120, additionalPrice: 0, images: [] },
       { id: 'c1000002-0002', colorName: 'Navy', colorHex: '#1B2A4A', sku: 'JCH-NV-001', stockQuantity: 85, additionalPrice: 0, images: [] },
@@ -74,6 +77,7 @@ const products = [
     rating: 5,
     reviewCount: 1,
     categorySlug: 'hijabs-scarves',
+    image: '/images/hero_dummy.jpg',
     variants: [
       { id: 'c1000003-0001', colorName: 'Champagne Gold', colorHex: '#F7E7CE', sku: 'SBW-CG-001', stockQuantity: 20, additionalPrice: 0, images: [] },
       { id: 'c1000003-0002', colorName: 'Midnight Blue', colorHex: '#191970', sku: 'SBW-MB-001', stockQuantity: 15, additionalPrice: 0, images: [] },
@@ -88,6 +92,7 @@ const products = [
     rating: 5,
     reviewCount: 1,
     categorySlug: 'abayas-dresses',
+    image: '/images/collection_abayas.jpg',
     variants: [
       { id: 'c1000005-0001', colorName: 'Classic Black', colorHex: '#0A0A0A', sku: 'ABA-CB-001', stockQuantity: 30, additionalPrice: 0, images: [] },
       { id: 'c1000005-0002', colorName: 'Charcoal', colorHex: '#333333', sku: 'ABA-CH-001', stockQuantity: 18, additionalPrice: 500, images: [] },
@@ -102,6 +107,7 @@ const products = [
     rating: 4,
     reviewCount: 2,
     categorySlug: 'abayas-dresses',
+    image: '/images/prod_kimono_abaya.jpg',
     variants: [
       { id: 'c1000006-0001', colorName: 'Emerald', colorHex: '#2E6B4E', sku: 'KMD-EM-001', stockQuantity: 12, additionalPrice: 0, images: [] },
       { id: 'c1000006-0002', colorName: 'Burgundy', colorHex: '#722F37', sku: 'KMD-BG-001', stockQuantity: 8, additionalPrice: 0, images: [] },
@@ -116,6 +122,7 @@ const products = [
     rating: 4,
     reviewCount: 1,
     categorySlug: 'abayas-dresses',
+    image: '/images/prod_maxi_dress.jpg',
     variants: [
       { id: 'c1000007-0001', colorName: 'Dusty Blue', colorHex: '#6E8FAE', sku: 'MXD-DB-001', stockQuantity: 40, additionalPrice: 0, images: [] },
       { id: 'c1000007-0002', colorName: 'Sand', colorHex: '#D2B48C', sku: 'MXD-SD-001', stockQuantity: 55, additionalPrice: 0, images: [] },
@@ -130,6 +137,7 @@ const products = [
     rating: 5,
     reviewCount: 2,
     categorySlug: 'modest-sportswear',
+    image: '/images/collection_sportswear.jpg',
     variants: [
       { id: 'c1000010-0001', colorName: 'Jet Black', colorHex: '#0D0D0D', sku: 'SPH-JB-001', stockQuantity: 90, additionalPrice: 0, images: [] },
       { id: 'c1000010-0002', colorName: 'Storm Grey', colorHex: '#708090', sku: 'SPH-SG-001', stockQuantity: 60, additionalPrice: 0, images: [] },
@@ -145,6 +153,7 @@ const products = [
     rating: 5,
     reviewCount: 1,
     categorySlug: 'accessories',
+    image: '/images/collection_accessories.jpg',
     variants: [
       { id: 'c1000012-0001', colorName: 'Gold', colorHex: '#D4AF37', sku: 'MHP-GD-001', stockQuantity: 200, additionalPrice: 0, images: [] },
       { id: 'c1000012-0002', colorName: 'Silver', colorHex: '#C0C0C0', sku: 'MHP-SV-001', stockQuantity: 180, additionalPrice: 0, images: [] },
@@ -159,6 +168,7 @@ const products = [
     rating: 4,
     reviewCount: 1,
     categorySlug: 'modest-sportswear',
+    image: '/images/prod_swimwear.jpg',
     variants: [
       { id: 'c1000009-0001', colorName: 'Ocean Blue', colorHex: '#0077BE', sku: 'SWM-OB-001', stockQuantity: 35, additionalPrice: 0, images: [] },
       { id: 'c1000009-0002', colorName: 'Coral', colorHex: '#FF6B6B', sku: 'SWM-CR-001', stockQuantity: 28, additionalPrice: 0, images: [] },
@@ -190,7 +200,7 @@ function ProductCard({ product }: { product: typeof products[0] }) {
       unitPrice: product.basePrice + firstVariant.additionalPrice,
       quantity: 1,
       maxQuantity: firstVariant.stockQuantity,
-      image: '',
+      image: product.image,
     };
 
     addItem(item);
@@ -202,13 +212,14 @@ function ProductCard({ product }: { product: typeof products[0] }) {
     <Link href={`/shop/${product.slug}`}>
       <Card className="group hover-lift border-0 overflow-hidden cursor-pointer h-full">
         {/* Image area */}
-        <div className="relative aspect-[3/4] bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div
-              className="w-24 h-24 rounded-full opacity-20 group-hover:scale-110 transition-transform duration-500"
-              style={{ backgroundColor: firstVariant.colorHex }}
-            />
-          </div>
+        <div className="relative aspect-[3/4] bg-muted overflow-hidden">
+          <Image
+            src={product.image}
+            alt={product.title}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+          />
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
 
           {/* Badge */}
           {product.badge && (
@@ -217,30 +228,40 @@ function ProductCard({ product }: { product: typeof products[0] }) {
             </Badge>
           )}
 
-          {/* Quick add */}
+          {/* Quick add desktop hover */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             whileHover={{ opacity: 1, y: 0 }}
-            className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="hidden sm:block absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity"
           >
             <Button
               onClick={handleQuickAdd}
-              className="w-full gradient-gold text-espresso font-semibold"
+              className="w-full gradient-gold text-espresso font-semibold cursor-pointer"
               size="sm"
             >
               <ShoppingBag size={14} className="mr-2" />
               Quick Add
             </Button>
           </motion.div>
+
+          {/* Quick add mobile 1-tap button */}
+          <button
+            type="button"
+            onClick={handleQuickAdd}
+            className="sm:hidden absolute bottom-2 right-2 w-8 h-8 rounded-full bg-card/90 backdrop-blur-md shadow-md flex items-center justify-center text-espresso hover:scale-110 active:scale-95 transition-transform border border-border/50 cursor-pointer"
+            title="Quick add to cart"
+          >
+            <ShoppingBag size={14} className="text-primary" />
+          </button>
         </div>
 
-        <CardContent className="p-4">
+        <CardContent className="p-3 sm:p-4">
           {/* Color swatches */}
-          <div className="flex items-center gap-1.5 mb-2">
+          <div className="flex items-center gap-1 sm:gap-1.5 mb-1.5 sm:mb-2">
             {product.variants.slice(0, 4).map((v) => (
               <div
                 key={v.id}
-                className="w-4 h-4 rounded-full border border-border shadow-sm"
+                className="w-4 h-4 rounded-full border border-black/30 dark:border-white/30 shadow-xs"
                 style={{ backgroundColor: v.colorHex }}
                 title={v.colorName}
               />
@@ -358,8 +379,23 @@ function ShopContent() {
           <aside
             className={`${
               showFilters ? 'block' : 'hidden'
-            } lg:block w-full lg:w-64 shrink-0 space-y-6`}
+            } lg:block w-full lg:w-64 shrink-0 space-y-6 bg-card lg:bg-transparent p-4 sm:p-6 lg:p-0 rounded-2xl lg:rounded-none border border-border lg:border-none shadow-lg lg:shadow-none mb-6 lg:mb-0`}
           >
+            {/* Mobile Filter Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-border lg:hidden">
+              <span className="font-heading font-bold text-base flex items-center gap-2">
+                <SlidersHorizontal size={16} className="text-primary" /> Filter Products
+              </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer"
+                onClick={() => setShowFilters(false)}
+              >
+                <X size={18} />
+              </Button>
+            </div>
+
             {/* Search */}
             <div>
               <h3 className="font-heading font-semibold text-sm mb-3">Search</h3>
@@ -442,19 +478,32 @@ function ShopContent() {
               </div>
             </div>
 
-            {hasFilters && (
-              <>
-                <Separator />
+            <Separator />
+
+            {/* Action buttons (Apply Filter on Mobile before Clear Filter) */}
+            <div className="space-y-2 pt-1">
+              <Button
+                onClick={() => {
+                  setShowFilters(false);
+                  toast.success(`Filters applied! Showing ${filteredProducts.length} items`);
+                }}
+                className="w-full gradient-gold text-espresso font-semibold h-10 shadow-sm cursor-pointer lg:hidden flex items-center justify-center gap-2"
+              >
+                <SlidersHorizontal size={15} />
+                Apply Filter ({filteredProducts.length})
+              </Button>
+
+              {hasFilters && (
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   onClick={clearFilters}
-                  className="w-full text-sm text-muted-foreground"
+                  className="w-full text-sm text-muted-foreground hover:text-foreground h-10 flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <X size={14} className="mr-2" />
+                  <X size={14} />
                   Clear All Filters
                 </Button>
-              </>
-            )}
+              )}
+            </div>
           </aside>
 
           {/* Product Grid */}
@@ -470,7 +519,7 @@ function ShopContent() {
                 </Button>
               </div>
             ) : (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
                 {filteredProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}

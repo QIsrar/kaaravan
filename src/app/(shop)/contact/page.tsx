@@ -189,12 +189,14 @@ export default function ContactPage() {
 
           {/* FAQ */}
           <motion.div
+            id="faq"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
+            className="scroll-mt-28"
           >
             <h2 className="font-heading text-2xl font-bold mb-6">
-              Frequently Asked Questions
+              Frequently Asked Questions &amp; Returns
             </h2>
             <Accordion type="single" collapsible className="space-y-2">
               {faqs.map((faq, i) => (

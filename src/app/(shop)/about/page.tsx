@@ -1,7 +1,8 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Heart, Shield, Leaf, Users, Target, Eye, Award, Globe } from 'lucide-react';
+import Image from 'next/image';
+import { Heart, Shield, Leaf, Users, Target, Eye, Award, Globe, Scissors } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 const fadeInUp = {
@@ -70,7 +71,7 @@ export default function AboutPage() {
       {/* Mission & Vision */}
       <section className="py-20 lg:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-2 gap-8 mb-16">
             <motion.div
               initial="hidden"
               whileInView="visible"
@@ -113,6 +114,39 @@ export default function AboutPage() {
               </Card>
             </motion.div>
           </div>
+
+          {/* Atelier & Craftsmanship Showcase */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+            className="grid lg:grid-cols-2 gap-12 items-center bg-card rounded-3xl p-8 lg:p-12 border border-border/40 shadow-sm"
+          >
+            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg border border-border/30">
+              <Image
+                src="/images/about_atelier.jpg"
+                alt="Veiled Canvas Tailor Atelier and Dressmaker Dummy"
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-4">
+                <Scissors size={14} />
+                Artisan Atelier
+              </div>
+              <h3 className="font-heading text-3xl font-bold mb-4">
+                Sculpted On Tailor Dummies, Perfected In Real Life
+              </h3>
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                Every silhouette at Veiled Canvas begins on traditional tailor dummies and bespoke bust forms. We drape, cut, and pin each curve to guarantee effortless movement, modesty, and impeccable drape without cling.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                Adhering to our core values, our collections celebrate design, textile integrity, and modest artistry.
+              </p>
+            </div>
+          </motion.div>
         </div>
       </section>
 

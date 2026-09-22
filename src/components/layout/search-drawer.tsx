@@ -6,10 +6,20 @@ import { Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useUIStore } from '@/stores/ui-store';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export function SearchDrawer() {
+  const router = useRouter();
   const { isSearchOpen, closeSearch } = useUIStore();
   const [query, setQuery] = useState('');
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (query.trim()) {
+      router.push(`/shop?search=${encodeURIComponent(query.trim())}`);
+      closeSearch();
+    }
+  };
 
   const popularSearches = [
     'Chiffon Hijab',
@@ -40,7 +50,7 @@ export function SearchDrawer() {
             className="fixed top-0 left-0 right-0 z-[70] bg-background shadow-2xl"
           >
             <div className="mx-auto max-w-3xl px-4 py-8">
-              <div className="flex items-center gap-4 mb-6">
+              <form onSubmit={handleSearch} className="flex items-center gap-4 mb-6">
                 <div className="relative flex-1">
                   <Search
                     size={20}
@@ -56,12 +66,13 @@ export function SearchDrawer() {
                   />
                 </div>
                 <button
+                  type="button"
                   onClick={closeSearch}
                   className="p-2 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <X size={24} />
                 </button>
-              </div>
+              </form>
 
               {!query && (
                 <div>

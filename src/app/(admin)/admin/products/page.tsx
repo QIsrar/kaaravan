@@ -420,7 +420,8 @@ export default function AdminProductsPage() {
                         >
                           <div className="flex items-center gap-2 min-w-0">
                             <span
-                              className="w-3.5 h-3.5 rounded-full border border-black/10 shrink-0"
+                              suppressHydrationWarning
+                              className="w-3.5 h-3.5 rounded-full border border-black/20 dark:border-white/20 shrink-0 shadow-xs"
                               style={{ backgroundColor: v.color_hex }}
                             />
                             <div className="min-w-0">

@@ -8,6 +8,7 @@ import { useCartStore } from '@/stores/cart-store';
 import { useUIStore } from '@/stores/ui-store';
 import { formatPrice } from '@/lib/utils';
 import Link from 'next/link';
+import Image from 'next/image';
 
 import { useState } from 'react';
 import toast from 'react-hot-toast';
@@ -122,17 +123,28 @@ export function CartDrawer() {
                       exit={{ opacity: 0, x: 50 }}
                       className="flex gap-4 p-3 rounded-xl bg-muted/50"
                     >
-                      {/* Image placeholder */}
-                      <div
-                        className="w-20 h-20 rounded-lg shrink-0 flex items-center justify-center"
-                        style={{
-                          background: `linear-gradient(135deg, ${item.colorHex}22, ${item.colorHex}44)`,
-                        }}
-                      >
-                        <div
-                          className="w-8 h-8 rounded-full"
-                          style={{ backgroundColor: item.colorHex }}
-                        />
+                      {/* Image */}
+                      <div className="relative w-20 h-20 rounded-lg shrink-0 overflow-hidden bg-muted border border-border/40">
+                        {item.image ? (
+                          <Image
+                            src={item.image}
+                            alt={item.productTitle}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div
+                            className="w-full h-full flex items-center justify-center"
+                            style={{
+                              background: `linear-gradient(135deg, ${item.colorHex}22, ${item.colorHex}44)`,
+                            }}
+                          >
+                            <div
+                              className="w-8 h-8 rounded-full border border-black/30 dark:border-white/30 shadow-xs"
+                              style={{ backgroundColor: item.colorHex }}
+                            />
+                          </div>
+                        )}
                       </div>
 
                       {/* Details */}

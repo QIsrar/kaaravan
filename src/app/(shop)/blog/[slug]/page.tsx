@@ -5,6 +5,7 @@ import { ArrowLeft, Clock, Calendar, Tag } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const blogContent: Record<string, {
   title: string;
@@ -15,6 +16,7 @@ const blogContent: Record<string, {
   tags: string[];
   readTime: number;
   publishedAt: string;
+  image: string;
 }> = {
   '5-ways-to-style-hijab-summer': {
     title: '5 Ways to Style Your Hijab for Summer',
@@ -49,6 +51,51 @@ Not just for the gym! A moisture-wicking sport hijab paired with a casual outfit
     tags: ['hijab', 'summer', 'styling', 'fashion tips'],
     readTime: 6,
     publishedAt: '2025-06-15',
+    image: '/images/blog_1.jpg',
+  },
+  'ethics-behind-our-supply-chain': {
+    title: 'The Ethics Behind Our Supply Chain',
+    excerpt: 'Transparency matters.',
+    content: `Transparency matters. Learn how Veiled Canvas ensures fair wages, sustainable materials, and ethical manufacturing across our entire partner artisan workshops.`,
+    authorName: 'Fatima Al-Rashid',
+    category: 'Behind the Brand',
+    tags: ['ethics', 'sustainability'],
+    readTime: 8,
+    publishedAt: '2025-05-20',
+    image: '/images/blog_2.jpg',
+  },
+  'modest-fashion-workplace-guide': {
+    title: 'Modest Fashion at the Workplace: A Complete Guide',
+    excerpt: 'Navigating professional dress codes while staying true to your modest fashion values.',
+    content: `From boardrooms to creative studios, styling high-end modest workwear that commands respect without compromising faith or individuality.`,
+    authorName: 'Nour Khatib',
+    category: 'Style Guide',
+    tags: ['workwear', 'professional'],
+    readTime: 10,
+    publishedAt: '2025-04-10',
+    image: '/images/blog_3.jpg',
+  },
+  'caring-for-premium-fabrics': {
+    title: 'Caring for Your Premium Fabrics',
+    excerpt: 'Extend the life of your hijabs and abayas with proper fabric care.',
+    content: `Detailed instructions on hand-washing chiffon, preserving bamboo modal, and steaming crepe abayas to retain drape and color vibrancy for years.`,
+    authorName: 'Layla Mahmoud',
+    category: 'Care & Tips',
+    tags: ['fabric care', 'maintenance'],
+    readTime: 5,
+    publishedAt: '2025-03-05',
+    image: '/images/blog_4.jpg',
+  },
+  'spring-2025-collection-preview': {
+    title: 'Spring 2025 Collection Preview',
+    excerpt: 'Get an exclusive first look at our upcoming Spring collection.',
+    content: `Pastels, breathable desert linens, and handcrafted metallic pins inspired by architectural arches and timeless modesty.`,
+    authorName: 'Veiled Canvas Team',
+    category: 'Collections',
+    tags: ['spring', 'new collection', '2025'],
+    readTime: 7,
+    publishedAt: '2025-02-28',
+    image: '/images/blog_5.jpg',
   },
 };
 
@@ -98,9 +145,15 @@ export default function BlogPostPage() {
             </span>
           </div>
 
-          {/* Cover image placeholder */}
-          <div className="aspect-[2/1] rounded-2xl bg-gradient-to-br from-primary/10 to-gold/10 mb-8 flex items-center justify-center">
-            <span className="text-muted-foreground text-sm">Featured Image</span>
+          {/* Cover image on tailor dummy/atelier */}
+          <div className="relative aspect-[2/1] rounded-2xl overflow-hidden shadow-lg border border-border/40 mb-8 bg-muted">
+            <Image
+              src={post.image || '/images/blog_1.jpg'}
+              alt={post.title}
+              fill
+              className="object-cover"
+              priority
+            />
           </div>
 
           <Separator className="mb-8" />

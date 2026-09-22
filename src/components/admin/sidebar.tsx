@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
@@ -66,12 +67,18 @@ export function AdminSidebar({ onCloseMobile }: { onCloseMobile?: () => void }) 
       <div>
         {/* Brand Header */}
         <div className="p-6 border-b border-border/70 flex items-center justify-between">
-          <Link href="/admin" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl gradient-gold flex items-center justify-center text-espresso font-heading font-black text-lg shadow-sm">
-              V
+          <Link href="/admin" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-full overflow-hidden shadow-sm shrink-0 border border-gold/40 group-hover:scale-105 transition-transform">
+              <Image
+                src="/images/logo-mark.png"
+                alt="Veiled Canvas"
+                width={40}
+                height={40}
+                className="w-full h-full object-cover"
+              />
             </div>
             <div>
-              <span className="font-heading font-bold text-sm text-foreground tracking-tight block">
+              <span className="font-heading font-bold text-sm text-foreground tracking-tight block group-hover:text-primary transition-colors">
                 Veiled Canvas
               </span>
               <span className="text-[10px] font-mono uppercase tracking-widest text-primary font-semibold flex items-center gap-1">

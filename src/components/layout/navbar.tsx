@@ -12,6 +12,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Logo } from '@/components/ui/logo';
 import { useCartStore } from '@/stores/cart-store';
 import { useUIStore } from '@/stores/ui-store';
 import { CartDrawer } from './cart-drawer';
@@ -37,6 +38,7 @@ const navLinks = [
 ];
 
 export function Navbar() {
+  const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu, openSearch, openCart } =
@@ -44,6 +46,7 @@ export function Navbar() {
   const totalItems = useCartStore((s) => s.getTotalItems());
 
   useEffect(() => {
+    setMounted(true);
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -70,16 +73,9 @@ export function Navbar() {
             </button>
 
             {/* Logo */}
-            <Link
-              href="/"
-              className="flex items-center gap-2"
-              onClick={closeMobileMenu}
-            >
-              <span className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-                Veiled{' '}
-                <span className="gradient-text">Canvas</span>
-              </span>
-            </Link>
+            <div onClick={closeMobileMenu}>
+              <Logo href="/" size="md" priority />
+            </div>
 
             {/* Desktop navigation */}
             <div className="hidden lg:flex lg:items-center lg:gap-8">
@@ -166,7 +162,7 @@ export function Navbar() {
                 aria-label="Cart"
               >
                 <ShoppingBag size={20} />
-                {totalItems > 0 && (
+                {mounted && totalItems > 0 && (
                   <motion.span
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}

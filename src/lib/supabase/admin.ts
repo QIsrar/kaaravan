@@ -9,16 +9,20 @@ import type { Database } from '@/types/database';
  *
  * NEVER import this in client components or expose to the browser.
  */
+import { getSanitizedSupabaseUrl } from './client';
+
 export function createAdminClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!supabaseUrl || !serviceRoleKey) {
+  if (!rawUrl || !serviceRoleKey) {
     throw new Error(
       'Missing SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL. ' +
       'These must be set in .env.local for server-side operations.'
     );
   }
+
+  const supabaseUrl = getSanitizedSupabaseUrl(rawUrl);
 
   return createSupabaseClient<Database>(supabaseUrl, serviceRoleKey, {
     auth: {

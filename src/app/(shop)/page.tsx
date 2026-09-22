@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import {
   ArrowRight,
@@ -124,38 +125,48 @@ function HeroSection() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="relative hidden lg:block"
+            className="relative block mt-10 lg:mt-0"
           >
-            <div className="relative w-full aspect-[3/4] rounded-3xl overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-gold/10 to-accent/20 rounded-3xl" />
-              <div className="absolute inset-4 rounded-2xl bg-gradient-to-br from-cream-dark to-cream flex items-center justify-center">
-                <div className="text-center p-8">
-                  <div className="w-32 h-32 mx-auto mb-6 rounded-full gradient-gold opacity-20" />
-                  <p className="font-heading text-xl text-espresso/40">
-                    Premium Collection
-                  </p>
-                </div>
+            <div className="relative w-full aspect-[4/5] sm:aspect-[3/4] rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-border/40 group">
+              <Image
+                src="/images/hero_dummy.jpg"
+                alt="Haute Couture Modest Abaya on Tailor Dummy"
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10" />
+              <div className="absolute bottom-4 left-4 right-20 sm:bottom-6 sm:left-6 sm:right-32 text-white pointer-events-none">
+                <span className="inline-block text-[10px] sm:text-xs tracking-widest uppercase font-semibold px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-black/50 backdrop-blur-md border border-white/20 mb-1.5 sm:mb-2 pointer-events-auto">
+                  Haute Couture Exhibition
+                </span>
+                <p className="font-heading text-base sm:text-xl font-bold leading-snug text-white">
+                  Embroidered Gold Abaya &amp; Hijab
+                </p>
+                <p className="text-[11px] sm:text-xs text-white/80 mt-0.5 sm:mt-1">
+                  Sculpted drape on artisan tailor form
+                </p>
               </div>
             </div>
 
-            {/* Floating badge */}
+            {/* Floating badge moved to right side */}
             <motion.div
-              animate={{ y: [0, -10, 0] }}
+              animate={{ y: [0, -6, 0] }}
               transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
-              className="absolute -bottom-4 -left-4 px-6 py-3 rounded-2xl bg-card shadow-lg border border-border"
+              className="absolute -bottom-3 right-3 sm:-bottom-4 sm:-right-4 px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl bg-card/95 backdrop-blur-md shadow-xl border border-border z-10"
             >
               <div className="flex items-center gap-2">
-                <div className="flex -space-x-2">
+                <div className="flex -space-x-1.5 sm:-space-x-2">
                   {['bg-primary', 'bg-gold', 'bg-accent'].map((bg, i) => (
                     <div
                       key={i}
-                      className={`w-8 h-8 rounded-full ${bg} border-2 border-card`}
+                      className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full ${bg} border-2 border-card`}
                     />
                   ))}
                 </div>
                 <div>
-                  <p className="text-xs font-semibold">Trending Now</p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-[11px] sm:text-xs font-semibold">Trending Now</p>
+                  <p className="text-[9px] sm:text-[10px] text-muted-foreground">
                     500+ sold this week
                   </p>
                 </div>
@@ -176,52 +187,48 @@ const collections = [
     title: 'Hijabs & Scarves',
     description: 'Premium fabrics for everyday elegance',
     slug: 'hijabs-scarves',
-    gradient: 'from-rose-100 to-pink-50',
-    accent: '#D4A0A0',
+    image: '/images/collection_hijabs.jpg',
   },
   {
     title: 'Abayas & Dresses',
     description: 'Flowing silhouettes, timeless style',
     slug: 'abayas-dresses',
-    gradient: 'from-amber-50 to-orange-50',
-    accent: '#C19A6B',
+    image: '/images/collection_abayas.jpg',
   },
   {
     title: 'Modest Sportswear',
     description: 'Performance meets modesty',
     slug: 'modest-sportswear',
-    gradient: 'from-teal-50 to-cyan-50',
-    accent: '#008080',
+    image: '/images/collection_sportswear.jpg',
   },
   {
     title: 'Accessories',
     description: 'The finishing touches',
     slug: 'accessories',
-    gradient: 'from-violet-50 to-purple-50',
-    accent: '#B76E79',
+    image: '/images/collection_accessories.jpg',
   },
 ];
 
 function FeaturedCollections() {
   return (
-    <section className="py-20 lg:py-28">
+    <section className="py-14 sm:py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-100px' }}
           variants={stagger}
-          className="text-center mb-14"
+          className="text-center mb-8 sm:mb-14"
         >
           <motion.h2
             variants={fadeInUp}
-            className="font-heading text-3xl lg:text-4xl font-bold mb-4"
+            className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4"
           >
             Explore Our Collections
           </motion.h2>
           <motion.p
             variants={fadeInUp}
-            className="text-muted-foreground max-w-2xl mx-auto"
+            className="text-xs sm:text-base text-muted-foreground max-w-2xl mx-auto"
           >
             Each piece in our collection is thoughtfully designed to blend
             modesty with modern sophistication.
@@ -233,26 +240,26 @@ function FeaturedCollections() {
           whileInView="visible"
           viewport={{ once: true, margin: '-50px' }}
           variants={stagger}
-          className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6"
         >
           {collections.map((collection) => (
             <motion.div key={collection.slug} variants={fadeInUp}>
               <Link href={`/shop?category=${collection.slug}`}>
-                <Card className="group hover-lift border-0 overflow-hidden cursor-pointer h-full">
-                  <div
-                    className={`aspect-[4/5] bg-gradient-to-br ${collection.gradient} flex items-center justify-center relative`}
-                  >
-                    <div
-                      className="w-24 h-24 rounded-full opacity-30 group-hover:scale-110 transition-transform duration-500"
-                      style={{ backgroundColor: collection.accent }}
+                <Card className="group hover-lift border-0 overflow-hidden cursor-pointer h-full bg-card shadow-sm hover:shadow-md transition-shadow">
+                  <div className="aspect-[4/5] relative overflow-hidden bg-muted">
+                    <Image
+                      src={collection.image}
+                      alt={collection.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                     />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-300" />
                   </div>
-                  <CardContent className="p-5">
-                    <h3 className="font-heading font-semibold text-lg mb-1 group-hover:text-primary transition-colors">
+                  <CardContent className="p-3 sm:p-5">
+                    <h3 className="font-heading font-semibold text-sm sm:text-lg mb-0.5 sm:mb-1 group-hover:text-primary transition-colors line-clamp-1">
                       {collection.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
                       {collection.description}
                     </p>
                   </CardContent>
@@ -298,24 +305,24 @@ const values = [
 
 function ValueProposition() {
   return (
-    <section className="py-20 lg:py-28 bg-muted/30">
+    <section className="py-14 sm:py-20 lg:py-28 bg-muted/30">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-100px' }}
           variants={stagger}
-          className="text-center mb-14"
+          className="text-center mb-8 sm:mb-14"
         >
           <motion.h2
             variants={fadeInUp}
-            className="font-heading text-3xl lg:text-4xl font-bold mb-4"
+            className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4"
           >
             The Veiled Canvas Difference
           </motion.h2>
           <motion.p
             variants={fadeInUp}
-            className="text-muted-foreground max-w-2xl mx-auto"
+            className="text-xs sm:text-base text-muted-foreground max-w-2xl mx-auto"
           >
             More than a fashion brand — we&apos;re a movement. Here&apos;s what sets us
             apart.
@@ -327,19 +334,19 @@ function ValueProposition() {
           whileInView="visible"
           viewport={{ once: true, margin: '-50px' }}
           variants={stagger}
-          className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6"
         >
           {values.map((value) => (
             <motion.div key={value.title} variants={fadeInUp}>
-              <Card className="text-center p-6 hover-lift border border-border/50 h-full">
+              <Card className="text-center p-3.5 sm:p-6 hover-lift border border-border/50 h-full">
                 <CardContent className="p-0">
-                  <div className="w-14 h-14 mx-auto mb-4 rounded-2xl gradient-gold flex items-center justify-center">
-                    <value.icon size={24} className="text-espresso" />
+                  <div className="w-10 h-10 sm:w-14 sm:h-14 mx-auto mb-2 sm:mb-4 rounded-xl sm:rounded-2xl gradient-gold flex items-center justify-center">
+                    <value.icon className="w-5 h-5 sm:w-6 sm:h-6 text-espresso" />
                   </div>
-                  <h3 className="font-heading font-semibold text-lg mb-2">
+                  <h3 className="font-heading font-semibold text-sm sm:text-lg mb-1 sm:mb-2">
                     {value.title}
                   </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed line-clamp-3 sm:line-clamp-none">
                     {value.description}
                   </p>
                 </CardContent>

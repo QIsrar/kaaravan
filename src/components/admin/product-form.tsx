@@ -137,8 +137,30 @@ export function ProductFormModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title.trim()) {
-      toast.error('Title is required');
+      toast.error('Product title is required');
       return;
+    }
+    if (!formData.base_price || formData.base_price <= 0) {
+      toast.error('Product price must be greater than $0.00');
+      return;
+    }
+    if (formData.base_price < 100) {
+      toast.error('Minimum product price is $1.00 USD');
+      return;
+    }
+    for (const v of formData.variants) {
+      if (!v.color_name.trim()) {
+        toast.error('All variants must specify a color name');
+        return;
+      }
+      if (!v.sku.trim()) {
+        toast.error('All variants must specify a SKU code');
+        return;
+      }
+      if (v.stock_quantity < 0) {
+        toast.error('Variant stock cannot be negative');
+        return;
+      }
     }
     onSave(formData);
     toast.success(initialData ? 'Product updated successfully' : 'Product created successfully');
@@ -201,18 +223,21 @@ export function ProductFormModal({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="prod-price">Base Price ($ USD)</Label>
+              <Label htmlFor="prod-price">Base Price ($ USD) *</Label>
               <Input
                 id="prod-price"
                 type="number"
                 step="0.01"
-                value={(formData.base_price / 100).toFixed(2)}
-                onChange={(e) =>
+                min="1.00"
+                value={formData.base_price > 0 ? (formData.base_price / 100).toString() : ''}
+                onChange={(e) => {
+                  const val = parseFloat(e.target.value);
                   setFormData({
                     ...formData,
-                    base_price: Math.round(parseFloat(e.target.value || '0') * 100),
-                  })
-                }
+                    base_price: isNaN(val) ? 0 : Math.round(val * 100),
+                  });
+                }}
+                placeholder="29.99"
                 required
               />
             </div>

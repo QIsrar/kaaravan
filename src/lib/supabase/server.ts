@@ -2,12 +2,16 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import type { Database } from '@/types/database';
 
+import { getSanitizedSupabaseUrl } from './client';
+
 export async function createClient() {
   const cookieStore = await cookies();
+  const url = getSanitizedSupabaseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder_anon_key';
 
   return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder_anon_key',
+    url,
+    key,
     {
       cookies: {
         getAll() {

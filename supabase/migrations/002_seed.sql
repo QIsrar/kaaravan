@@ -10,11 +10,11 @@
 -- Categories
 -- ---------------------------------------------------------------------------
 INSERT INTO categories (id, name, slug, description, image_url, sort_order) VALUES
-  ('a1b2c3d4-0001-4000-8000-000000000001', 'Hijabs & Scarves', 'hijabs-scarves', 'Premium hijabs and scarves crafted from the finest fabrics for everyday elegance and special occasions.', '/images/categories/hijabs.jpg', 1),
-  ('a1b2c3d4-0002-4000-8000-000000000002', 'Abayas & Dresses', 'abayas-dresses', 'Flowing abayas and modest dresses designed for comfort, style, and grace.', '/images/categories/abayas.jpg', 2),
-  ('a1b2c3d4-0003-4000-8000-000000000003', 'Modest Sportswear', 'modest-sportswear', 'Performance-driven modest activewear for the modern, active woman.', '/images/categories/sportswear.jpg', 3),
-  ('a1b2c3d4-0004-4000-8000-000000000004', 'Accessories', 'accessories', 'Curated accessories including pins, underscarves, and jewelry to complete your look.', '/images/categories/accessories.jpg', 4),
-  ('a1b2c3d4-0005-4000-8000-000000000005', 'New Arrivals', 'new-arrivals', 'The latest additions to our modest fashion collection.', '/images/categories/new-arrivals.jpg', 0);
+  ('a1b2c3d4-0001-4000-8000-000000000001', 'Hijabs & Scarves', 'hijabs-scarves', 'Premium hijabs and scarves crafted from the finest fabrics for everyday elegance and special occasions.', '/images/collection_hijabs.jpg', 1),
+  ('a1b2c3d4-0002-4000-8000-000000000002', 'Abayas & Dresses', 'abayas-dresses', 'Flowing abayas and modest dresses designed for comfort, style, and grace.', '/images/collection_abayas.jpg', 2),
+  ('a1b2c3d4-0003-4000-8000-000000000003', 'Modest Sportswear', 'modest-sportswear', 'Performance-driven modest activewear for the modern, active woman.', '/images/collection_sportswear.jpg', 3),
+  ('a1b2c3d4-0004-4000-8000-000000000004', 'Accessories', 'accessories', 'Curated accessories including pins, underscarves, and jewelry to complete your look.', '/images/collection_accessories.jpg', 4),
+  ('a1b2c3d4-0005-4000-8000-000000000005', 'New Arrivals', 'new-arrivals', 'The latest additions to our modest fashion collection.', '/images/hero_dummy.jpg', 0);
 
 -- ---------------------------------------------------------------------------
 -- Products
@@ -54,84 +54,84 @@ INSERT INTO products (id, category_id, title, slug, description, base_price, is_
 
 -- Premium Chiffon Hijab variants
 INSERT INTO product_variants (id, product_id, color_name, color_hex, sku, stock_quantity, additional_price, images) VALUES
-  ('c1000001-0001-4000-8000-000000000001', 'b1b2c3d4-0001-4000-8000-000000000001', 'Dusty Rose', '#D4A0A0', 'CHF-DR-001', 45, 0, ARRAY['/images/products/chiffon-dusty-rose-1.jpg', '/images/products/chiffon-dusty-rose-2.jpg']),
-  ('c1000001-0002-4000-8000-000000000001', 'b1b2c3d4-0001-4000-8000-000000000001', 'Sage Green', '#9CAF88', 'CHF-SG-001', 32, 0, ARRAY['/images/products/chiffon-sage-1.jpg']),
-  ('c1000001-0003-4000-8000-000000000001', 'b1b2c3d4-0001-4000-8000-000000000001', 'Ivory', '#FFFFF0', 'CHF-IV-001', 58, 0, ARRAY['/images/products/chiffon-ivory-1.jpg']),
-  ('c1000001-0004-4000-8000-000000000001', 'b1b2c3d4-0001-4000-8000-000000000001', 'Deep Plum', '#4A0E2E', 'CHF-DP-001', 27, 200, ARRAY['/images/products/chiffon-plum-1.jpg']);
+  ('c1000001-0001-4000-8000-000000000001', 'b1b2c3d4-0001-4000-8000-000000000001', 'Dusty Rose', '#D4A0A0', 'CHF-DR-001', 45, 0, ARRAY['/images/collection_hijabs.jpg']),
+  ('c1000001-0002-4000-8000-000000000001', 'b1b2c3d4-0001-4000-8000-000000000001', 'Sage Green', '#9CAF88', 'CHF-SG-001', 32, 0, ARRAY['/images/collection_hijabs.jpg']),
+  ('c1000001-0003-4000-8000-000000000001', 'b1b2c3d4-0001-4000-8000-000000000001', 'Ivory', '#FFFFF0', 'CHF-IV-001', 58, 0, ARRAY['/images/collection_hijabs.jpg']),
+  ('c1000001-0004-4000-8000-000000000001', 'b1b2c3d4-0001-4000-8000-000000000001', 'Deep Plum', '#4A0E2E', 'CHF-DP-001', 27, 200, ARRAY['/images/collection_hijabs.jpg']);
 
 -- Jersey Cotton Hijab variants
 INSERT INTO product_variants (id, product_id, color_name, color_hex, sku, stock_quantity, additional_price, images) VALUES
-  ('c1000002-0001-4000-8000-000000000001', 'b1b2c3d4-0002-4000-8000-000000000001', 'Black', '#1A1A1A', 'JCH-BK-001', 120, 0, ARRAY['/images/products/jersey-black-1.jpg']),
-  ('c1000002-0002-4000-8000-000000000001', 'b1b2c3d4-0002-4000-8000-000000000001', 'Navy', '#1B2A4A', 'JCH-NV-001', 85, 0, ARRAY['/images/products/jersey-navy-1.jpg']),
-  ('c1000002-0003-4000-8000-000000000001', 'b1b2c3d4-0002-4000-8000-000000000001', 'Mauve', '#C9A0DC', 'JCH-MV-001', 40, 0, ARRAY['/images/products/jersey-mauve-1.jpg']),
-  ('c1000002-0004-4000-8000-000000000001', 'b1b2c3d4-0002-4000-8000-000000000001', 'Camel', '#C19A6B', 'JCH-CM-001', 65, 0, ARRAY['/images/products/jersey-camel-1.jpg']);
+  ('c1000002-0001-4000-8000-000000000001', 'b1b2c3d4-0002-4000-8000-000000000001', 'Black', '#1A1A1A', 'JCH-BK-001', 120, 0, ARRAY['/images/prod_modal_silk.jpg']),
+  ('c1000002-0002-4000-8000-000000000001', 'b1b2c3d4-0002-4000-8000-000000000001', 'Navy', '#1B2A4A', 'JCH-NV-001', 85, 0, ARRAY['/images/prod_modal_silk.jpg']),
+  ('c1000002-0003-4000-8000-000000000001', 'b1b2c3d4-0002-4000-8000-000000000001', 'Mauve', '#C9A0DC', 'JCH-MV-001', 40, 0, ARRAY['/images/prod_modal_silk.jpg']),
+  ('c1000002-0004-4000-8000-000000000001', 'b1b2c3d4-0002-4000-8000-000000000001', 'Camel', '#C19A6B', 'JCH-CM-001', 65, 0, ARRAY['/images/prod_modal_silk.jpg']);
 
 -- Silk Blend Wrap variants
 INSERT INTO product_variants (id, product_id, color_name, color_hex, sku, stock_quantity, additional_price, images) VALUES
-  ('c1000003-0001-4000-8000-000000000001', 'b1b2c3d4-0003-4000-8000-000000000001', 'Champagne Gold', '#F7E7CE', 'SBW-CG-001', 20, 0, ARRAY['/images/products/silk-champagne-1.jpg']),
-  ('c1000003-0002-4000-8000-000000000001', 'b1b2c3d4-0003-4000-8000-000000000001', 'Midnight Blue', '#191970', 'SBW-MB-001', 15, 0, ARRAY['/images/products/silk-midnight-1.jpg']),
-  ('c1000003-0003-4000-8000-000000000001', 'b1b2c3d4-0003-4000-8000-000000000001', 'Blush', '#F5C6C6', 'SBW-BL-001', 22, 0, ARRAY['/images/products/silk-blush-1.jpg']);
+  ('c1000003-0001-4000-8000-000000000001', 'b1b2c3d4-0003-4000-8000-000000000001', 'Champagne Gold', '#F7E7CE', 'SBW-CG-001', 20, 0, ARRAY['/images/hero_dummy.jpg']),
+  ('c1000003-0002-4000-8000-000000000001', 'b1b2c3d4-0003-4000-8000-000000000001', 'Midnight Blue', '#191970', 'SBW-MB-001', 15, 0, ARRAY['/images/hero_dummy.jpg']),
+  ('c1000003-0003-4000-8000-000000000001', 'b1b2c3d4-0003-4000-8000-000000000001', 'Blush', '#F5C6C6', 'SBW-BL-001', 22, 0, ARRAY['/images/hero_dummy.jpg']);
 
 -- Modal Hijab Collection variants
 INSERT INTO product_variants (id, product_id, color_name, color_hex, sku, stock_quantity, additional_price, images) VALUES
-  ('c1000004-0001-4000-8000-000000000001', 'b1b2c3d4-0004-4000-8000-000000000001', 'Terracotta', '#CC7755', 'MDL-TC-001', 50, 0, ARRAY['/images/products/modal-terracotta-1.jpg']),
-  ('c1000004-0002-4000-8000-000000000001', 'b1b2c3d4-0004-4000-8000-000000000001', 'Cloud White', '#F5F5F5', 'MDL-CW-001', 70, 0, ARRAY['/images/products/modal-white-1.jpg']),
-  ('c1000004-0003-4000-8000-000000000001', 'b1b2c3d4-0004-4000-8000-000000000001', 'Olive', '#6B7B3A', 'MDL-OL-001', 35, 0, ARRAY['/images/products/modal-olive-1.jpg']);
+  ('c1000004-0001-4000-8000-000000000001', 'b1b2c3d4-0004-4000-8000-000000000001', 'Terracotta', '#CC7755', 'MDL-TC-001', 50, 0, ARRAY['/images/prod_modal_silk.jpg']),
+  ('c1000004-0002-4000-8000-000000000001', 'b1b2c3d4-0004-4000-8000-000000000001', 'Cloud White', '#F5F5F5', 'MDL-CW-001', 70, 0, ARRAY['/images/prod_modal_silk.jpg']),
+  ('c1000004-0003-4000-8000-000000000001', 'b1b2c3d4-0004-4000-8000-000000000001', 'Olive', '#6B7B3A', 'MDL-OL-001', 35, 0, ARRAY['/images/prod_modal_silk.jpg']);
 
 -- Classic Black Abaya variants
 INSERT INTO product_variants (id, product_id, color_name, color_hex, sku, stock_quantity, additional_price, images) VALUES
-  ('c1000005-0001-4000-8000-000000000001', 'b1b2c3d4-0005-4000-8000-000000000001', 'Classic Black', '#0A0A0A', 'ABA-CB-001', 30, 0, ARRAY['/images/products/abaya-black-1.jpg', '/images/products/abaya-black-2.jpg']),
-  ('c1000005-0002-4000-8000-000000000001', 'b1b2c3d4-0005-4000-8000-000000000001', 'Charcoal', '#333333', 'ABA-CH-001', 18, 500, ARRAY['/images/products/abaya-charcoal-1.jpg']);
+  ('c1000005-0001-4000-8000-000000000001', 'b1b2c3d4-0005-4000-8000-000000000001', 'Classic Black', '#0A0A0A', 'ABA-CB-001', 30, 0, ARRAY['/images/collection_abayas.jpg']),
+  ('c1000005-0002-4000-8000-000000000001', 'b1b2c3d4-0005-4000-8000-000000000001', 'Charcoal', '#333333', 'ABA-CH-001', 18, 500, ARRAY['/images/collection_abayas.jpg']);
 
 -- Embroidered Kimono Dress variants
 INSERT INTO product_variants (id, product_id, color_name, color_hex, sku, stock_quantity, additional_price, images) VALUES
-  ('c1000006-0001-4000-8000-000000000001', 'b1b2c3d4-0006-4000-8000-000000000001', 'Emerald', '#2E6B4E', 'KMD-EM-001', 12, 0, ARRAY['/images/products/kimono-emerald-1.jpg']),
-  ('c1000006-0002-4000-8000-000000000001', 'b1b2c3d4-0006-4000-8000-000000000001', 'Burgundy', '#722F37', 'KMD-BG-001', 8, 0, ARRAY['/images/products/kimono-burgundy-1.jpg']),
-  ('c1000006-0003-4000-8000-000000000001', 'b1b2c3d4-0006-4000-8000-000000000001', 'Royal Navy', '#0C1445', 'KMD-RN-001', 10, 1000, ARRAY['/images/products/kimono-navy-1.jpg']);
+  ('c1000006-0001-4000-8000-000000000001', 'b1b2c3d4-0006-4000-8000-000000000001', 'Emerald', '#2E6B4E', 'KMD-EM-001', 12, 0, ARRAY['/images/prod_kimono_abaya.jpg']),
+  ('c1000006-0002-4000-8000-000000000001', 'b1b2c3d4-0006-4000-8000-000000000001', 'Burgundy', '#722F37', 'KMD-BG-001', 8, 0, ARRAY['/images/prod_kimono_abaya.jpg']),
+  ('c1000006-0003-4000-8000-000000000001', 'b1b2c3d4-0006-4000-8000-000000000001', 'Royal Navy', '#0C1445', 'KMD-RN-001', 10, 1000, ARRAY['/images/prod_kimono_abaya.jpg']);
 
 -- Everyday Maxi Dress variants
 INSERT INTO product_variants (id, product_id, color_name, color_hex, sku, stock_quantity, additional_price, images) VALUES
-  ('c1000007-0001-4000-8000-000000000001', 'b1b2c3d4-0007-4000-8000-000000000001', 'Dusty Blue', '#6E8FAE', 'MXD-DB-001', 40, 0, ARRAY['/images/products/maxi-blue-1.jpg']),
-  ('c1000007-0002-4000-8000-000000000001', 'b1b2c3d4-0007-4000-8000-000000000001', 'Sand', '#D2B48C', 'MXD-SD-001', 55, 0, ARRAY['/images/products/maxi-sand-1.jpg']),
-  ('c1000007-0003-4000-8000-000000000001', 'b1b2c3d4-0007-4000-8000-000000000001', 'Rust', '#B7410E', 'MXD-RS-001', 28, 0, ARRAY['/images/products/maxi-rust-1.jpg']);
+  ('c1000007-0001-4000-8000-000000000001', 'b1b2c3d4-0007-4000-8000-000000000001', 'Dusty Blue', '#6E8FAE', 'MXD-DB-001', 40, 0, ARRAY['/images/prod_maxi_dress.jpg']),
+  ('c1000007-0002-4000-8000-000000000001', 'b1b2c3d4-0007-4000-8000-000000000001', 'Sand', '#D2B48C', 'MXD-SD-001', 55, 0, ARRAY['/images/prod_maxi_dress.jpg']),
+  ('c1000007-0003-4000-8000-000000000001', 'b1b2c3d4-0007-4000-8000-000000000001', 'Rust', '#B7410E', 'MXD-RS-001', 28, 0, ARRAY['/images/prod_maxi_dress.jpg']);
 
 -- Linen Summer Abaya variants
 INSERT INTO product_variants (id, product_id, color_name, color_hex, sku, stock_quantity, additional_price, images) VALUES
-  ('c1000008-0001-4000-8000-000000000001', 'b1b2c3d4-0008-4000-8000-000000000001', 'Natural Linen', '#E8DCC8', 'LNA-NL-001', 25, 0, ARRAY['/images/products/linen-natural-1.jpg']),
-  ('c1000008-0002-4000-8000-000000000001', 'b1b2c3d4-0008-4000-8000-000000000001', 'Soft Khaki', '#BDB76B', 'LNA-SK-001', 20, 0, ARRAY['/images/products/linen-khaki-1.jpg']);
+  ('c1000008-0001-4000-8000-000000000001', 'b1b2c3d4-0008-4000-8000-000000000001', 'Natural Linen', '#E8DCC8', 'LNA-NL-001', 25, 0, ARRAY['/images/collection_abayas.jpg']),
+  ('c1000008-0002-4000-8000-000000000001', 'b1b2c3d4-0008-4000-8000-000000000001', 'Soft Khaki', '#BDB76B', 'LNA-SK-001', 20, 0, ARRAY['/images/collection_abayas.jpg']);
 
 -- Performance Swim Set variants
 INSERT INTO product_variants (id, product_id, color_name, color_hex, sku, stock_quantity, additional_price, images) VALUES
-  ('c1000009-0001-4000-8000-000000000001', 'b1b2c3d4-0009-4000-8000-000000000001', 'Ocean Blue', '#0077BE', 'SWM-OB-001', 35, 0, ARRAY['/images/products/swim-blue-1.jpg']),
-  ('c1000009-0002-4000-8000-000000000001', 'b1b2c3d4-0009-4000-8000-000000000001', 'Coral', '#FF6B6B', 'SWM-CR-001', 28, 0, ARRAY['/images/products/swim-coral-1.jpg']);
+  ('c1000009-0001-4000-8000-000000000001', 'b1b2c3d4-0009-4000-8000-000000000001', 'Ocean Blue', '#0077BE', 'SWM-OB-001', 35, 0, ARRAY['/images/prod_swimwear.jpg']),
+  ('c1000009-0002-4000-8000-000000000001', 'b1b2c3d4-0009-4000-8000-000000000001', 'Coral', '#FF6B6B', 'SWM-CR-001', 28, 0, ARRAY['/images/prod_swimwear.jpg']);
 
 -- Sport Hijab Pro variants
 INSERT INTO product_variants (id, product_id, color_name, color_hex, sku, stock_quantity, additional_price, images) VALUES
-  ('c1000010-0001-4000-8000-000000000001', 'b1b2c3d4-0010-4000-8000-000000000001', 'Jet Black', '#0D0D0D', 'SPH-JB-001', 90, 0, ARRAY['/images/products/sport-hijab-black-1.jpg']),
-  ('c1000010-0002-4000-8000-000000000001', 'b1b2c3d4-0010-4000-8000-000000000001', 'Storm Grey', '#708090', 'SPH-SG-001', 60, 0, ARRAY['/images/products/sport-hijab-grey-1.jpg']),
-  ('c1000010-0003-4000-8000-000000000001', 'b1b2c3d4-0010-4000-8000-000000000001', 'Teal', '#008080', 'SPH-TL-001', 45, 0, ARRAY['/images/products/sport-hijab-teal-1.jpg']);
+  ('c1000010-0001-4000-8000-000000000001', 'b1b2c3d4-0010-4000-8000-000000000001', 'Jet Black', '#0D0D0D', 'SPH-JB-001', 90, 0, ARRAY['/images/collection_sportswear.jpg']),
+  ('c1000010-0002-4000-8000-000000000001', 'b1b2c3d4-0010-4000-8000-000000000001', 'Storm Grey', '#708090', 'SPH-SG-001', 60, 0, ARRAY['/images/collection_sportswear.jpg']),
+  ('c1000010-0003-4000-8000-000000000001', 'b1b2c3d4-0010-4000-8000-000000000001', 'Teal', '#008080', 'SPH-TL-001', 45, 0, ARRAY['/images/collection_sportswear.jpg']);
 
 -- Modest Running Set variants
 INSERT INTO product_variants (id, product_id, color_name, color_hex, sku, stock_quantity, additional_price, images) VALUES
-  ('c1000011-0001-4000-8000-000000000001', 'b1b2c3d4-0011-4000-8000-000000000001', 'Midnight', '#191970', 'MRS-MN-001', 20, 0, ARRAY['/images/products/running-midnight-1.jpg']),
-  ('c1000011-0002-4000-8000-000000000001', 'b1b2c3d4-0011-4000-8000-000000000001', 'Graphite', '#474747', 'MRS-GR-001', 22, 0, ARRAY['/images/products/running-graphite-1.jpg']);
+  ('c1000011-0001-4000-8000-000000000001', 'b1b2c3d4-0011-4000-8000-000000000001', 'Midnight', '#191970', 'MRS-MN-001', 20, 0, ARRAY['/images/collection_sportswear.jpg']),
+  ('c1000011-0002-4000-8000-000000000001', 'b1b2c3d4-0011-4000-8000-000000000001', 'Graphite', '#474747', 'MRS-GR-001', 22, 0, ARRAY['/images/collection_sportswear.jpg']);
 
 -- Magnetic Hijab Pins Set variants
 INSERT INTO product_variants (id, product_id, color_name, color_hex, sku, stock_quantity, additional_price, images) VALUES
-  ('c1000012-0001-4000-8000-000000000001', 'b1b2c3d4-0012-4000-8000-000000000001', 'Gold', '#D4AF37', 'MHP-GD-001', 200, 0, ARRAY['/images/products/pins-gold-1.jpg']),
-  ('c1000012-0002-4000-8000-000000000001', 'b1b2c3d4-0012-4000-8000-000000000001', 'Silver', '#C0C0C0', 'MHP-SV-001', 180, 0, ARRAY['/images/products/pins-silver-1.jpg']),
-  ('c1000012-0003-4000-8000-000000000001', 'b1b2c3d4-0012-4000-8000-000000000001', 'Rose Gold', '#B76E79', 'MHP-RG-001', 150, 200, ARRAY['/images/products/pins-rosegold-1.jpg']);
+  ('c1000012-0001-4000-8000-000000000001', 'b1b2c3d4-0012-4000-8000-000000000001', 'Gold', '#D4AF37', 'MHP-GD-001', 200, 0, ARRAY['/images/collection_accessories.jpg']),
+  ('c1000012-0002-4000-8000-000000000001', 'b1b2c3d4-0012-4000-8000-000000000001', 'Silver', '#C0C0C0', 'MHP-SV-001', 180, 0, ARRAY['/images/collection_accessories.jpg']),
+  ('c1000012-0003-4000-8000-000000000001', 'b1b2c3d4-0012-4000-8000-000000000001', 'Rose Gold', '#B76E79', 'MHP-RG-001', 150, 200, ARRAY['/images/collection_accessories.jpg']);
 
 -- Bamboo Jersey Underscarf variants
 INSERT INTO product_variants (id, product_id, color_name, color_hex, sku, stock_quantity, additional_price, images) VALUES
-  ('c1000013-0001-4000-8000-000000000001', 'b1b2c3d4-0013-4000-8000-000000000001', 'Black', '#0A0A0A', 'BJU-BK-001', 300, 0, ARRAY['/images/products/underscarf-black-1.jpg']),
-  ('c1000013-0002-4000-8000-000000000001', 'b1b2c3d4-0013-4000-8000-000000000001', 'Nude', '#E8C39E', 'BJU-ND-001', 250, 0, ARRAY['/images/products/underscarf-nude-1.jpg']),
-  ('c1000013-0003-4000-8000-000000000001', 'b1b2c3d4-0013-4000-8000-000000000001', 'White', '#FAFAFA', 'BJU-WH-001', 220, 0, ARRAY['/images/products/underscarf-white-1.jpg']);
+  ('c1000013-0001-4000-8000-000000000001', 'b1b2c3d4-0013-4000-8000-000000000001', 'Black', '#0A0A0A', 'BJU-BK-001', 300, 0, ARRAY['/images/prod_modal_silk.jpg']),
+  ('c1000013-0002-4000-8000-000000000001', 'b1b2c3d4-0013-4000-8000-000000000001', 'Nude', '#E8C39E', 'BJU-ND-001', 250, 0, ARRAY['/images/prod_modal_silk.jpg']),
+  ('c1000013-0003-4000-8000-000000000001', 'b1b2c3d4-0013-4000-8000-000000000001', 'White', '#FAFAFA', 'BJU-WH-001', 220, 0, ARRAY['/images/prod_modal_silk.jpg']);
 
 -- Pearl Brooch Collection variants
 INSERT INTO product_variants (id, product_id, color_name, color_hex, sku, stock_quantity, additional_price, images) VALUES
-  ('c1000014-0001-4000-8000-000000000001', 'b1b2c3d4-0014-4000-8000-000000000001', 'Classic Pearl', '#FDEEF4', 'PBC-CP-001', 75, 0, ARRAY['/images/products/brooch-pearl-1.jpg']),
-  ('c1000014-0002-4000-8000-000000000001', 'b1b2c3d4-0014-4000-8000-000000000001', 'Vintage Gold', '#CFB53B', 'PBC-VG-001', 60, 500, ARRAY['/images/products/brooch-gold-1.jpg']);
+  ('c1000014-0001-4000-8000-000000000001', 'b1b2c3d4-0014-4000-8000-000000000001', 'Classic Pearl', '#FDEEF4', 'PBC-CP-001', 75, 0, ARRAY['/images/collection_accessories.jpg']),
+  ('c1000014-0002-4000-8000-000000000001', 'b1b2c3d4-0014-4000-8000-000000000001', 'Vintage Gold', '#CFB53B', 'PBC-VG-001', 60, 500, ARRAY['/images/collection_accessories.jpg']);
 
 -- ---------------------------------------------------------------------------
 -- Blog Posts
@@ -149,7 +149,7 @@ INSERT INTO blog_posts (id, title, slug, excerpt, content, author_name, category
     6,
     true,
     '2025-06-15T10:00:00Z',
-    '/images/blog/summer-hijab.jpg'
+    '/images/blog_1.jpg'
   ),
   (
     'd1000001-0002-4000-8000-000000000001',
@@ -163,7 +163,7 @@ INSERT INTO blog_posts (id, title, slug, excerpt, content, author_name, category
     8,
     true,
     '2025-05-20T09:00:00Z',
-    '/images/blog/supply-chain.jpg'
+    '/images/blog_2.jpg'
   ),
   (
     'd1000001-0003-4000-8000-000000000001',
@@ -177,7 +177,7 @@ INSERT INTO blog_posts (id, title, slug, excerpt, content, author_name, category
     10,
     true,
     '2025-04-10T14:00:00Z',
-    '/images/blog/workplace-fashion.jpg'
+    '/images/blog_3.jpg'
   ),
   (
     'd1000001-0004-4000-8000-000000000001',
@@ -191,7 +191,7 @@ INSERT INTO blog_posts (id, title, slug, excerpt, content, author_name, category
     5,
     true,
     '2025-03-05T11:00:00Z',
-    '/images/blog/fabric-care.jpg'
+    '/images/blog_4.jpg'
   ),
   (
     'd1000001-0005-4000-8000-000000000001',
@@ -205,7 +205,7 @@ INSERT INTO blog_posts (id, title, slug, excerpt, content, author_name, category
     7,
     true,
     '2025-02-28T08:00:00Z',
-    '/images/blog/spring-collection.jpg'
+    '/images/blog_5.jpg'
   );
 
 -- ---------------------------------------------------------------------------

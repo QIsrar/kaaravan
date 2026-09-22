@@ -100,6 +100,24 @@
     font-family: var(--font-heading);
   }
 
+  /* Ensure all clickable buttons, role=button, and interactive controls show hand pointer */
+  button,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  select,
+  summary {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [role="button"][aria-disabled="true"],
+  input:disabled,
+  select:disabled {
+    cursor: not-allowed;
+  }
+
   /* Smooth scrolling */
   html {
     scroll-behavior: smooth;

@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Send } from 'lucide-react';
+import { Send, ExternalLink, Sparkles } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Logo } from '@/components/ui/logo';
 import toast from 'react-hot-toast';
 
 const footerLinks = {
@@ -17,17 +18,16 @@ const footerLinks = {
     { label: 'Accessories', href: '/shop?category=accessories' },
   ],
   company: [
-    { label: 'About Us', href: '/about' },
-    { label: 'Blog', href: '/blog' },
-    { label: 'Contact', href: '/contact' },
-    { label: 'Careers', href: '#' },
+    { label: 'Our Story & Atelier', href: '/about' },
+    { label: 'The Journal', href: '/blog' },
+    { label: 'Contact Us', href: '/contact' },
   ],
   support: [
-    { label: 'Shipping & Returns', href: '#' },
-    { label: 'Size Guide', href: '#' },
-    { label: 'FAQ', href: '#' },
-    { label: 'Privacy Policy', href: '#' },
-    { label: 'Terms of Service', href: '#' },
+    { label: 'Shipping & Delivery', href: '/contact#faq' },
+    { label: 'Returns & Exchanges', href: '/contact#faq' },
+    { label: 'FAQs', href: '/contact#faq' },
+    { label: 'Terms & Privacy', href: '/terms' },
+    { label: 'Client Sign In', href: '/login' },
   ],
 };
 
@@ -106,11 +106,9 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {/* Brand Column */}
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="inline-block mb-4">
-              <span className="font-heading text-xl font-bold text-cream">
-                Veiled <span className="text-gold">Canvas</span>
-              </span>
-            </Link>
+            <div className="mb-4">
+              <Logo href="/" size="md" theme="dark" showSubtitle />
+            </div>
             <p className="text-cream/60 text-sm leading-relaxed mb-6">
               Where modesty meets artistry. Premium fashion crafted with
               elegance, ethics, and purpose.
@@ -189,7 +187,7 @@ export function Footer() {
             </h4>
             <ul className="space-y-2.5">
               {footerLinks.company.map((link) => (
-                <li key={link.href}>
+                <li key={link.label}>
                   <Link
                     href={link.href}
                     className="text-sm text-cream/60 hover:text-gold transition-colors"
@@ -208,7 +206,7 @@ export function Footer() {
             </h4>
             <ul className="space-y-2.5">
               {footerLinks.support.map((link) => (
-                <li key={link.href}>
+                <li key={link.label}>
                   <Link
                     href={link.href}
                     className="text-sm text-cream/60 hover:text-gold transition-colors"
@@ -222,13 +220,77 @@ export function Footer() {
         </div>
       </div>
 
-      {/* Copyright */}
-      <div className="border-t border-white/10">
+      {/* Prominent Developed & Maintained Attribution */}
+      <div className="border-t border-white/10 bg-black/30">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
-          <p className="text-center text-xs text-cream/40">
-            © {new Date().getFullYear()} Veiled Canvas. All rights reserved.
-            Crafted with purpose and care.
+          <div className="flex flex-col md:flex-row items-center justify-between gap-5 p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-white/[0.05] via-gold/[0.12] to-white/[0.05] border border-gold/30 shadow-xl backdrop-blur-md">
+            <div className="flex items-center gap-3.5 text-center sm:text-left">
+              <div className="w-10 h-10 rounded-xl gradient-gold flex items-center justify-center text-espresso font-black shrink-0 shadow-md">
+                <Sparkles size={18} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-start">
+                  <span className="text-[11px] uppercase tracking-[0.2em] text-gold font-bold">
+                    Official Technology Partner
+                  </span>
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-gold/70" />
+                  <span className="text-[11px] text-cream/70 font-medium">
+                    Architecture & Operations
+                  </span>
+                </div>
+                <p className="text-sm sm:text-base text-cream/90 font-medium mt-0.5">
+                  Proudly <span className="text-gold font-bold">Developed & Maintained</span> by{' '}
+                  <a
+                    href="https://www.onetechandai.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white font-bold underline decoration-gold underline-offset-4 hover:text-gold transition-colors inline-flex items-center gap-1.5"
+                  >
+                    <span>OneTech & AI</span>
+                    <ExternalLink size={14} className="inline opacity-80" />
+                  </a>
+                </p>
+              </div>
+            </div>
+
+            <a
+              href="https://www.onetechandai.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl gradient-gold text-espresso font-bold text-xs sm:text-sm hover:brightness-110 active:scale-95 transition-all shadow-lg group shrink-0"
+            >
+              <span>Visit onetechandai.com</span>
+              <ExternalLink size={15} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Copyright & Legal */}
+      <div className="border-t border-white/10 bg-black/40">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-center sm:text-left text-xs text-cream/60">
+            © {new Date().getFullYear()} Veiled Canvas. All rights reserved. Platform developed & maintained by{' '}
+            <a
+              href="https://www.onetechandai.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gold font-semibold hover:underline"
+            >
+              OneTech & AI
+            </a>.
           </p>
+          <div className="flex items-center gap-6 text-xs text-cream/50">
+            <Link href="/terms" className="hover:text-gold transition-colors">
+              Terms of Service
+            </Link>
+            <Link href="/terms" className="hover:text-gold transition-colors">
+              Privacy Policy
+            </Link>
+            <Link href="/contact#faq" className="hover:text-gold transition-colors">
+              Help Center
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

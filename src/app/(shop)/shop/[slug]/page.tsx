@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Star, Minus, Plus, ShoppingBag, Heart, Share2, Check, Truck, Shield, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,24 @@ import { formatPrice } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 
-/* Mock product data — in production fetched via server component + generateStaticParams */
+function isLightColor(hex: string): boolean {
+  const clean = hex.replace('#', '');
+  if (clean.length === 3) {
+    const r = parseInt(clean[0] + clean[0], 16);
+    const g = parseInt(clean[1] + clean[1], 16);
+    const b = parseInt(clean[2] + clean[2], 16);
+    return (r * 299 + g * 587 + b * 114) / 1000 > 180;
+  }
+  if (clean.length === 6) {
+    const r = parseInt(clean.substring(0, 2), 16);
+    const g = parseInt(clean.substring(2, 4), 16);
+    const b = parseInt(clean.substring(4, 6), 16);
+    return (r * 299 + g * 587 + b * 114) / 1000 > 180;
+  }
+  return false;
+}
+
+/* Mock product data — with tailor dummy & modest mannequin still-life photos */
 const allProducts: Record<string, {
   id: string;
   title: string;
@@ -22,6 +40,7 @@ const allProducts: Record<string, {
   rating: number;
   reviewCount: number;
   categoryName: string;
+  images: string[];
   variants: Array<{
     id: string;
     colorName: string;
@@ -35,11 +54,12 @@ const allProducts: Record<string, {
     id: 'b1b2c3d4-0001-4000-8000-000000000001',
     title: 'Premium Chiffon Hijab',
     slug: 'premium-chiffon-hijab',
-    description: 'Lightweight and breathable chiffon hijab with a soft, flowing drape. Perfect for daily wear and elegant occasions. Features a delicate hand-finished edge for a polished look.',
+    description: 'Lightweight and breathable chiffon hijab draped on a couture mannequin bust. Soft flowing silhouette with a delicate hand-finished edge for a polished, modest presentation.',
     basePrice: 2499,
     rating: 5,
     reviewCount: 3,
     categoryName: 'Hijabs & Scarves',
+    images: ['/images/collection_hijabs.jpg', '/images/prod_modal_silk.jpg'],
     variants: [
       { id: 'c1000001-0001', colorName: 'Dusty Rose', colorHex: '#D4A0A0', sku: 'CHF-DR-001', stockQuantity: 45, additionalPrice: 0 },
       { id: 'c1000001-0002', colorName: 'Sage Green', colorHex: '#9CAF88', sku: 'CHF-SG-001', stockQuantity: 32, additionalPrice: 0 },
@@ -47,33 +67,129 @@ const allProducts: Record<string, {
       { id: 'c1000001-0004', colorName: 'Deep Plum', colorHex: '#4A0E2E', sku: 'CHF-DP-001', stockQuantity: 27, additionalPrice: 200 },
     ],
   },
+  'jersey-cotton-hijab': {
+    id: 'b1b2c3d4-0002-4000-8000-000000000001',
+    title: 'Jersey Cotton Hijab',
+    slug: 'jersey-cotton-hijab',
+    description: 'Ultra-soft jersey cotton hijab styled seamlessly on bust form. Stretchy, comfortable, and stays in place without pins.',
+    basePrice: 1999,
+    rating: 5,
+    reviewCount: 2,
+    categoryName: 'Hijabs & Scarves',
+    images: ['/images/prod_modal_silk.jpg', '/images/collection_hijabs.jpg'],
+    variants: [
+      { id: 'c1000002-0001', colorName: 'Black', colorHex: '#1A1A1A', sku: 'JCH-BK-001', stockQuantity: 120, additionalPrice: 0 },
+      { id: 'c1000002-0002', colorName: 'Navy', colorHex: '#1B2A4A', sku: 'JCH-NV-001', stockQuantity: 85, additionalPrice: 0 },
+      { id: 'c1000002-0003', colorName: 'Mauve', colorHex: '#C9A0DC', sku: 'JCH-MV-001', stockQuantity: 40, additionalPrice: 0 },
+      { id: 'c1000002-0004', colorName: 'Camel', colorHex: '#C19A6B', sku: 'JCH-CM-001', stockQuantity: 65, additionalPrice: 0 },
+    ],
+  },
+  'silk-blend-wrap': {
+    id: 'b1b2c3d4-0003-4000-8000-000000000001',
+    title: 'Silk Blend Wrap',
+    slug: 'silk-blend-wrap',
+    description: 'Luxurious silk blend wrap with subtle sheen, shown on haute couture wooden tripod tailor mannequin.',
+    basePrice: 4999,
+    rating: 5,
+    reviewCount: 1,
+    categoryName: 'Hijabs & Scarves',
+    images: ['/images/hero_dummy.jpg', '/images/collection_hijabs.jpg'],
+    variants: [
+      { id: 'c1000003-0001', colorName: 'Champagne Gold', colorHex: '#F7E7CE', sku: 'SBW-CG-001', stockQuantity: 20, additionalPrice: 0 },
+      { id: 'c1000003-0002', colorName: 'Midnight Blue', colorHex: '#191970', sku: 'SBW-MB-001', stockQuantity: 15, additionalPrice: 0 },
+    ],
+  },
   'classic-black-abaya': {
     id: 'b1b2c3d4-0005-4000-8000-000000000001',
     title: 'Classic Black Abaya',
     slug: 'classic-black-abaya',
-    description: 'Timeless black abaya with contemporary tailoring. Features elegant bell sleeves and a subtle A-line silhouette. Made from premium crepe fabric.',
+    description: 'Timeless black abaya tailored on a bespoke couture dressmaker dummy. Features elegant bell sleeves and a flowing A-line silhouette in premium crepe.',
     basePrice: 8999,
     rating: 5,
     reviewCount: 1,
     categoryName: 'Abayas & Dresses',
+    images: ['/images/collection_abayas.jpg', '/images/prod_kimono_abaya.jpg'],
     variants: [
       { id: 'c1000005-0001', colorName: 'Classic Black', colorHex: '#0A0A0A', sku: 'ABA-CB-001', stockQuantity: 30, additionalPrice: 0 },
       { id: 'c1000005-0002', colorName: 'Charcoal', colorHex: '#333333', sku: 'ABA-CH-001', stockQuantity: 18, additionalPrice: 500 },
+    ],
+  },
+  'embroidered-kimono-dress': {
+    id: 'b1b2c3d4-0006-4000-8000-000000000001',
+    title: 'Embroidered Kimono Dress',
+    slug: 'embroidered-kimono-dress',
+    description: 'Statement dress with intricate golden filigree embroidery on tailored dress form. Open kimono layering over matching modest inner slip.',
+    basePrice: 12999,
+    rating: 4,
+    reviewCount: 2,
+    categoryName: 'Abayas & Dresses',
+    images: ['/images/prod_kimono_abaya.jpg', '/images/hero_dummy.jpg'],
+    variants: [
+      { id: 'c1000006-0001', colorName: 'Emerald', colorHex: '#2E6B4E', sku: 'KMD-EM-001', stockQuantity: 12, additionalPrice: 0 },
+      { id: 'c1000006-0002', colorName: 'Burgundy', colorHex: '#722F37', sku: 'KMD-BG-001', stockQuantity: 8, additionalPrice: 0 },
+    ],
+  },
+  'everyday-maxi-dress': {
+    id: 'b1b2c3d4-0007-4000-8000-000000000001',
+    title: 'Everyday Maxi Dress',
+    slug: 'everyday-maxi-dress',
+    description: 'Effortlessly modest maxi dress with clean architectural lines on a mannequin form. Breathable fabric and relaxed drape.',
+    basePrice: 5999,
+    rating: 4,
+    reviewCount: 1,
+    categoryName: 'Abayas & Dresses',
+    images: ['/images/prod_maxi_dress.jpg', '/images/collection_abayas.jpg'],
+    variants: [
+      { id: 'c1000007-0001', colorName: 'Dusty Blue', colorHex: '#6E8FAE', sku: 'MXD-DB-001', stockQuantity: 40, additionalPrice: 0 },
+      { id: 'c1000007-0002', colorName: 'Sand', colorHex: '#D2B48C', sku: 'MXD-SD-001', stockQuantity: 55, additionalPrice: 0 },
+      { id: 'c1000007-0003', colorName: 'Rust', colorHex: '#B7410E', sku: 'MXD-RS-001', stockQuantity: 28, additionalPrice: 0 },
     ],
   },
   'sport-hijab-pro': {
     id: 'b1b2c3d4-0010-4000-8000-000000000001',
     title: 'Sport Hijab Pro',
     slug: 'sport-hijab-pro',
-    description: 'Engineered for athletes. Moisture-wicking, anti-slip sport hijab with mesh ventilation zones and a secure pull-on fit.',
+    description: 'Engineered for athletes. Moisture-wicking, anti-slip sport hijab on an athletic mannequin bust form with breathable mesh zones.',
     basePrice: 2999,
     rating: 5,
     reviewCount: 2,
     categoryName: 'Modest Sportswear',
+    images: ['/images/collection_sportswear.jpg', '/images/prod_swimwear.jpg'],
     variants: [
       { id: 'c1000010-0001', colorName: 'Jet Black', colorHex: '#0D0D0D', sku: 'SPH-JB-001', stockQuantity: 90, additionalPrice: 0 },
       { id: 'c1000010-0002', colorName: 'Storm Grey', colorHex: '#708090', sku: 'SPH-SG-001', stockQuantity: 60, additionalPrice: 0 },
       { id: 'c1000010-0003', colorName: 'Teal', colorHex: '#008080', sku: 'SPH-TL-001', stockQuantity: 45, additionalPrice: 0 },
+    ],
+  },
+  'magnetic-hijab-pins-set': {
+    id: 'b1b2c3d4-0012-4000-8000-000000000001',
+    title: 'Magnetic Hijab Pins Set',
+    slug: 'magnetic-hijab-pins-set',
+    description: 'Strong magnetic hijab pins on ivory silk satin backdrop. Snag-free hold that preserves delicate chiffon and modal silks.',
+    basePrice: 1499,
+    rating: 5,
+    reviewCount: 1,
+    categoryName: 'Accessories',
+    images: ['/images/collection_accessories.jpg'],
+    variants: [
+      { id: 'c1000012-0001', colorName: 'Gold', colorHex: '#D4AF37', sku: 'MHP-GD-001', stockQuantity: 200, additionalPrice: 0 },
+      { id: 'c1000012-0002', colorName: 'Silver', colorHex: '#C0C0C0', sku: 'MHP-SV-001', stockQuantity: 180, additionalPrice: 0 },
+      { id: 'c1000012-0003', colorName: 'Rose Gold', colorHex: '#B76E79', sku: 'MHP-RG-001', stockQuantity: 150, additionalPrice: 200 },
+    ],
+  },
+  'performance-swim-set': {
+    id: 'b1b2c3d4-0009-4000-8000-000000000001',
+    title: 'Performance Swim Set',
+    slug: 'performance-swim-set',
+    description: 'Full-coverage modest swimwear with UPF 50+ protection, displayed on headless athletic form. Quick-dry and chlorine-resistant.',
+    basePrice: 6999,
+    rating: 4,
+    reviewCount: 1,
+    categoryName: 'Modest Sportswear',
+    images: ['/images/prod_swimwear.jpg', '/images/collection_sportswear.jpg'],
+    variants: [
+      { id: 'c1000009-0001', colorName: 'Ocean Blue', colorHex: '#0077BE', sku: 'SWM-OB-001', stockQuantity: 35, additionalPrice: 0 },
+      { id: 'c1000009-0002', colorName: 'Coral', colorHex: '#FF6B6B', sku: 'SWM-CR-001', stockQuantity: 28, additionalPrice: 0 },
     ],
   },
 };
@@ -84,15 +200,11 @@ function getProduct(slug: string) {
 }
 
 export default function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
-  // We use a client component for interactivity; in production this would be a server component wrapper
-  const [resolvedParams, setResolvedParams] = useState<{ slug: string } | null>(null);
-
-  // Use React.use() pattern — but since this is client, we'll handle it differently
-  // For the static mock data approach, we extract slug from URL
   const slug = typeof window !== 'undefined' ? window.location.pathname.split('/').pop() || 'premium-chiffon-hijab' : 'premium-chiffon-hijab';
   const product = getProduct(slug);
 
   const [selectedVariantIdx, setSelectedVariantIdx] = useState(0);
+  const [selectedImageIdx, setSelectedImageIdx] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const addItem = useCartStore((s) => s.addItem);
   const openCart = useUIStore((s) => s.openCart);
@@ -100,6 +212,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
   const variant = product.variants[selectedVariantIdx];
   const totalPrice = product.basePrice + variant.additionalPrice;
   const inStock = variant.stockQuantity > 0;
+  const currentImage = product.images[selectedImageIdx] || product.images[0];
 
   const handleAddToCart = () => {
     if (!inStock) return;
@@ -115,7 +228,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
       unitPrice: totalPrice,
       quantity,
       maxQuantity: variant.stockQuantity,
-      image: '',
+      image: currentImage,
     };
 
     addItem(item);
@@ -135,41 +248,42 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
           <span className="text-foreground">{product.title}</span>
         </nav>
 
-        <div className="grid lg:grid-cols-2 gap-12">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Image Gallery */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
-            {/* Main image */}
-            <div className="aspect-square rounded-2xl bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center mb-4 overflow-hidden">
-              <motion.div
-                key={selectedVariantIdx}
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.3 }}
-                className="w-48 h-48 rounded-full opacity-30"
-                style={{ backgroundColor: variant.colorHex }}
+            {/* Main image on tailor dummy/mannequin */}
+            <div className="relative aspect-square rounded-2xl bg-muted overflow-hidden mb-3 sm:mb-4 shadow-md border border-border/40 group">
+              <Image
+                src={currentImage}
+                alt={`${product.title} on tailor dummy`}
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                priority
               />
+              <div className="absolute top-3 left-3 sm:top-4 sm:left-4">
+                <span className="text-[10px] sm:text-[11px] font-medium tracking-wide uppercase px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-black/40 backdrop-blur-md text-white border border-white/20">
+                  Couture Form Display
+                </span>
+              </div>
             </div>
 
-            {/* Thumbnails */}
-            <div className="flex gap-3">
-              {product.variants.map((v, i) => (
+            {/* Gallery Thumbnails */}
+            <div className="flex gap-2 sm:gap-3 mb-4 overflow-x-auto pb-1">
+              {product.images.map((img, i) => (
                 <button
-                  key={v.id}
-                  onClick={() => { setSelectedVariantIdx(i); setQuantity(1); }}
-                  className={`w-20 h-20 rounded-xl flex items-center justify-center transition-all ${
-                    i === selectedVariantIdx
-                      ? 'ring-2 ring-primary ring-offset-2'
-                      : 'bg-muted hover:ring-1 ring-border'
+                  key={i}
+                  onClick={() => setSelectedImageIdx(i)}
+                  className={`relative w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-xl overflow-hidden transition-all border cursor-pointer ${
+                    i === selectedImageIdx
+                      ? 'ring-2 ring-primary ring-offset-2 border-transparent'
+                      : 'opacity-70 hover:opacity-100 border-border/50'
                   }`}
                 >
-                  <div
-                    className="w-8 h-8 rounded-full"
-                    style={{ backgroundColor: v.colorHex }}
-                  />
+                  <Image src={img} alt={`${product.title} view ${i + 1}`} fill className="object-cover" />
                 </button>
               ))}
             </div>
@@ -227,23 +341,33 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                 Color: <span className="text-primary">{variant.colorName}</span>
               </h3>
               <div className="flex gap-3">
-                {product.variants.map((v, i) => (
-                  <button
-                    key={v.id}
-                    onClick={() => { setSelectedVariantIdx(i); setQuantity(1); }}
-                    className={`relative w-10 h-10 rounded-full transition-all ${
-                      i === selectedVariantIdx
-                        ? 'ring-2 ring-primary ring-offset-2 scale-110'
-                        : 'hover:scale-105'
-                    }`}
-                    style={{ backgroundColor: v.colorHex }}
-                    title={v.colorName}
-                  >
-                    {i === selectedVariantIdx && (
-                      <Check size={16} className="absolute inset-0 m-auto text-white drop-shadow-md" />
-                    )}
-                  </button>
-                ))}
+                {product.variants.map((v, i) => {
+                  const light = isLightColor(v.colorHex);
+                  return (
+                    <button
+                      key={v.id}
+                      onClick={() => { setSelectedVariantIdx(i); setQuantity(1); }}
+                      className={`relative w-10 h-10 rounded-full transition-all border-2 ${
+                        light ? 'border-neutral-500' : 'border-black/20'
+                      } ${
+                        i === selectedVariantIdx
+                          ? 'ring-2 ring-primary ring-offset-2 scale-110 shadow-sm'
+                          : 'hover:scale-105 opacity-90 hover:opacity-100'
+                      }`}
+                      style={{ backgroundColor: v.colorHex }}
+                      title={v.colorName}
+                    >
+                      {i === selectedVariantIdx && (
+                        <Check
+                          size={16}
+                          className={`absolute inset-0 m-auto ${
+                            light ? 'text-neutral-900' : 'text-white'
+                          } drop-shadow-sm font-bold`}
+                        />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

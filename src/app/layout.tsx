@@ -15,26 +15,64 @@ const playfair = Playfair_Display({
   display: 'swap',
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  ? process.env.NEXT_PUBLIC_SITE_URL
+  : process.env.VERCEL_URL
+  ? `https://${process.env.VERCEL_URL}`
+  : 'https://veiled-canvas.vercel.app';
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: 'Veiled Canvas | Where Modesty Meets Artistry',
     template: '%s | Veiled Canvas',
   },
   description:
-    'Premium modest fashion for the modern woman. Discover hijabs, abayas, dresses, sportswear, and accessories crafted with elegance and purpose.',
+    'Veiled Canvas — Haute Couture Modest Fashion. Discover handcrafted abayas, luxury silks, flowing hijabs, and contemporary silhouettes crafted with elegance, ethics, and purpose.',
   keywords: [
+    'Veiled Canvas',
     'modest fashion',
-    'hijab',
-    'abaya',
+    'luxury abayas',
+    'haute couture hijab',
+    'silk scarves',
     'modest dresses',
-    'modest sportswear',
-    'ethical fashion',
+    'ethical luxury fashion',
   ],
-  authors: [{ name: 'Veiled Canvas' }],
+  authors: [{ name: 'Veiled Canvas' }, { name: 'OneTech & AI', url: 'https://www.onetechandai.com/' }],
+  creator: 'OneTech & AI (https://www.onetechandai.com/)',
+  publisher: 'Veiled Canvas',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon.png', type: 'image/png', sizes: '512x512' },
+      { url: '/icon-192.png', type: 'image/png', sizes: '192x192' },
+    ],
+    apple: [{ url: '/apple-icon.png', sizes: '180x180', type: 'image/png' }],
+    shortcut: ['/favicon.ico'],
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
+    url: '/',
     siteName: 'Veiled Canvas',
+    title: 'Veiled Canvas | Where Modesty Meets Artistry',
+    description:
+      'Veiled Canvas — Haute Couture Modest Fashion. Discover handcrafted abayas, luxury silks, flowing hijabs, and contemporary silhouettes crafted with elegance, ethics, and purpose.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Veiled Canvas — Where Modesty Meets Artistry',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Veiled Canvas | Where Modesty Meets Artistry',
+    description:
+      'Haute Couture Modest Fashion. Handcrafted abayas, luxury silks, and contemporary silhouettes.',
+    images: ['/og-image.png'],
   },
 };
 
@@ -44,7 +82,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+    <html
+      lang="en"
+      className={`${inter.variable} ${playfair.variable}`}
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
       <body className="min-h-screen bg-background font-sans antialiased">
         <Providers>{children}</Providers>
       </body>
