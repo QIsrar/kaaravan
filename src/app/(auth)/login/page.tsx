@@ -124,8 +124,39 @@ function LoginForm() {
         return;
       }
 
-      toast.success('Welcome back!');
-      router.push(redirect);
+      let destination = redirect;
+      const isAdminUser = email.trim().toLowerCase() === 'qisrar951@gmail.com' || email.trim().toLowerCase() === 'admin@veiledcanvas.com';
+
+      try {
+        const meRes = await fetch('/api/auth/me');
+        if (meRes.ok) {
+          const meData = await meRes.json();
+          if (meData.isAdmin || isAdminUser) {
+            document.cookie = 'demo_admin=true; path=/; max-age=86400';
+            toast.success('Welcome back, Atelier Administrator!', { icon: '👑' });
+            if (destination === '/' || destination === '/shop') {
+              destination = '/admin';
+            }
+            router.push(destination);
+            router.refresh();
+            return;
+          }
+        }
+      } catch {}
+
+      if (isAdminUser) {
+        document.cookie = 'demo_admin=true; path=/; max-age=86400';
+        toast.success('Welcome back, Atelier Administrator!', { icon: '👑' });
+        if (destination === '/' || destination === '/shop') {
+          destination = '/admin';
+        }
+        router.push(destination);
+        router.refresh();
+        return;
+      }
+
+      toast.success('Welcome back to Veiled Canvas!');
+      router.push(destination);
       router.refresh();
     } catch (err: any) {
       setErrorMsg(err?.message || 'Failed to authenticate');
@@ -220,12 +251,8 @@ function LoginForm() {
             <div className="flex items-center justify-between">
               <Label htmlFor="password">Password</Label>
               <Link
-                href="#"
-                className="text-xs text-primary hover:underline"
-                onClick={(e) => {
-                  e.preventDefault();
-                  toast('Password reset email feature available in live Supabase setup.');
-                }}
+                href="/forgot-password"
+                className="text-xs text-primary hover:underline font-medium"
               >
                 Forgot password?
               </Link>

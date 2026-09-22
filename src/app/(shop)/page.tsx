@@ -36,7 +36,7 @@ const stagger = {
    ============================================================================ */
 function HeroSection() {
   return (
-    <section className="relative min-h-[90vh] flex items-center overflow-hidden">
+    <section className="relative min-h-[90vh] flex items-center overflow-hidden border-b-2 border-border/80">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-cream via-background to-cream-dark" />
       <div className="absolute inset-0 opacity-[0.03]" style={{
@@ -211,7 +211,7 @@ const collections = [
 
 function FeaturedCollections() {
   return (
-    <section className="py-14 sm:py-20 lg:py-28">
+    <section className="py-14 sm:py-20 lg:py-24 border-b-2 border-border/80 bg-background">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial="hidden"
@@ -245,7 +245,7 @@ function FeaturedCollections() {
           {collections.map((collection) => (
             <motion.div key={collection.slug} variants={fadeInUp}>
               <Link href={`/shop?category=${collection.slug}`}>
-                <Card className="group hover-lift border-0 overflow-hidden cursor-pointer h-full bg-card shadow-sm hover:shadow-md transition-shadow">
+                <Card className="group hover-lift border-2 border-border/80 hover:border-primary/60 rounded-2xl overflow-hidden cursor-pointer h-full bg-card shadow-xs transition-all duration-300">
                   <div className="aspect-[4/5] relative overflow-hidden bg-muted">
                     <Image
                       src={collection.image}
@@ -305,7 +305,7 @@ const values = [
 
 function ValueProposition() {
   return (
-    <section className="py-14 sm:py-20 lg:py-28 bg-muted/30">
+    <section className="py-14 sm:py-20 lg:py-24 bg-muted/30 border-b-2 border-border/80">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial="hidden"
@@ -338,7 +338,7 @@ function ValueProposition() {
         >
           {values.map((value) => (
             <motion.div key={value.title} variants={fadeInUp}>
-              <Card className="text-center p-3.5 sm:p-6 hover-lift border border-border/50 h-full">
+              <Card className="text-center p-4 sm:p-6 hover-lift border-2 border-border/80 hover:border-primary/60 rounded-2xl bg-card shadow-xs h-full transition-all duration-300">
                 <CardContent className="p-0">
                   <div className="w-10 h-10 sm:w-14 sm:h-14 mx-auto mb-2 sm:mb-4 rounded-xl sm:rounded-2xl gradient-gold flex items-center justify-center">
                     <value.icon className="w-5 h-5 sm:w-6 sm:h-6 text-espresso" />
@@ -403,14 +403,14 @@ function CustomerReviews() {
     setCurrent((c) => (c - 1 + reviews.length) % reviews.length);
 
   return (
-    <section className="py-20 lg:py-28">
+    <section className="py-16 sm:py-20 lg:py-24 border-b-2 border-border/80 bg-background">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-100px' }}
           variants={stagger}
-          className="text-center mb-14"
+          className="text-center mb-10 sm:mb-14"
         >
           <motion.h2
             variants={fadeInUp}
@@ -427,7 +427,7 @@ function CustomerReviews() {
           </motion.p>
         </motion.div>
 
-        <div className="relative max-w-3xl mx-auto">
+        <div className="relative max-w-3xl mx-auto p-6 sm:p-10 rounded-3xl border-2 border-border/80 bg-card shadow-xs">
           <motion.div
             key={current}
             initial={{ opacity: 0, x: 50 }}

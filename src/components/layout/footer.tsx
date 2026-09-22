@@ -63,9 +63,9 @@ export function Footer() {
   };
 
   return (
-    <footer className="bg-espresso text-cream">
+    <footer className="bg-espresso text-cream border-t-2 border-border/80">
       {/* Newsletter Section */}
-      <div className="border-b border-white/10">
+      <div className="border-b-2 border-white/10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
           <div className="grid lg:grid-cols-2 gap-8 items-center">
             <div>

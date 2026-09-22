@@ -52,11 +52,39 @@ export function useAuth() {
 
       if (session?.user) {
         const metadata = session.user.user_metadata || {};
+        let userRole: 'admin' | 'customer' = (metadata.role as any) || 'customer';
+        let userName = metadata.full_name || session.user.email?.split('@')[0] || 'Client';
+
+        // Check if user is qisrar951@gmail.com or admin email
+        if (session.user.email?.toLowerCase() === 'qisrar951@gmail.com' || session.user.email?.toLowerCase() === 'admin@veiledcanvas.com') {
+          userRole = 'admin';
+          if (typeof document !== 'undefined') {
+            document.cookie = 'demo_admin=true; path=/; max-age=86400';
+          }
+        }
+
+        // Fetch database profile role via /api/auth/me
+        try {
+          const res = await fetch('/api/auth/me');
+          if (res.ok) {
+            const data = await res.json();
+            if (data.authenticated && data.user) {
+              if (data.user.role) userRole = data.user.role;
+              if (data.user.name) userName = data.user.name;
+              if (data.isAdmin && typeof document !== 'undefined') {
+                document.cookie = 'demo_admin=true; path=/; max-age=86400';
+              }
+            }
+          }
+        } catch (apiErr) {
+          console.warn('Could not fetch /api/auth/me:', apiErr);
+        }
+
         setUser({
           id: session.user.id,
           email: session.user.email,
-          name: metadata.full_name || session.user.email?.split('@')[0] || 'Client',
-          role: metadata.role || 'customer',
+          name: userName,
+          role: userRole,
         });
       } else {
         setUser(null);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AdminHeader } from '@/components/admin/header';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -105,6 +105,29 @@ export default function AdminInboxPage() {
   const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Fetch real contact submissions on mount
+  useEffect(() => {
+    const fetchInquiries = async () => {
+      try {
+        const res = await fetch('/api/contact');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.inquiries && data.inquiries.length > 0) {
+            setInquiries((prev) => {
+              const merged = [...data.inquiries, ...prev];
+              return merged.filter((v, idx, arr) => 
+                arr.findIndex(t => t.id === v.id || (t.email === v.email && t.message === v.message)) === idx
+              );
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load contact inquiries:', err);
+      }
+    };
+    fetchInquiries();
+  }, []);
+
   const filteredInquiries = inquiries.filter(
     (i) =>
       i.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -113,21 +136,32 @@ export default function AdminInboxPage() {
   );
 
   const handleToggleStatus = (id: string) => {
+    const target = inquiries.find((item) => item.id === id);
+    const nextStatus = target?.status === 'unread' ? 'resolved' : 'unread';
+
     setInquiries((prev) =>
       prev.map((item) => {
         if (item.id === id) {
-          const next = item.status === 'unread' ? 'resolved' : 'unread';
-          toast.success(`Inquiry marked as ${next}`);
-          return { ...item, status: next };
+          return { ...item, status: nextStatus };
         }
         return item;
       })
     );
+    toast.success(`Inquiry marked as ${nextStatus}`);
+
     if (selectedInquiry && selectedInquiry.id === id) {
       setSelectedInquiry((prev) =>
-        prev ? { ...prev, status: prev.status === 'unread' ? 'resolved' : 'unread' } : null
+        prev ? { ...prev, status: nextStatus } : null
       );
     }
+
+    try {
+      fetch('/api/contact', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status: nextStatus }),
+      }).catch(() => {});
+    } catch {}
   };
 
   const handleExportCSV = () => {

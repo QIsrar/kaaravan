@@ -56,18 +56,27 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Check if user has admin role
+    // Direct check for designated admin email
+    if (user.email?.toLowerCase() === 'qisrar951@gmail.com' || user.email?.toLowerCase() === 'admin@veiledcanvas.com') {
+      supabaseResponse.cookies.set('demo_admin', 'true', { path: '/', maxAge: 86400 });
+      return supabaseResponse;
+    }
+
+    // Check if user has admin role in profiles
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single();
 
-    if (!profile || profile.role !== 'admin') {
-      const url = request.nextUrl.clone();
-      url.pathname = '/';
-      return NextResponse.redirect(url);
+    if (profile?.role === 'admin') {
+      supabaseResponse.cookies.set('demo_admin', 'true', { path: '/', maxAge: 86400 });
+      return supabaseResponse;
     }
+
+    const url = request.nextUrl.clone();
+    url.pathname = '/';
+    return NextResponse.redirect(url);
   }
 
   // Redirect authenticated users away from auth pages

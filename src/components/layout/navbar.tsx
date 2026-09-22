@@ -41,7 +41,17 @@ const navLinks = [
   },
   { label: 'About', href: '/about' },
   { label: 'Blog', href: '/blog' },
-  { label: 'Contact', href: '/contact' },
+  {
+    label: 'Client Care',
+    href: '/faq',
+    children: [
+      { label: 'Shipping & Delivery', href: '/shipping' },
+      { label: 'Returns & Exchanges', href: '/returns' },
+      { label: 'FAQs & Support', href: '/faq' },
+      { label: 'Privacy Charter', href: '/privacy' },
+      { label: 'Contact Concierge', href: '/contact' },
+    ],
+  },
 ];
 
 export function Navbar() {
@@ -161,6 +171,18 @@ export function Navbar() {
 
             {/* Action icons */}
             <div className="flex items-center gap-1 sm:gap-2">
+              {isAdmin && (
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="hidden md:inline-flex items-center gap-1.5 border-primary/50 bg-primary/10 text-primary font-semibold hover:bg-primary hover:text-primary-foreground h-8 px-2.5 text-xs rounded-full transition-all shadow-xs"
+                >
+                  <Link href="/admin">
+                    <ShieldCheck size={13} /> Admin Portal
+                  </Link>
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="icon"

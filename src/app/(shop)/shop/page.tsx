@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useMemo, Suspense } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Star, ShoppingBag, SlidersHorizontal, X, Heart } from 'lucide-react';
+import { Star, ShoppingBag, SlidersHorizontal, X, Heart, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -243,7 +243,7 @@ function ProductCard({ product }: { product: typeof products[0] }) {
 
   return (
     <Link href={`/shop/${product.slug}`}>
-      <Card className="group hover-lift border-0 overflow-hidden cursor-pointer h-full relative">
+      <Card className="group hover-lift border-2 border-border/80 hover:border-primary/60 rounded-2xl shadow-xs transition-all duration-300 overflow-hidden cursor-pointer h-full relative">
         {/* Image area */}
         <div className="relative aspect-[3/4] bg-muted overflow-hidden">
           <Image
@@ -363,13 +363,23 @@ function ProductCard({ product }: { product: typeof products[0] }) {
    ============================================================================ */
 function ShopContent() {
   const searchParams = useSearchParams();
-  const initialCategory = searchParams.get('category') || '';
+  const urlSearch = searchParams.get('search') || '';
+  const urlCategory = searchParams.get('category') || '';
 
-  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
+  const [selectedCategory, setSelectedCategory] = useState(urlCategory);
   const [selectedPriceRange, setSelectedPriceRange] = useState<number | null>(null);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+  const [searchQuery, setSearchQuery] = useState(urlSearch);
   const [showFilters, setShowFilters] = useState(false);
+
+  // Sync state whenever URL parameters change (e.g. from navbar popular searches or drawer)
+  useEffect(() => {
+    setSearchQuery(urlSearch);
+  }, [urlSearch]);
+
+  useEffect(() => {
+    setSelectedCategory(urlCategory);
+  }, [urlCategory]);
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
@@ -379,9 +389,18 @@ function ShopContent() {
         const range = priceRanges[selectedPriceRange];
         if (p.basePrice < range.min || p.basePrice >= range.max) return false;
       }
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase();
-        if (!p.title.toLowerCase().includes(q)) return false;
+      if (searchQuery.trim()) {
+        const terms = searchQuery.toLowerCase().trim().split(/\s+/);
+        const searchableText = [
+          p.title,
+          p.categorySlug,
+          p.badge || '',
+          ...p.variants.map((v) => `${v.colorName} ${v.sku}`),
+        ].join(' ').toLowerCase();
+
+        // Check if any word in the search query matches
+        const matches = terms.some((term) => searchableText.includes(term));
+        if (!matches) return false;
       }
       return true;
     });
@@ -398,15 +417,16 @@ function ShopContent() {
 
   return (
     <div className="pt-20 lg:pt-24">
-      {/* Header */}
-      <div className="bg-muted/30 py-12">
+      {/* Header with bold border */}
+      <div className="bg-muted/30 py-10 border-b-2 border-border/80">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h1 className="font-heading text-3xl lg:text-4xl font-bold mb-2">
             Shop Our Collection
           </h1>
           <p className="text-muted-foreground">
-            {filteredProducts.length} products
+            {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} available
             {selectedCategory && ` in ${categories.find(c => c.slug === selectedCategory)?.name}`}
+            {searchQuery && ` matching "${searchQuery}"`}
           </p>
         </div>
       </div>
@@ -417,7 +437,7 @@ function ShopContent() {
           <Button
             variant="outline"
             onClick={() => setShowFilters(!showFilters)}
-            className="w-full"
+            className="w-full border-2 border-border/80"
           >
             <SlidersHorizontal size={16} className="mr-2" />
             Filters
@@ -427,12 +447,12 @@ function ShopContent() {
           </Button>
         </div>
 
-        <div className="flex gap-8">
-          {/* Sidebar Filters */}
+        <div className="flex gap-8 items-start">
+          {/* Sidebar Filters with clear outline border */}
           <aside
             className={`${
               showFilters ? 'block' : 'hidden'
-            } lg:block w-full lg:w-64 shrink-0 space-y-6 bg-card lg:bg-transparent p-4 sm:p-6 lg:p-0 rounded-2xl lg:rounded-none border border-border lg:border-none shadow-lg lg:shadow-none mb-6 lg:mb-0`}
+            } lg:block w-full lg:w-64 shrink-0 space-y-6 bg-card p-5 sm:p-6 rounded-2xl border-2 border-border/80 shadow-xs mb-6 lg:mb-0 sticky top-24`}
           >
             {/* Mobile Filter Header */}
             <div className="flex items-center justify-between pb-3 border-b border-border lg:hidden">
@@ -562,13 +582,17 @@ function ShopContent() {
           {/* Product Grid */}
           <div className="flex-1">
             {filteredProducts.length === 0 ? (
-              <div className="text-center py-20">
-                <p className="font-heading text-xl mb-2">No products found</p>
-                <p className="text-muted-foreground mb-4">
-                  Try adjusting your filters or search query
+              <div className="text-center py-16 px-6 bg-card rounded-2xl border-2 border-dashed border-border/80 shadow-xs">
+                <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mx-auto mb-4 text-muted-foreground">
+                  <Search size={24} />
+                </div>
+                <p className="font-heading text-xl font-bold mb-2">No matching products found</p>
+                <p className="text-muted-foreground text-sm max-w-md mx-auto mb-6">
+                  {searchQuery ? `We could not find any pieces matching "${searchQuery}".` : 'No products match the selected filter combination.'}
+                  {' '}Try clearing your search or exploring our full collection.
                 </p>
-                <Button variant="outline" onClick={clearFilters}>
-                  Clear Filters
+                <Button variant="outline" onClick={clearFilters} className="border-2 border-border/80 hover:bg-muted font-medium">
+                  <X size={14} className="mr-1.5" /> Clear All Filters
                 </Button>
               </div>
             ) : (
