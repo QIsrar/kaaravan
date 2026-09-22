@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
 
     try {
       const admin = createAdminClient();
-      const { data: { users }, error: listError } = await admin.auth.admin.listUsers();
+      const { data: { users }, error: listError } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
 
       if (listError) {
         return NextResponse.json({ error: listError.message }, { status: 500 });
