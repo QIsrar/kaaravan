@@ -148,7 +148,7 @@ INSERT INTO blog_posts (id, title, slug, excerpt, content, author_name, category
     ARRAY['hijab', 'summer', 'styling', 'fashion tips'],
     6,
     true,
-    '2025-06-15T10:00:00Z',
+    '2026-06-15T10:00:00Z',
     '/images/blog_1.jpg'
   ),
   (
@@ -162,7 +162,7 @@ INSERT INTO blog_posts (id, title, slug, excerpt, content, author_name, category
     ARRAY['ethics', 'sustainability', 'supply chain', 'transparency'],
     8,
     true,
-    '2025-05-20T09:00:00Z',
+    '2026-05-20T09:00:00Z',
     '/images/blog_2.jpg'
   ),
   (
@@ -176,7 +176,7 @@ INSERT INTO blog_posts (id, title, slug, excerpt, content, author_name, category
     ARRAY['workwear', 'professional', 'capsule wardrobe', 'office style'],
     10,
     true,
-    '2025-04-10T14:00:00Z',
+    '2026-04-10T14:00:00Z',
     '/images/blog_3.jpg'
   ),
   (
@@ -190,21 +190,21 @@ INSERT INTO blog_posts (id, title, slug, excerpt, content, author_name, category
     ARRAY['fabric care', 'maintenance', 'washing', 'storage'],
     5,
     true,
-    '2025-03-05T11:00:00Z',
+    '2026-03-05T11:00:00Z',
     '/images/blog_4.jpg'
   ),
   (
     'd1000001-0005-4000-8000-000000000001',
-    'Spring 2025 Collection Preview',
-    'spring-2025-collection-preview',
+    'Spring 2026 Collection Preview',
+    'spring-2026-collection-preview',
     'Get an exclusive first look at our upcoming Spring collection. Fresh colors, new silhouettes, and exciting collaborations.',
-    E'# Spring 2025 Collection Preview\n\nSpring is the season of renewal, and our latest collection embodies exactly that. Here''s your exclusive preview.\n\n## The Color Palette\n\nThis season, we''re drawing inspiration from Mediterranean gardens:\n- **Terracotta** — warm, earthy, and grounding\n- **Sage Green** — fresh and calming\n- **Dusty Rose** — soft and romantic\n- **Cloud White** — clean and versatile\n\n## New Silhouettes\n\n### The Structured Kimono\nA modern take on the traditional kimono with architectural lines and hidden closures.\n\n### The Wrap Maxi\nOur new wrap-style maxi dress features an adjustable waist and flutter sleeves.\n\n## Sustainability First\n\nEvery piece in the Spring collection is made from at least 50% sustainable materials. New organic linen options are our most eco-friendly yet.\n\n## Mark Your Calendar\n\nThe full collection drops March 21, 2025. Newsletter subscribers get 48-hour early access.\n\n---\n\n*Sign up for our newsletter to be the first to shop the Spring collection.*',
+    E'# Spring 2026 Collection Preview\n\nSpring is the season of renewal, and our latest collection embodies exactly that. Here''s your exclusive preview.\n\n## The Color Palette\n\nThis season, we''re drawing inspiration from Mediterranean gardens:\n- **Terracotta** — warm, earthy, and grounding\n- **Sage Green** — fresh and calming\n- **Dusty Rose** — soft and romantic\n- **Cloud White** — clean and versatile\n\n## New Silhouettes\n\n### The Structured Kimono\nA modern take on the traditional kimono with architectural lines and hidden closures.\n\n### The Wrap Maxi\nOur new wrap-style maxi dress features an adjustable waist and flutter sleeves.\n\n## Sustainability First\n\nEvery piece in the Spring collection is made from at least 50% sustainable materials. New organic linen options are our most eco-friendly yet.\n\n## Mark Your Calendar\n\nThe full collection drops March 21, 2026. Newsletter subscribers get 48-hour early access.\n\n---\n\n*Sign up for our newsletter to be the first to shop the Spring collection.*',
     'Veiled Canvas Team',
     'Collections',
-    ARRAY['spring', 'new collection', 'preview', '2025'],
+    ARRAY['spring', 'new collection', 'preview', '2026'],
     7,
     true,
-    '2025-02-28T08:00:00Z',
+    '2026-02-28T08:00:00Z',
     '/images/blog_5.jpg'
   );
 
@@ -230,19 +230,19 @@ INSERT INTO testimonials (id, product_id, customer_name, location, collection_ta
 -- Newsletter Subscribers (synthetic)
 -- ---------------------------------------------------------------------------
 INSERT INTO newsletter_subscribers (email, is_active, subscribed_at) VALUES
-  ('test.subscriber1@example.com', true, '2025-01-15T08:30:00Z'),
-  ('test.subscriber2@example.com', true, '2025-02-20T14:45:00Z'),
-  ('test.subscriber3@example.com', true, '2025-03-10T09:00:00Z'),
-  ('test.subscriber4@example.com', false, '2025-01-05T16:20:00Z'),
-  ('test.subscriber5@example.com', true, '2025-04-01T11:00:00Z');
+  ('test.subscriber1@example.com', true, '2026-01-15T08:30:00Z'),
+  ('test.subscriber2@example.com', true, '2026-02-20T14:45:00Z'),
+  ('test.subscriber3@example.com', true, '2026-03-10T09:00:00Z'),
+  ('test.subscriber4@example.com', false, '2026-01-05T16:20:00Z'),
+  ('test.subscriber5@example.com', true, '2026-04-01T11:00:00Z');
 
 -- ---------------------------------------------------------------------------
 -- Contact Submissions (synthetic)
 -- ---------------------------------------------------------------------------
 INSERT INTO contact_submissions (name, email, subject, message, status, created_at) VALUES
-  ('Jane Doe', 'jane.doe@example.com', 'Order Inquiry', 'Hi, I placed an order last week (Order #12345) and haven''t received a tracking number yet. Could you please provide an update?', 'unread', '2025-06-18T09:30:00Z'),
-  ('Ahmed Khan', 'ahmed.khan@example.com', 'Wholesale Partnership', 'I run a boutique in London and would love to discuss wholesale pricing for your hijab collection. Please contact me at your earliest convenience.', 'unread', '2025-06-17T15:00:00Z'),
-  ('Maria Santos', 'maria.santos@example.com', 'Size Guide Question', 'Could you provide more detailed measurements for the Everyday Maxi Dress? I''m between sizes and want to make sure I order the right one.', 'resolved', '2025-06-15T11:45:00Z');
+  ('Jane Doe', 'jane.doe@example.com', 'Order Inquiry', 'Hi, I placed an order last week (Order #12345) and haven''t received a tracking number yet. Could you please provide an update?', 'unread', '2026-06-18T09:30:00Z'),
+  ('Ahmed Khan', 'ahmed.khan@example.com', 'Wholesale Partnership', 'I run a boutique in London and would love to discuss wholesale pricing for your hijab collection. Please contact me at your earliest convenience.', 'unread', '2026-06-17T15:00:00Z'),
+  ('Maria Santos', 'maria.santos@example.com', 'Size Guide Question', 'Could you provide more detailed measurements for the Everyday Maxi Dress? I''m between sizes and want to make sure I order the right one.', 'resolved', '2026-06-15T11:45:00Z');
 
 -- ============================================================================
 -- END OF SEED DATA

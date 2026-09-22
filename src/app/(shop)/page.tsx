@@ -55,7 +55,7 @@ function HeroSection() {
               className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6"
             >
               <Sparkles size={14} />
-              New Spring Collection 2025
+              New Spring Collection 2026
             </motion.span>
 
             <motion.h1
@@ -475,11 +475,10 @@ function CustomerReviews() {
                 <button
                   key={i}
                   onClick={() => setCurrent(i)}
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    i === current
+                  className={`w-2 h-2 rounded-full transition-all ${i === current
                       ? 'bg-primary w-6'
                       : 'bg-border hover:bg-muted-foreground'
-                  }`}
+                    }`}
                 />
               ))}
             </div>

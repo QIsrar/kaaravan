@@ -25,7 +25,7 @@ const blogPosts = [
     category: 'Style Guide',
     tags: ['hijab', 'summer', 'styling'],
     readTime: 6,
-    publishedAt: '2025-06-15',
+    publishedAt: '2026-06-15',
     image: '/images/blog_1.jpg',
   },
   {
@@ -36,7 +36,7 @@ const blogPosts = [
     category: 'Behind the Brand',
     tags: ['ethics', 'sustainability', 'fabric care'],
     readTime: 8,
-    publishedAt: '2025-05-20',
+    publishedAt: '2026-05-20',
     image: '/images/blog_2.jpg',
   },
   {
@@ -47,7 +47,7 @@ const blogPosts = [
     category: 'Style Guide',
     tags: ['workwear', 'styling', 'professional'],
     readTime: 10,
-    publishedAt: '2025-04-10',
+    publishedAt: '2026-04-10',
     image: '/images/blog_3.jpg',
   },
   {
@@ -58,18 +58,18 @@ const blogPosts = [
     category: 'Care & Tips',
     tags: ['fabric care', 'maintenance', 'sustainability'],
     readTime: 5,
-    publishedAt: '2025-03-05',
+    publishedAt: '2026-03-05',
     image: '/images/blog_4.jpg',
   },
   {
-    slug: 'spring-2025-collection-preview',
-    title: 'Spring 2025 Collection Preview: Modern Silhouettes & Earth Tones',
+    slug: 'spring-2026-collection-preview',
+    title: 'Spring 2026 Collection Preview: Modern Silhouettes & Earth Tones',
     excerpt: 'Get an exclusive atelier preview of our upcoming spring drops, featuring mineral washed linens and handcrafted kimono abayas.',
     authorName: 'Veiled Canvas Atelier',
     category: 'Collections',
     tags: ['spring', 'new collection', 'summer', 'styling'],
     readTime: 7,
-    publishedAt: '2025-02-28',
+    publishedAt: '2026-02-28',
     image: '/images/blog_5.jpg',
   },
   {
@@ -80,7 +80,7 @@ const blogPosts = [
     category: 'Behind the Brand',
     tags: ['sustainability', 'workwear', 'styling'],
     readTime: 6,
-    publishedAt: '2025-01-18',
+    publishedAt: '2026-01-18',
     image: '/images/blog_2.jpg',
   },
 ];
@@ -250,11 +250,10 @@ export default function BlogPage() {
                                   e.preventDefault();
                                   setSearchQuery(tag);
                                 }}
-                                className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium transition-colors ${
-                                  searchQuery.toLowerCase() === tag.toLowerCase()
+                                className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium transition-colors ${searchQuery.toLowerCase() === tag.toLowerCase()
                                     ? 'bg-primary text-primary-foreground'
                                     : 'bg-muted text-muted-foreground hover:bg-primary/20 hover:text-foreground'
-                                }`}
+                                  }`}
                               >
                                 #{tag}
                               </span>
@@ -294,9 +293,8 @@ export default function BlogPage() {
               <div className="space-y-1.5">
                 <button
                   onClick={() => setSelectedCategory(null)}
-                  className={`block w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                    selectedCategory === null ? 'bg-primary text-primary-foreground font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                  }`}
+                  className={`block w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${selectedCategory === null ? 'bg-primary text-primary-foreground font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                    }`}
                 >
                   All Categories ({blogPosts.length})
                 </button>
@@ -304,9 +302,8 @@ export default function BlogPage() {
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`block w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                      selectedCategory === cat ? 'bg-primary text-primary-foreground font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                    }`}
+                    className={`block w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${selectedCategory === cat ? 'bg-primary text-primary-foreground font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      }`}
                   >
                     {cat}
                   </button>
@@ -324,11 +321,10 @@ export default function BlogPage() {
                   <button
                     key={tag}
                     onClick={() => setSearchQuery(tag)}
-                    className={`px-3 py-1.5 rounded-full text-xs transition-colors cursor-pointer border ${
-                      searchQuery.toLowerCase() === tag.toLowerCase()
+                    className={`px-3 py-1.5 rounded-full text-xs transition-colors cursor-pointer border ${searchQuery.toLowerCase() === tag.toLowerCase()
                         ? 'bg-primary text-primary-foreground border-primary font-semibold'
                         : 'bg-muted/70 border-border/80 text-muted-foreground hover:bg-primary/20 hover:text-foreground'
-                    }`}
+                      }`}
                   >
                     <Tag size={10} className="inline mr-1" />
                     {tag}

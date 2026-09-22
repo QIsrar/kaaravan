@@ -27,7 +27,7 @@ const milestones = [
   { year: '2022', title: 'Global Reach', description: 'Expanded to 20+ countries and introduced our Abayas & Dresses collection.' },
   { year: '2023', title: 'Sustainability Pledge', description: 'Committed to 70% sustainable materials and carbon-neutral shipping.' },
   { year: '2024', title: 'Modest Sportswear', description: 'Launched our performance sportswear line for the active modest woman.' },
-  { year: '2025', title: 'Community of 15K+', description: 'Grew to 15,000+ happy customers across 40+ countries worldwide.' },
+  { year: '2026', title: 'Community of 15K+', description: 'Grew to 15,000+ happy customers across 40+ countries worldwide.' },
 ];
 
 const team = [

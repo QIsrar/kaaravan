@@ -49,7 +49,7 @@ export const initialCatalog: CatalogProduct[] = [
       { id: 'var-001-3', color_name: 'Ivory', color_hex: '#FFFFF0', sku: 'CHF-IV-001', stock_quantity: 0, additional_price: 0 }, // Out of stock
       { id: 'var-001-4', color_name: 'Deep Plum', color_hex: '#4A0E2E', sku: 'CHF-DP-001', stock_quantity: 27, additional_price: 200 },
     ],
-    created_at: '2025-01-10T10:00:00Z',
+    created_at: '2026-01-10T10:00:00Z',
     updated_at: '2026-09-22T20:00:00Z',
   },
   {
@@ -71,7 +71,7 @@ export const initialCatalog: CatalogProduct[] = [
       { id: 'var-002-3', color_name: 'Mauve', color_hex: '#C9A0DC', sku: 'JCH-MV-001', stock_quantity: 4, additional_price: 0 }, // Low stock
       { id: 'var-002-4', color_name: 'Camel', color_hex: '#C19A6B', sku: 'JCH-CM-001', stock_quantity: 65, additional_price: 0 },
     ],
-    created_at: '2025-01-15T10:00:00Z',
+    created_at: '2026-01-15T10:00:00Z',
     updated_at: '2026-09-22T20:00:00Z',
   },
   {
@@ -91,7 +91,7 @@ export const initialCatalog: CatalogProduct[] = [
       { id: 'var-003-1', color_name: 'Champagne Gold', color_hex: '#F7E7CE', sku: 'SBW-CG-001', stock_quantity: 2, additional_price: 0 }, // Low stock
       { id: 'var-003-2', color_name: 'Midnight Blue', color_hex: '#191970', sku: 'SBW-MB-001', stock_quantity: 15, additional_price: 0 },
     ],
-    created_at: '2025-02-01T10:00:00Z',
+    created_at: '2026-02-01T10:00:00Z',
     updated_at: '2026-09-22T20:00:00Z',
   },
   {
@@ -111,7 +111,7 @@ export const initialCatalog: CatalogProduct[] = [
       { id: 'var-004-1', color_name: 'Classic Black', color_hex: '#0A0A0A', sku: 'ABA-CB-001', stock_quantity: 30, additional_price: 0 },
       { id: 'var-004-2', color_name: 'Charcoal', color_hex: '#333333', sku: 'ABA-CH-001', stock_quantity: 18, additional_price: 500 },
     ],
-    created_at: '2025-02-05T10:00:00Z',
+    created_at: '2026-02-05T10:00:00Z',
     updated_at: '2026-09-22T20:00:00Z',
   },
   {
@@ -131,7 +131,7 @@ export const initialCatalog: CatalogProduct[] = [
       { id: 'var-005-1', color_name: 'Emerald', color_hex: '#2E6B4E', sku: 'KMD-EM-001', stock_quantity: 1, additional_price: 0 }, // Critical stock
       { id: 'var-005-2', color_name: 'Burgundy', color_hex: '#722F37', sku: 'KMD-BG-001', stock_quantity: 8, additional_price: 0 },
     ],
-    created_at: '2025-02-10T10:00:00Z',
+    created_at: '2026-02-10T10:00:00Z',
     updated_at: '2026-09-22T20:00:00Z',
   },
   {
@@ -151,7 +151,7 @@ export const initialCatalog: CatalogProduct[] = [
       { id: 'var-006-2', color_name: 'Sand', color_hex: '#D2B48C', sku: 'MXD-SD-001', stock_quantity: 55, additional_price: 0 },
       { id: 'var-006-3', color_name: 'Rust', color_hex: '#B7410E', sku: 'MXD-RS-001', stock_quantity: 28, additional_price: 0 },
     ],
-    created_at: '2025-02-15T10:00:00Z',
+    created_at: '2026-02-15T10:00:00Z',
     updated_at: '2026-09-22T20:00:00Z',
   },
   {
@@ -172,7 +172,7 @@ export const initialCatalog: CatalogProduct[] = [
       { id: 'var-007-2', color_name: 'Storm Grey', color_hex: '#708090', sku: 'SPH-SG-001', stock_quantity: 60, additional_price: 0 },
       { id: 'var-007-3', color_name: 'Teal', color_hex: '#008080', sku: 'SPH-TL-001', stock_quantity: 5, additional_price: 0 }, // Low stock
     ],
-    created_at: '2025-02-20T10:00:00Z',
+    created_at: '2026-02-20T10:00:00Z',
     updated_at: '2026-09-22T20:00:00Z',
   },
   {
@@ -192,7 +192,7 @@ export const initialCatalog: CatalogProduct[] = [
       { id: 'var-008-2', color_name: 'Silver', color_hex: '#C0C0C0', sku: 'MHP-SV-001', stock_quantity: 180, additional_price: 0 },
       { id: 'var-008-3', color_name: 'Rose Gold', color_hex: '#B76E79', sku: 'MHP-RG-001', stock_quantity: 150, additional_price: 200 },
     ],
-    created_at: '2025-02-25T10:00:00Z',
+    created_at: '2026-02-25T10:00:00Z',
     updated_at: '2026-09-22T20:00:00Z',
   },
   {
@@ -212,7 +212,7 @@ export const initialCatalog: CatalogProduct[] = [
       { id: 'var-009-1', color_name: 'Ocean Blue', color_hex: '#0077BE', sku: 'SWM-OB-001', stock_quantity: 35, additional_price: 0 },
       { id: 'var-009-2', color_name: 'Coral', color_hex: '#FF6B6B', sku: 'SWM-CR-001', stock_quantity: 0, additional_price: 0 }, // Out of stock
     ],
-    created_at: '2025-03-01T10:00:00Z',
+    created_at: '2026-03-01T10:00:00Z',
     updated_at: '2026-09-22T20:00:00Z',
   },
 ];

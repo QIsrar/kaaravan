@@ -50,7 +50,7 @@ Not just for the gym! A moisture-wicking sport hijab paired with a casual outfit
     category: 'Style Guide',
     tags: ['hijab', 'summer', 'styling', 'fashion tips'],
     readTime: 6,
-    publishedAt: '2025-06-15',
+    publishedAt: '2026-06-15',
     image: '/images/blog_1.jpg',
   },
   'ethics-behind-our-supply-chain': {
@@ -61,7 +61,7 @@ Not just for the gym! A moisture-wicking sport hijab paired with a casual outfit
     category: 'Behind the Brand',
     tags: ['ethics', 'sustainability'],
     readTime: 8,
-    publishedAt: '2025-05-20',
+    publishedAt: '2026-05-20',
     image: '/images/blog_2.jpg',
   },
   'modest-fashion-workplace-guide': {
@@ -72,7 +72,7 @@ Not just for the gym! A moisture-wicking sport hijab paired with a casual outfit
     category: 'Style Guide',
     tags: ['workwear', 'professional'],
     readTime: 10,
-    publishedAt: '2025-04-10',
+    publishedAt: '2026-04-10',
     image: '/images/blog_3.jpg',
   },
   'caring-for-premium-fabrics': {
@@ -83,18 +83,18 @@ Not just for the gym! A moisture-wicking sport hijab paired with a casual outfit
     category: 'Care & Tips',
     tags: ['fabric care', 'maintenance'],
     readTime: 5,
-    publishedAt: '2025-03-05',
+    publishedAt: '2026-03-05',
     image: '/images/blog_4.jpg',
   },
-  'spring-2025-collection-preview': {
-    title: 'Spring 2025 Collection Preview',
+  'spring-2026-collection-preview': {
+    title: 'Spring 2026 Collection Preview',
     excerpt: 'Get an exclusive first look at our upcoming Spring collection.',
     content: `Pastels, breathable desert linens, and handcrafted metallic pins inspired by architectural arches and timeless modesty.`,
     authorName: 'Veiled Canvas Team',
     category: 'Collections',
-    tags: ['spring', 'new collection', '2025'],
+    tags: ['spring', 'new collection', '2026'],
     readTime: 7,
-    publishedAt: '2025-02-28',
+    publishedAt: '2026-02-28',
     image: '/images/blog_5.jpg',
   },
 };
