@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Star, Minus, Plus, ShoppingBag, Heart, Share2, Check, Truck, Shield, RotateCcw } from 'lucide-react';
@@ -204,7 +204,39 @@ function getProduct(slug: string) {
 
 export default function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const slug = typeof window !== 'undefined' ? window.location.pathname.split('/').pop() || 'premium-chiffon-hijab' : 'premium-chiffon-hijab';
-  const product = getProduct(slug);
+  const [product, setProduct] = useState(getProduct(slug));
+
+  useEffect(() => {
+    fetch('/api/products')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.products) {
+          const match = data.products.find((p: any) => p.slug === slug);
+          if (match) {
+            setProduct({
+              id: match.id,
+              title: match.title,
+              slug: match.slug,
+              description: match.description,
+              basePrice: match.base_price,
+              rating: match.rating || 5,
+              reviewCount: match.review_count || 1,
+              categoryName: match.category_name || 'Atelier Collection',
+              images: match.images?.length > 0 ? match.images : [match.image || '/images/collection_hijabs.jpg'],
+              variants: (match.variants || []).map((v: any) => ({
+                id: v.id,
+                colorName: v.color_name,
+                colorHex: v.color_hex,
+                sku: v.sku,
+                stockQuantity: v.stock_quantity,
+                additionalPrice: v.additional_price,
+              })),
+            });
+          }
+        }
+      })
+      .catch(() => {});
+  }, [slug]);
 
   const [selectedVariantIdx, setSelectedVariantIdx] = useState(0);
   const [selectedImageIdx, setSelectedImageIdx] = useState(0);
@@ -212,10 +244,18 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
   const addItem = useCartStore((s) => s.addItem);
   const openCart = useUIStore((s) => s.openCart);
 
-  const variant = product.variants[selectedVariantIdx];
+  const safeVariantIdx = Math.min(selectedVariantIdx, (product.variants?.length || 1) - 1);
+  const variant = product.variants?.[safeVariantIdx] || {
+    id: 'default',
+    colorName: 'Standard',
+    colorHex: '#000000',
+    sku: 'DEF-001',
+    stockQuantity: 10,
+    additionalPrice: 0,
+  };
   const totalPrice = product.basePrice + variant.additionalPrice;
   const inStock = variant.stockQuantity > 0;
-  const currentImage = product.images[selectedImageIdx] || product.images[0];
+  const currentImage = (product.images && product.images[selectedImageIdx]) || (product.images && product.images[0]) || '/images/collection_hijabs.jpg';
 
   const handleAddToCart = () => {
     if (!inStock) return;

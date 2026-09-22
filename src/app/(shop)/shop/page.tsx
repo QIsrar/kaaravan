@@ -366,11 +366,44 @@ function ShopContent() {
   const urlSearch = searchParams.get('search') || '';
   const urlCategory = searchParams.get('category') || '';
 
+  const [storeProducts, setStoreProducts] = useState(products);
   const [selectedCategory, setSelectedCategory] = useState(urlCategory);
   const [selectedPriceRange, setSelectedPriceRange] = useState<number | null>(null);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState(urlSearch);
   const [showFilters, setShowFilters] = useState(false);
+
+  // Sync with live products API
+  useEffect(() => {
+    fetch('/api/products')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.products && data.products.length > 0) {
+          const mapped = data.products.map((p: any) => ({
+            id: p.id,
+            title: p.title,
+            slug: p.slug,
+            basePrice: p.base_price,
+            rating: p.rating || 5,
+            reviewCount: p.review_count || 1,
+            categorySlug: p.category,
+            image: p.image || '/images/collection_hijabs.jpg',
+            variants: (p.variants || []).map((v: any) => ({
+              id: v.id,
+              colorName: v.color_name,
+              colorHex: v.color_hex,
+              sku: v.sku,
+              stockQuantity: v.stock_quantity,
+              additionalPrice: v.additional_price,
+              images: v.images || [],
+            })),
+            badge: p.badge,
+          }));
+          setStoreProducts(mapped);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Sync state whenever URL parameters change (e.g. from navbar popular searches or drawer)
   useEffect(() => {
@@ -382,7 +415,7 @@ function ShopContent() {
   }, [urlCategory]);
 
   const filteredProducts = useMemo(() => {
-    return products.filter((p) => {
+    return storeProducts.filter((p) => {
       if (selectedCategory && p.categorySlug !== selectedCategory) return false;
       if (selectedRating && p.rating < selectedRating) return false;
       if (selectedPriceRange !== null) {

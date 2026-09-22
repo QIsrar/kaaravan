@@ -1,182 +1,191 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AdminHeader } from '@/components/admin/header';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ProductFormModal, type ProductFormValues } from '@/components/admin/product-form';
-import { formatPrice } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
 import {
-  Search,
   Plus,
+  Search,
+  SlidersHorizontal,
   Edit2,
   Archive,
-  RefreshCw,
   ArchiveRestore,
-  AlertTriangle,
+  Package,
   Layers,
+  Sparkles,
+  ArrowUpDown,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  Trash2,
+  ExternalLink,
 } from 'lucide-react';
+import { formatPrice } from '@/lib/utils';
+import { ProductFormModal, type ProductFormValues } from '@/components/admin/product-form';
 import toast from 'react-hot-toast';
+import Link from 'next/link';
+
+interface ProductVariant {
+  id: string;
+  color_name: string;
+  color_hex: string;
+  sku: string;
+  stock_quantity: number;
+  additional_price: number;
+}
 
 interface AdminProductItem {
   id: string;
   title: string;
   slug: string;
   category: string;
-  categoryName: string;
+  category_name?: string;
   description: string;
   base_price: number;
+  image?: string;
   is_archived: boolean;
-  variants: Array<{
-    id: string;
-    color_name: string;
-    color_hex: string;
-    sku: string;
-    stock_quantity: number;
-    additional_price: number;
-  }>;
+  variants: ProductVariant[];
 }
-
-const initialProducts: AdminProductItem[] = [
-  {
-    id: 'prod_1',
-    title: 'Premium Silk Chiffon Hijab',
-    slug: 'premium-silk-chiffon-hijab',
-    category: 'hijabs-scarves',
-    categoryName: 'Hijabs & Scarves',
-    description: 'Ultra-soft, lightweight modal with a delicate woven texture and generous 180cm x 70cm dimensions.',
-    base_price: 3800,
-    is_archived: false,
-    variants: [
-      { id: 'v1', color_name: 'Dusty Rose', color_hex: '#DCAE96', sku: 'VC-HJB-SILK-ROSE', stock_quantity: 45, additional_price: 0 },
-      { id: 'v2', color_name: 'Sage Mist', color_hex: '#9CAF88', sku: 'VC-HJB-SILK-SAGE', stock_quantity: 28, additional_price: 0 },
-      { id: 'v3', color_name: 'Emerald Green', color_hex: '#1B4D3E', sku: 'VC-HJB-SILK-EMR', stock_quantity: 2, additional_price: 200 },
-    ],
-  },
-  {
-    id: 'prod_2',
-    title: 'Minimalist Linen Everyday Abaya',
-    slug: 'minimalist-linen-everyday-abaya',
-    category: 'abayas-dresses',
-    categoryName: 'Abayas & Dresses',
-    description: 'Clean silhouette in 100% French washed linen. Breathable, durable, and refined.',
-    base_price: 13500,
-    is_archived: false,
-    variants: [
-      { id: 'v4', color_name: 'Oatmeal Beige', color_hex: '#D7C4B7', sku: 'VC-ABY-LIN-OAT', stock_quantity: 18, additional_price: 0 },
-      { id: 'v5', color_name: 'Midnight Charcoal', color_hex: '#2E3138', sku: 'VC-ABY-LIN-CHR', stock_quantity: 22, additional_price: 0 },
-    ],
-  },
-  {
-    id: 'prod_3',
-    title: 'Modal Silk Square Hijab',
-    slug: 'modal-silk-square-hijab',
-    category: 'hijabs-scarves',
-    categoryName: 'Hijabs & Scarves',
-    description: 'Generous 110x110cm square hijab with subtle luminous sheen and effortless drape.',
-    base_price: 4200,
-    is_archived: false,
-    variants: [
-      { id: 'v6', color_name: 'Pearl Cream', color_hex: '#FDFBF7', sku: 'VC-HJB-MOD-PRL', stock_quantity: 32, additional_price: 0 },
-      { id: 'v7', color_name: 'Caramel Taupe', color_hex: '#A07855', sku: 'VC-HJB-MOD-TAU', stock_quantity: 14, additional_price: 0 },
-    ],
-  },
-  {
-    id: 'prod_4',
-    title: 'Seamless Bamboo Underscarf',
-    slug: 'seamless-bamboo-underscarf',
-    category: 'accessories',
-    categoryName: 'Accessories',
-    description: 'Thermo-regulating organic bamboo fiber designed to stay in place without tension.',
-    base_price: 2000,
-    is_archived: false,
-    variants: [
-      { id: 'v8', color_name: 'Mocha', color_hex: '#5E4839', sku: 'VC-ACC-UND-MCH', stock_quantity: 4, additional_price: 0 },
-      { id: 'v9', color_name: 'Nude Beige', color_hex: '#E3C8B2', sku: 'VC-ACC-UND-NUD', stock_quantity: 48, additional_price: 0 },
-      { id: 'v10', color_name: 'Obsidian Black', color_hex: '#1A1A1A', sku: 'VC-ACC-UND-BLK', stock_quantity: 50, additional_price: 0 },
-    ],
-  },
-  {
-    id: 'prod_5',
-    title: 'Active Modest Performance Tunic',
-    slug: 'active-modest-performance-tunic',
-    category: 'modest-sportswear',
-    categoryName: 'Modest Sportswear',
-    description: 'UPF 50+ sweat-wicking tunic with curved modest hem and side-slit vents.',
-    base_price: 6800,
-    is_archived: false,
-    variants: [
-      { id: 'v11', color_name: 'Midnight Black', color_hex: '#111111', sku: 'VC-SPT-ACT-BLK', stock_quantity: 19, additional_price: 0 },
-      { id: 'v12', color_name: 'Slate Blue', color_hex: '#5C6B73', sku: 'VC-SPT-ACT-BLU', stock_quantity: 11, additional_price: 0 },
-    ],
-  },
-  {
-    id: 'prod_6',
-    title: 'Pleated Satin Evening Abaya',
-    slug: 'pleated-satin-evening-abaya',
-    category: 'abayas-dresses',
-    categoryName: 'Abayas & Dresses',
-    description: 'Fluid accordian pleating along sleeve and hem, tailored for celebratory occasions.',
-    base_price: 18900,
-    is_archived: true, // Archived demo example
-    variants: [
-      { id: 'v13', color_name: 'Champagne Gold', color_hex: '#E6C280', sku: 'VC-ABY-SAT-GLD', stock_quantity: 8, additional_price: 0 },
-    ],
-  },
-];
 
 export default function AdminProductsPage() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [products, setProducts] = useState<AdminProductItem[]>(initialProducts);
+  const [products, setProducts] = useState<AdminProductItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'archived'>('all');
+  const [sortByLowStock, setSortByLowStock] = useState(false);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductFormValues | null>(null);
 
-  const filteredProducts = products.filter((p) => {
-    const matchesSearch =
-      p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.variants.some((v) => v.sku.toLowerCase().includes(searchQuery.toLowerCase()));
-
-    const matchesCategory = categoryFilter === 'all' || p.category === categoryFilter;
-
-    const matchesStatus =
-      statusFilter === 'all' ||
-      (statusFilter === 'active' && !p.is_archived) ||
-      (statusFilter === 'archived' && p.is_archived);
-
-    return matchesSearch && matchesCategory && matchesStatus;
-  });
-
-  const handleToggleArchive = (id: string, currentArchived: boolean) => {
-    setProducts((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, is_archived: !currentArchived } : p))
-    );
-    toast.success(
-      currentArchived ? 'Product restored to active catalog' : 'Product soft-archived'
-    );
+  // Fetch real-time products from shared API
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch('/api/products?admin=true');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.products) {
+          setProducts(data.products);
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to load products from API:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleAdjustStock = (productId: string, variantId: string, delta: number) => {
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  // Calculate lowest stock across variants for each product
+  const getMinStock = (p: AdminProductItem) => {
+    if (!p.variants || p.variants.length === 0) return 0;
+    return Math.min(...p.variants.map((v) => v.stock_quantity));
+  };
+
+  // Filter and sort products
+  const filteredProducts = products
+    .filter((p) => {
+      const matchesSearch =
+        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.variants.some((v) => v.sku.toLowerCase().includes(searchQuery.toLowerCase()));
+
+      const matchesCategory = categoryFilter === 'all' || p.category === categoryFilter;
+
+      const matchesStatus =
+        statusFilter === 'all' ||
+        (statusFilter === 'active' && !p.is_archived) ||
+        (statusFilter === 'archived' && p.is_archived);
+
+      return matchesSearch && matchesCategory && matchesStatus;
+    })
+    .sort((a, b) => {
+      if (sortByLowStock) {
+        // Priority: lowest stock first (0 -> 1 -> 2 ...)
+        return getMinStock(a) - getMinStock(b);
+      }
+      return 0; // Natural order
+    });
+
+  const handleToggleArchive = async (id: string, currentArchived: boolean) => {
+    const nextArchived = !currentArchived;
+    setProducts((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, is_archived: nextArchived } : p))
+    );
+
+    try {
+      await fetch('/api/products', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, is_archived: nextArchived }),
+      });
+      toast.success(
+        nextArchived ? 'Product archived from active store' : 'Product restored and live on store!'
+      );
+    } catch {
+      toast.error('Failed to sync archive status with server');
+    }
+  };
+
+  const handleAdjustStock = async (productId: string, variantId: string, delta: number) => {
+    let updatedVariantSku = '';
+    let newQty = 0;
+
     setProducts((prev) =>
       prev.map((p) => {
         if (p.id !== productId) return p;
         return {
           ...p,
-          variants: p.variants.map((v) =>
-            v.id === variantId
-              ? { ...v, stock_quantity: Math.max(0, v.stock_quantity + delta) }
-              : v
-          ),
+          variants: p.variants.map((v) => {
+            if (v.id === variantId) {
+              updatedVariantSku = v.sku;
+              newQty = Math.max(0, v.stock_quantity + delta);
+              return { ...v, stock_quantity: newQty };
+            }
+            return v;
+          }),
         };
       })
     );
+
+    try {
+      const targetProd = products.find((p) => p.id === productId);
+      if (targetProd) {
+        const updatedVariants = targetProd.variants.map((v) =>
+          v.id === variantId ? { ...v, stock_quantity: Math.max(0, v.stock_quantity + delta) } : v
+        );
+        await fetch('/api/products', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: productId, variants: updatedVariants }),
+        });
+        toast.success(`Stock updated: ${newQty} units live`);
+      }
+    } catch {
+      toast.error('Could not sync stock with server');
+    }
+  };
+
+  const handleDeleteProduct = async (id: string, title: string) => {
+    if (!confirm(`Are you sure you want to permanently delete "${title}"?`)) return;
+
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+
+    try {
+      await fetch(`/api/products?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      });
+      toast.success(`"${title}" deleted from catalog and database`);
+    } catch {
+      toast.error('Failed to delete product from database');
+    }
   };
 
   const handleOpenCreate = () => {
@@ -204,265 +213,344 @@ export default function AdminProductsPage() {
     setIsFormOpen(true);
   };
 
-  const handleSaveProduct = (formValues: ProductFormValues) => {
-    if (formValues.id) {
-      // Update
-      setProducts((prev) =>
-        prev.map((p) => {
-          if (p.id !== formValues.id) return p;
-          return {
-            ...p,
-            title: formValues.title,
-            slug: formValues.slug,
-            description: formValues.description,
-            category: formValues.category,
-            base_price: formValues.base_price,
-            variants: formValues.variants.map((v, i) => ({
-              id: v.id || `v_gen_${Date.now()}_${i}`,
-              color_name: v.color_name,
-              color_hex: v.color_hex,
-              sku: v.sku,
-              stock_quantity: v.stock_quantity,
-              additional_price: v.additional_price,
-            })),
-          };
-        })
-      );
-    } else {
-      // Create new
-      const newProd: AdminProductItem = {
-        id: `prod_${Date.now()}`,
-        title: formValues.title,
-        slug: formValues.slug,
-        category: formValues.category,
-        categoryName: formValues.category.replace('-', ' ').toUpperCase(),
-        description: formValues.description,
-        base_price: formValues.base_price,
-        is_archived: false,
-        variants: formValues.variants.map((v, i) => ({
-          id: `v_new_${Date.now()}_${i}`,
-          color_name: v.color_name,
-          color_hex: v.color_hex,
-          sku: v.sku,
-          stock_quantity: v.stock_quantity,
-          additional_price: v.additional_price,
-        })),
-      };
-      setProducts((prev) => [newProd, ...prev]);
+  const handleSaveProduct = async (formValues: ProductFormValues) => {
+    const isEdit = Boolean(formValues.id);
+
+    try {
+      const res = await fetch('/api/products', {
+        method: isEdit ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formValues,
+          is_archived: false,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.product) {
+          if (isEdit) {
+            setProducts((prev) =>
+              prev.map((p) => (p.id === formValues.id ? { ...p, ...data.product } : p))
+            );
+            toast.success('Product updated and live on storefront!');
+          } else {
+            setProducts((prev) => [data.product, ...prev]);
+            toast.success('New product created and live on storefront!');
+          }
+          return;
+        }
+      }
+      toast.success(isEdit ? 'Product updated!' : 'Product added!');
+      fetchProducts();
+    } catch {
+      toast.error('Failed to save to server');
     }
   };
+
+  const totalSKUs = products.reduce((acc, p) => acc + p.variants.length, 0);
+  const outOfStockCount = products.reduce(
+    (acc, p) => acc + p.variants.filter((v) => v.stock_quantity === 0).length,
+    0
+  );
+  const lowStockCount = products.reduce(
+    (acc, p) => acc + p.variants.filter((v) => v.stock_quantity > 0 && v.stock_quantity <= 5).length,
+    0
+  );
 
   return (
     <div className="flex-1 pb-12">
       <AdminHeader
         onOpenMobile={() => setMobileOpen(true)}
         title="Catalog & Inventory"
-        subtitle="Manage modest fashion items, color variants, SKU stocks, and soft archive"
+        subtitle="Live catalog management with real-time storefront synchronization"
       />
 
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-        {/* Actions & Filters */}
-        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
-          <div className="flex flex-1 gap-2 max-w-lg">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by title, slug, or SKU..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-10"
-              />
-            </div>
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-36 h-10 text-xs">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="hijabs-scarves">Hijabs</SelectItem>
-                <SelectItem value="abayas-dresses">Abayas</SelectItem>
-                <SelectItem value="modest-sportswear">Sportswear</SelectItem>
-                <SelectItem value="accessories">Accessories</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
-              <SelectTrigger className="w-32 h-10 text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All ({products.length})</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="archived">Archived</SelectItem>
-              </SelectContent>
-            </Select>
+        {/* KPI Strip & Action Toolbar */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+          <div className="p-4 rounded-2xl bg-card border-2 border-border shadow-xs">
+            <span className="text-xs text-muted-foreground font-medium">Total Products</span>
+            <p className="font-heading text-2xl font-bold mt-1 text-foreground">{products.length}</p>
           </div>
-
-          <Button
-            onClick={handleOpenCreate}
-            className="gradient-gold text-espresso font-semibold h-10 shrink-0 gap-1.5"
-          >
-            <Plus size={16} />
-            Add New Product
-          </Button>
+          <div className="p-4 rounded-2xl bg-card border-2 border-border shadow-xs">
+            <span className="text-xs text-muted-foreground font-medium">Active SKUs</span>
+            <p className="font-heading text-2xl font-bold mt-1 text-foreground">{totalSKUs}</p>
+          </div>
+          <div className={`p-4 rounded-2xl border-2 shadow-xs ${outOfStockCount > 0 ? 'bg-rose-500/10 border-rose-500/30' : 'bg-card border-border'}`}>
+            <span className="text-xs text-rose-600 dark:text-rose-400 font-medium flex items-center gap-1">
+              <XCircle size={13} /> Out of Stock
+            </span>
+            <p className="font-heading text-2xl font-bold mt-1 text-rose-600 dark:text-rose-400">{outOfStockCount} SKUs</p>
+          </div>
+          <div className={`p-4 rounded-2xl border-2 shadow-xs ${lowStockCount > 0 ? 'bg-amber-500/10 border-amber-500/30' : 'bg-card border-border'}`}>
+            <span className="text-xs text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
+              <AlertTriangle size={13} /> Critical Low Stock
+            </span>
+            <p className="font-heading text-2xl font-bold mt-1 text-amber-600 dark:text-amber-400">{lowStockCount} SKUs</p>
+          </div>
         </div>
 
-        {/* Products Grid / Cards */}
-        <div className="space-y-4">
-          {filteredProducts.length === 0 ? (
-            <Card className="p-12 text-center text-muted-foreground border-border/80">
-              No products found matching the current search & filters.
-            </Card>
-          ) : (
-            filteredProducts.map((product) => {
-              const totalStock = product.variants.reduce((acc, v) => acc + v.stock_quantity, 0);
-              const hasLowStock = product.variants.some((v) => v.stock_quantity <= 5);
+        {/* Toolbar & Filter Bar */}
+        <div className="p-4 rounded-2xl bg-card border-2 border-border shadow-xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+          <div className="flex flex-1 flex-col sm:flex-row gap-2.5 items-stretch sm:items-center">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search title, slug, SKU..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-10 border-2 border-border"
+              />
+            </div>
 
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="h-10 px-3 rounded-lg border-2 border-border bg-background text-xs font-medium"
+            >
+              <option value="all">All Categories</option>
+              <option value="hijabs-scarves">Hijabs & Scarves</option>
+              <option value="abayas-dresses">Abayas & Dresses</option>
+              <option value="modest-sportswear">Modest Sportswear</option>
+              <option value="accessories">Accessories</option>
+            </select>
+
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as any)}
+              className="h-10 px-3 rounded-lg border-2 border-border bg-background text-xs font-medium"
+            >
+              <option value="all">All Statuses</option>
+              <option value="active">Active Only</option>
+              <option value="archived">Archived Only</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {/* Priority Sort Button */}
+            <Button
+              variant={sortByLowStock ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setSortByLowStock(!sortByLowStock)}
+              className={`h-10 text-xs border-2 cursor-pointer ${
+                sortByLowStock
+                  ? 'bg-amber-600 text-white border-amber-600'
+                  : 'border-border text-foreground hover:bg-muted'
+              }`}
+              title="Prioritize low stock first"
+            >
+              <ArrowUpDown size={14} className="mr-1.5" />
+              {sortByLowStock ? 'Low Stock First (Active)' : 'Sort: Low Stock First'}
+            </Button>
+
+            <Button
+              onClick={handleOpenCreate}
+              className="h-10 text-xs gradient-gold text-espresso font-semibold shadow-xs cursor-pointer"
+            >
+              <Plus size={15} className="mr-1.5" /> Add Product
+            </Button>
+          </div>
+        </div>
+
+        {/* Product List */}
+        {loading ? (
+          <div className="text-center py-16 bg-card rounded-2xl border-2 border-border">
+            <p className="text-sm text-muted-foreground animate-pulse">Loading live catalog and inventory...</p>
+          </div>
+        ) : filteredProducts.length === 0 ? (
+          <div className="text-center py-16 bg-card rounded-2xl border-2 border-dashed border-border p-6">
+            <Package size={32} className="mx-auto text-muted-foreground mb-3" />
+            <h3 className="font-heading font-bold text-lg mb-1">No products match your filters</h3>
+            <p className="text-xs text-muted-foreground mb-4">Try clearing filters or add a new piece to your catalog.</p>
+            <Button onClick={handleOpenCreate} size="sm" className="gradient-gold text-espresso font-semibold">
+              <Plus size={14} className="mr-1" /> Create First Product
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredProducts.map((product) => {
+              const minStock = getMinStock(product);
               return (
                 <Card
                   key={product.id}
-                  className={`border-border/80 bg-card overflow-hidden transition-all ${
-                    product.is_archived ? 'opacity-60 bg-muted/20' : ''
+                  className={`border-2 transition-all shadow-xs rounded-2xl overflow-hidden ${
+                    product.is_archived
+                      ? 'border-border/60 bg-muted/20 opacity-75'
+                      : minStock === 0
+                      ? 'border-rose-500/40 bg-card hover:border-rose-500'
+                      : minStock <= 5
+                      ? 'border-amber-500/40 bg-card hover:border-amber-500'
+                      : 'border-border bg-card hover:border-primary/50'
                   }`}
                 >
-                  <div className="p-4 sm:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                    {/* Main Info */}
-                    <div className="space-y-1.5 flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-heading font-bold text-base text-foreground">
-                          {product.title}
-                        </h3>
-                        {product.is_archived ? (
-                          <Badge variant="outline" className="text-[10px] bg-muted text-muted-foreground border">
-                            Archived
-                          </Badge>
-                        ) : hasLowStock ? (
-                          <Badge variant="outline" className="text-[10px] bg-amber-500/10 text-amber-600 border-amber-500/20 flex items-center gap-1">
-                            <AlertTriangle size={10} /> Low Stock Alert
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
-                            Active Catalog
-                          </Badge>
-                        )}
-                        <span className="text-xs text-muted-foreground font-mono">
-                          /{product.slug}
-                        </span>
-                      </div>
-
-                      <p className="text-xs text-muted-foreground line-clamp-1">
-                        {product.description}
-                      </p>
-
-                      <div className="flex flex-wrap items-center gap-4 text-xs pt-1">
-                        <span className="font-semibold text-primary">
-                          Base: {formatPrice(product.base_price)}
-                        </span>
-                        <span className="text-muted-foreground">
-                          Category: <span className="text-foreground capitalize">{product.category.replace('-', ' ')}</span>
-                        </span>
-                        <span className="text-muted-foreground">
-                          Total Inventory:{' '}
-                          <span className={`font-bold ${totalStock <= 5 ? 'text-rose-600' : 'text-foreground'}`}>
-                            {totalStock} units
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+                      {/* Left: Product Meta */}
+                      <div className="space-y-1.5 flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-xs font-mono font-bold text-muted-foreground">
+                            {product.id}
                           </span>
-                        </span>
+                          <h3 className="font-heading font-bold text-base sm:text-lg text-foreground truncate">
+                            {product.title}
+                          </h3>
+                          <Badge variant="secondary" className="text-[11px] capitalize border">
+                            {product.category_name || product.category}
+                          </Badge>
+                          {product.is_archived ? (
+                            <Badge variant="outline" className="text-[10px] text-muted-foreground bg-muted border-border">
+                              Archived
+                            </Badge>
+                          ) : minStock === 0 ? (
+                            <Badge className="text-[10px] bg-rose-500 text-white font-bold animate-pulse">
+                              OUT OF STOCK
+                            </Badge>
+                          ) : minStock <= 5 ? (
+                            <Badge className="text-[10px] bg-amber-500 text-espresso font-bold">
+                              CRITICAL STOCK ({minStock} left)
+                            </Badge>
+                          ) : (
+                            <Badge className="text-[10px] bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-semibold border-emerald-500/30">
+                              Active & In Stock
+                            </Badge>
+                          )}
+                        </div>
+
+                        <p className="text-xs text-muted-foreground line-clamp-2 max-w-2xl leading-relaxed">
+                          {product.description}
+                        </p>
+
+                        <div className="flex items-center gap-4 text-xs font-medium pt-1">
+                          <span className="text-primary font-bold font-heading text-sm">
+                            {formatPrice(product.base_price)}
+                          </span>
+                          <span className="text-muted-foreground font-mono">
+                            slug: /{product.slug}
+                          </span>
+                          <Link
+                            href={`/shop/${product.slug}`}
+                            target="_blank"
+                            className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 text-[11px]"
+                          >
+                            <ExternalLink size={11} /> View on store
+                          </Link>
+                        </div>
+                      </div>
+
+                      {/* Right: Actions */}
+                      <div className="flex items-center gap-2 shrink-0 pt-2 lg:pt-0">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleOpenEdit(product)}
+                          className="h-8 text-xs border-2 border-border cursor-pointer hover:bg-muted"
+                        >
+                          <Edit2 size={13} className="mr-1.5" /> Edit
+                        </Button>
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleToggleArchive(product.id, product.is_archived)}
+                          className="h-8 text-xs border-2 border-border cursor-pointer hover:bg-muted"
+                        >
+                          {product.is_archived ? (
+                            <>
+                              <ArchiveRestore size={13} className="mr-1.5" /> Restore
+                            </>
+                          ) : (
+                            <>
+                              <Archive size={13} className="mr-1.5" /> Archive
+                            </>
+                          )}
+                        </Button>
+
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteProduct(product.id, product.title)}
+                          className="h-8 w-8 text-destructive hover:bg-destructive/10 cursor-pointer"
+                          title="Delete Product"
+                        >
+                          <Trash2 size={14} />
+                        </Button>
                       </div>
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex items-center gap-2 shrink-0">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleOpenEdit(product)}
-                        className="text-xs h-8 gap-1.5"
-                      >
-                        <Edit2 size={13} />
-                        Edit Product
-                      </Button>
+                    {/* Variants Inventory Matrix */}
+                    <div className="mt-4 pt-4 border-t-2 border-border/60">
+                      <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
+                        <Layers size={12} /> Color Variants & Stock Levels ({product.variants.length})
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                        {product.variants.map((v) => (
+                          <div
+                            key={v.id}
+                            className={`p-2.5 rounded-xl border-2 flex items-center justify-between gap-2 text-xs ${
+                              v.stock_quantity === 0
+                                ? 'bg-rose-500/10 border-rose-500/40 text-rose-950 dark:text-rose-200'
+                                : v.stock_quantity <= 5
+                                ? 'bg-amber-500/10 border-amber-500/40 text-amber-950 dark:text-amber-200'
+                                : 'bg-muted/40 border-border'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span
+                                className="w-4 h-4 rounded-full border border-black/20 shrink-0"
+                                style={{ backgroundColor: v.color_hex }}
+                              />
+                              <div className="truncate">
+                                <p className="font-semibold text-[11px] truncate leading-tight">
+                                  {v.color_name}
+                                </p>
+                                <p className="text-[9px] font-mono text-muted-foreground truncate">
+                                  {v.sku}
+                                </p>
+                              </div>
+                            </div>
 
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleToggleArchive(product.id, product.is_archived)}
-                        className={`text-xs h-8 gap-1.5 ${
-                          product.is_archived
-                            ? 'text-emerald-600 hover:text-emerald-700'
-                            : 'text-muted-foreground hover:text-destructive'
-                        }`}
-                      >
-                        {product.is_archived ? (
-                          <>
-                            <ArchiveRestore size={13} />
-                            Restore
-                          </>
-                        ) : (
-                          <>
-                            <Archive size={13} />
-                            Soft Archive
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Variants Sub-table */}
-                  <div className="border-t border-border/60 bg-muted/20 px-4 sm:px-6 py-3">
-                    <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                      <Layers size={12} />
-                      SKU Variants ({product.variants.length})
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                      {product.variants.map((v) => (
-                        <div
-                          key={v.id}
-                          className="flex items-center justify-between p-2 rounded-lg bg-card border border-border text-xs"
-                        >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span
-                              suppressHydrationWarning
-                              className="w-3.5 h-3.5 rounded-full border border-black/20 dark:border-white/20 shrink-0 shadow-xs"
-                              style={{ backgroundColor: v.color_hex }}
-                            />
-                            <div className="min-w-0">
-                              <p className="font-medium truncate">{v.color_name}</p>
-                              <p className="text-[10px] font-mono text-muted-foreground truncate">{v.sku}</p>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => handleAdjustStock(product.id, v.id, -1)}
+                                className="w-5 h-5 rounded bg-card hover:bg-muted border border-border flex items-center justify-center font-bold text-xs cursor-pointer select-none"
+                                title="Decrease stock"
+                              >
+                                -
+                              </button>
+                              <span
+                                className={`font-mono font-bold text-xs px-1 ${
+                                  v.stock_quantity === 0
+                                    ? 'text-rose-600 dark:text-rose-400'
+                                    : v.stock_quantity <= 5
+                                    ? 'text-amber-600 dark:text-amber-400'
+                                    : 'text-foreground'
+                                }`}
+                              >
+                                {v.stock_quantity}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleAdjustStock(product.id, v.id, 1)}
+                                className="w-5 h-5 rounded bg-card hover:bg-muted border border-border flex items-center justify-center font-bold text-xs cursor-pointer select-none"
+                                title="Increase stock"
+                              >
+                                +
+                              </button>
                             </div>
                           </div>
-
-                          <div className="flex items-center gap-1.5 shrink-0 pl-2">
-                            <button
-                              onClick={() => handleAdjustStock(product.id, v.id, -1)}
-                              className="w-5 h-5 rounded border border-border flex items-center justify-center text-muted-foreground hover:text-foreground"
-                            >
-                              -
-                            </button>
-                            <span
-                              className={`w-6 text-center font-bold text-xs ${
-                                v.stock_quantity <= 5 ? 'text-rose-600' : 'text-foreground'
-                              }`}
-                            >
-                              {v.stock_quantity}
-                            </span>
-                            <button
-                              onClick={() => handleAdjustStock(product.id, v.id, 1)}
-                              className="w-5 h-5 rounded border border-border flex items-center justify-center text-muted-foreground hover:text-foreground"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  </CardContent>
                 </Card>
               );
-            })
-          )}
-        </div>
+            })}
+          </div>
+        )}
       </div>
 
-      {/* Product Edit/Create Modal */}
       <ProductFormModal
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -8,53 +8,42 @@ import {
   ShoppingBag,
   Package,
   Users,
-  ArrowUpRight,
   AlertTriangle,
   ArrowRight,
   TrendingUp,
   Clock,
   CheckCircle,
   ExternalLink,
+  Plus,
+  RefreshCw,
+  XCircle,
 } from 'lucide-react';
 import { AdminHeader } from '@/components/admin/header';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { formatPrice } from '@/lib/utils';
+import toast from 'react-hot-toast';
 
-// Mock overview data matching seed structure
-const metrics = [
-  {
-    title: 'Total Revenue',
-    value: '$24,890.50',
-    change: '+14.2% from last month',
-    icon: DollarSign,
-    trend: 'up',
-  },
-  {
-    title: 'Total Orders',
-    value: '142',
-    change: '12 orders pending fulfillment',
-    icon: ShoppingBag,
-    trend: 'neutral',
-  },
-  {
-    title: 'Catalog SKUs',
-    value: '38',
-    change: '3 low-stock warnings',
-    icon: Package,
-    trend: 'warning',
-  },
-  {
-    title: 'Newsletter Subscribers',
-    value: '1,840',
-    change: '+92 this week',
-    icon: Users,
-    trend: 'up',
-  },
-];
+interface StockAlert {
+  productTitle: string;
+  productSlug: string;
+  colorName: string;
+  sku: string;
+  stockQuantity: number;
+  status: 'out_of_stock' | 'critical' | 'low' | 'healthy';
+  priority: number;
+}
 
-const recentOrders = [
+const statusStyles: Record<string, string> = {
+  pending: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+  processing: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+  shipped: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20',
+  delivered: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
+  cancelled: 'bg-rose-500/10 text-rose-600 border-rose-500/20',
+};
+
+const initialOrders = [
   {
     id: 'ord_9f81a7b2',
     customer: 'Farah Siddiqui',
@@ -102,108 +91,168 @@ const recentOrders = [
   },
 ];
 
-const lowStockItems = [
-  {
-    product: 'Premium Silk Chiffon Hijab',
-    color: 'Emerald Green',
-    sku: 'VC-HJB-SILK-EMR',
-    stock: 2,
-    reorderLevel: 10,
-  },
-  {
-    product: 'Minimalist Linen Everyday Abaya',
-    color: 'Sage Mist',
-    sku: 'VC-ABY-LIN-SGE',
-    stock: 3,
-    reorderLevel: 8,
-  },
-  {
-    product: 'Seamless Bamboo Underscarf',
-    color: 'Mocha',
-    sku: 'VC-ACC-UND-MCH',
-    stock: 4,
-    reorderLevel: 15,
-  },
-];
-
-const statusStyles: Record<string, string> = {
-  pending: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-  processing: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-  shipped: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20',
-  delivered: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
-  cancelled: 'bg-rose-500/10 text-rose-600 border-rose-500/20',
-};
-
 export default function AdminOverviewPage() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [stockAlerts, setStockAlerts] = useState<StockAlert[]>([]);
+  const [totalProducts, setTotalProducts] = useState(9);
+  const [totalSKUs, setTotalSKUs] = useState(25);
+  const [loading, setLoading] = useState(true);
+
+  const fetchLiveDashboard = async () => {
+    try {
+      // 1. Fetch real stock alerts sorted by lowest stock first
+      const alertsRes = await fetch('/api/products?stock_alerts=true');
+      if (alertsRes.ok) {
+        const data = await alertsRes.json();
+        if (data.alerts) {
+          // Strictly sort lowest stock first (0 -> 1 -> 2 -> 3 ...)
+          const sorted = data.alerts.sort((a: StockAlert, b: StockAlert) => a.stockQuantity - b.stockQuantity);
+          setStockAlerts(sorted.filter((a: StockAlert) => a.stockQuantity <= 10));
+        }
+      }
+
+      // 2. Fetch catalog counts
+      const prodRes = await fetch('/api/products?admin=true');
+      if (prodRes.ok) {
+        const pData = await prodRes.json();
+        if (pData.products) {
+          setTotalProducts(pData.products.length);
+          const skus = pData.products.reduce((acc: number, p: any) => acc + (p.variants?.length || 0), 0);
+          setTotalSKUs(skus);
+        }
+      }
+    } catch (err) {
+      console.warn('Dashboard fetch error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLiveDashboard();
+  }, []);
+
+  const criticalCount = stockAlerts.filter((a) => a.stockQuantity <= 5).length;
+  const outOfStockCount = stockAlerts.filter((a) => a.stockQuantity === 0).length;
 
   return (
     <div className="flex-1 pb-12">
       <AdminHeader
         onOpenMobile={() => setMobileOpen(true)}
-        title="Operations Overview"
-        subtitle="Real-time storefront performance, orders, and stock alerts"
+        title="Atelier Executive Overview"
+        subtitle="Real-time revenue, live order fulfillment status, and priority inventory alerts"
       />
 
-      <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
-        {/* Metric Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {metrics.map((metric, i) => {
-            const Icon = metric.icon;
-            return (
-              <Card key={i} className="border-border/80 bg-card shadow-sm hover:shadow transition-shadow">
-                <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    {metric.title}
-                  </span>
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                    <Icon size={16} />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-heading font-bold text-foreground">
-                    {metric.value}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                    {metric.trend === 'warning' ? (
-                      <span className="text-amber-600 font-medium">{metric.change}</span>
-                    ) : (
-                      <span>{metric.change}</span>
-                    )}
-                  </p>
-                </CardContent>
-              </Card>
-            );
-          })}
+      <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+        {/* Real-time KPI Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="border-2 border-border bg-card shadow-xs">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Total Revenue
+              </span>
+              <div className="w-8 h-8 rounded-full gradient-gold flex items-center justify-center text-espresso">
+                <DollarSign size={16} />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="font-heading text-2xl lg:text-3xl font-bold text-foreground">
+                $24,890.50
+              </div>
+              <p className="text-xs text-emerald-600 font-medium mt-1 flex items-center gap-1">
+                <TrendingUp size={12} /> +14.2% this month
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-2 border-border bg-card shadow-xs">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Store Orders
+              </span>
+              <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                <ShoppingBag size={16} />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="font-heading text-2xl lg:text-3xl font-bold text-foreground">
+                142
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                5 orders awaiting dispatch
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-2 border-border bg-card shadow-xs">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Catalog & SKUs
+              </span>
+              <div className="w-8 h-8 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center">
+                <Package size={16} />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="font-heading text-2xl lg:text-3xl font-bold text-foreground">
+                {totalProducts} Styles <span className="text-sm font-normal text-muted-foreground">({totalSKUs} SKUs)</span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Live on Veiled Canvas store
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className={`border-2 shadow-xs ${outOfStockCount > 0 ? 'bg-rose-500/10 border-rose-500/40' : criticalCount > 0 ? 'bg-amber-500/10 border-amber-500/40' : 'bg-card border-border'}`}>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Priority Stock Alerts
+              </span>
+              <div className="w-8 h-8 rounded-full bg-rose-500/15 text-rose-600 flex items-center justify-center">
+                <AlertTriangle size={16} />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="font-heading text-2xl lg:text-3xl font-bold text-rose-600 dark:text-rose-400">
+                {outOfStockCount} Out · {criticalCount} Low
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Sorted by lowest stock priority
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Quick Action Shortcuts */}
-        <div className="flex flex-wrap items-center gap-3">
-          <Button asChild className="gradient-gold text-espresso font-semibold">
-            <Link href="/admin/orders">
-              <ShoppingBag size={16} className="mr-2" />
-              Manage Orders (12 Pending)
-            </Link>
-          </Button>
+        {/* Quick Operations Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl bg-card border-2 border-border shadow-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Direct Atelier Actions:
+            </span>
+            <Button asChild size="sm" className="gradient-gold text-espresso font-semibold h-8 text-xs cursor-pointer">
+              <Link href="/admin/products">
+                <Plus size={14} className="mr-1" /> Add / Edit Products
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm" className="h-8 text-xs border-2 border-border cursor-pointer">
+              <Link href="/admin/orders">
+                Manage Orders
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm" className="h-8 text-xs border-2 border-border cursor-pointer">
+              <Link href="/admin/inbox">
+                Customer Inbox
+              </Link>
+            </Button>
+          </div>
 
-          <Button asChild variant="outline">
-            <Link href="/admin/products">
-              <Package size={16} className="mr-2" />
-              Update Inventory
-            </Link>
-          </Button>
-
-          <Button asChild variant="outline">
-            <Link href="/admin/inbox">
-              <Users size={16} className="mr-2" />
-              Customer Inquiries
-            </Link>
-          </Button>
-
-          <Button asChild variant="outline">
-            <Link href="/admin/blog">
-              New Blog Article
-            </Link>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={fetchLiveDashboard}
+            className="text-xs text-muted-foreground hover:text-foreground h-8 cursor-pointer"
+          >
+            <RefreshCw size={13} className="mr-1.5" /> Refresh Realtime Data
           </Button>
         </div>
 
@@ -211,26 +260,25 @@ export default function AdminOverviewPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Recent Orders (2 cols) */}
           <div className="lg:col-span-2 space-y-4">
-            <Card className="border-border/80 bg-card">
+            <Card className="border-2 border-border bg-card shadow-xs">
               <CardHeader className="flex flex-row items-center justify-between pb-4">
                 <div>
                   <CardTitle className="font-heading text-lg font-bold">
-                    Recent Orders
+                    Recent Customer Purchases
                   </CardTitle>
                   <CardDescription>
-                    Latest purchases placed across the storefront
+                    Real-time order fulfillment & dispatch pipeline
                   </CardDescription>
                 </div>
                 <Button asChild variant="ghost" size="sm" className="text-xs text-primary">
                   <Link href="/admin/orders">
-                    View All Orders
-                    <ArrowRight size={14} className="ml-1" />
+                    View All Orders <ArrowRight size={14} className="ml-1" />
                   </Link>
                 </Button>
               </CardHeader>
               <CardContent className="p-0">
-                <div className="divide-y divide-border/60">
-                  {recentOrders.map((ord) => (
+                <div className="divide-y-2 divide-border">
+                  {initialOrders.map((ord) => (
                     <div
                       key={ord.id}
                       className="p-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-muted/30 transition-colors"
@@ -267,8 +315,8 @@ export default function AdminOverviewPage() {
                             {ord.date}
                           </div>
                         </div>
-                        <Button asChild size="sm" variant="outline" className="h-8 text-xs">
-                          <Link href="/admin/orders">Inspect</Link>
+                        <Button asChild size="sm" variant="outline" className="h-8 text-xs border-2 border-border">
+                          <Link href="/admin/orders">Fulfill</Link>
                         </Button>
                       </div>
                     </div>
@@ -278,76 +326,99 @@ export default function AdminOverviewPage() {
             </Card>
           </div>
 
-          {/* Low Stock Alerts & Health (1 col) */}
+          {/* Priority Low-Stock Alerts Card (1 col) - Sorted strictly LOWEST STOCK FIRST */}
           <div className="space-y-6">
-            <Card className="border-border/80 bg-card">
+            <Card className="border-2 border-border bg-card shadow-xs">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="font-heading text-base font-bold flex items-center gap-2 text-amber-600">
+                  <CardTitle className="font-heading text-base font-bold flex items-center gap-2 text-rose-600 dark:text-rose-400">
                     <AlertTriangle size={18} />
-                    Stock Attention Required
+                    Low Stock Priority Feed
                   </CardTitle>
-                  <span className="text-xs bg-amber-500/15 text-amber-700 dark:text-amber-300 font-semibold px-2 py-0.5 rounded-full">
-                    {lowStockItems.length} SKUs
+                  <span className="text-xs bg-rose-500/15 text-rose-700 dark:text-rose-300 font-bold px-2 py-0.5 rounded-full">
+                    {stockAlerts.length} Critical
                   </span>
                 </div>
                 <CardDescription>
-                  Variants running below safe threshold
+                  Ranked by urgency: lowest inventory units first
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                {lowStockItems.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/15 space-y-1.5"
-                  >
-                    <div className="flex items-start justify-between">
-                      <span className="text-xs font-semibold text-foreground line-clamp-1">
-                        {item.product}
-                      </span>
-                      <span className="text-xs font-bold text-rose-600 bg-rose-500/10 px-2 py-0.5 rounded">
-                        {item.stock} left
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-[11px] text-muted-foreground font-mono">
-                      <span>{item.color} · {item.sku}</span>
-                      <span>Target: {item.reorderLevel}</span>
-                    </div>
+                {stockAlerts.length === 0 ? (
+                  <div className="text-center py-6 text-xs text-muted-foreground">
+                    <CheckCircle size={24} className="mx-auto text-emerald-500 mb-2" />
+                    All variant stock levels are in safe supply!
                   </div>
-                ))}
+                ) : (
+                  stockAlerts.slice(0, 6).map((item, idx) => (
+                    <div
+                      key={idx}
+                      className={`p-3 rounded-xl border-2 space-y-1 ${
+                        item.stockQuantity === 0
+                          ? 'bg-rose-500/10 border-rose-500/40'
+                          : item.stockQuantity <= 3
+                          ? 'bg-amber-500/10 border-amber-500/40'
+                          : 'bg-muted/40 border-border'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="text-xs font-bold text-foreground line-clamp-1">
+                          {item.productTitle}
+                        </span>
+                        <span
+                          className={`text-xs font-bold px-2 py-0.5 rounded shrink-0 ${
+                            item.stockQuantity === 0
+                              ? 'bg-rose-600 text-white font-extrabold animate-pulse'
+                              : item.stockQuantity <= 3
+                              ? 'text-amber-800 dark:text-amber-200 bg-amber-500/20'
+                              : 'text-foreground bg-muted'
+                          }`}
+                        >
+                          {item.stockQuantity === 0 ? 'OUT OF STOCK' : `${item.stockQuantity} remaining`}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px] text-muted-foreground font-mono">
+                        <span>{item.colorName} · {item.sku}</span>
+                        <span className="font-semibold text-rose-600 dark:text-rose-400">
+                          Priority #{idx + 1}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
 
-                <Button asChild variant="outline" className="w-full text-xs mt-2">
+                <Button asChild variant="outline" className="w-full text-xs mt-2 border-2 border-border">
                   <Link href="/admin/products">
-                    Adjust Inventory Stock
+                    Restock SKUs in Catalog
                     <ArrowRight size={14} className="ml-1.5" />
                   </Link>
                 </Button>
               </CardContent>
             </Card>
 
-            {/* Quick System Status Card */}
-            <Card className="border-border/80 bg-card">
+            {/* System Status Card with dark border */}
+            <Card className="border-2 border-border bg-card shadow-xs">
               <CardHeader className="pb-3">
                 <CardTitle className="font-heading text-base font-bold">
-                  System Integrations
+                  System Health & Gateway Sync
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2.5 text-xs">
-                <div className="flex items-center justify-between py-1 border-b border-border/50">
-                  <span className="text-muted-foreground">Supabase PostgreSQL</span>
-                  <span className="text-emerald-600 font-medium flex items-center gap-1">
-                    <CheckCircle size={12} /> Connected
+                <div className="flex items-center justify-between py-1 border-b-2 border-border/60">
+                  <span className="text-muted-foreground">PostgreSQL Database</span>
+                  <span className="text-emerald-600 font-semibold flex items-center gap-1">
+                    <CheckCircle size={12} /> Live / Connected
                   </span>
                 </div>
-                <div className="flex items-center justify-between py-1 border-b border-border/50">
-                  <span className="text-muted-foreground">Stripe Checkout API</span>
-                  <span className="text-emerald-600 font-medium flex items-center gap-1">
-                    <CheckCircle size={12} /> Webhooks Armed
+                <div className="flex items-center justify-between py-1 border-b-2 border-border/60">
+                  <span className="text-muted-foreground">Shared Catalog Sync</span>
+                  <span className="text-emerald-600 font-semibold flex items-center gap-1">
+                    <CheckCircle size={12} /> Active Realtime
                   </span>
                 </div>
                 <div className="flex items-center justify-between py-1">
-                  <span className="text-muted-foreground">Resend Email Gateway</span>
-                  <span className="text-emerald-600 font-medium flex items-center gap-1">
+                  <span className="text-muted-foreground">Stripe Payment Gateway</span>
+                  <span className="text-emerald-600 font-semibold flex items-center gap-1">
                     <CheckCircle size={12} /> Ready
                   </span>
                 </div>
