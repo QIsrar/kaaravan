@@ -1,0 +1,49 @@
+{
+  "brand": {
+    "name": "Kaaravan",
+    "tagline": "A trusted marketplace journey across Pakistan"
+  },
+  "nav": {
+    "home": "Home",
+    "categories": "Categories",
+    "sellerPortal": "Seller Portal",
+    "adminPanel": "Admin Panel",
+    "account": "My Account",
+    "cart": "Cart"
+  },
+  "common": {
+    "loading": "Loading...",
+    "empty": "No items found.",
+    "error": "Something went wrong. Please try again.",
+    "save": "Save Changes",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "viewDetails": "View Details",
+    "pkr": "PKR"
+  },
+  "journey": {
+    "placed": "Placed",
+    "packed": "Packed",
+    "onTheWay": "On the way",
+    "arrived": "Arrived",
+    "statusMessage": "Your order has joined the Kaaravan"
+  },
+  "styleguide": {
+    "title": "Design System & Style Guide",
+    "subtitle": "Kaaravan Design Language & UI Components",
+    "buttons": "Buttons & Actions",
+    "inputs": "Form Inputs",
+    "cards": "Cards & Containers",
+    "badges": "Status & Identity Badges",
+    "tables": "Data Tables",
+    "journeyTracker": "Order Journey Tracker",
+    "patterns": "Pattern Dividers & Accents"
+  },
+  "auth": {
+    "login": "Sign In",
+    "logout": "Sign Out",
+    "sellerLogin": "Seller Access",
+    "adminLogin": "Superadmin Access",
+    "unauthorized": "You do not have permission to view this page."
+  }
+}

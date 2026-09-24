@@ -1,0 +1,5 @@
+node_modules
+.next
+dist
+.pnpm-store
+pnpm-lock.yaml
