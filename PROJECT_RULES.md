@@ -21,7 +21,7 @@ NON-NEGOTIABLE RULES
 3. RLS enabled on EVERY table. Default deny. Sellers only see rows for their own seller_id; customers only their own data; superadmin via a role check function.
 4. The Supabase service-role key is used ONLY in server code (route handlers, server actions, edge functions). Never import it in client components. Never prefix it with NEXT_PUBLIC.
 5. Every admin and seller mutation writes a row to audit_logs (actor, action, entity, entity_id, before, after, ip, timestamp).
-6. Every financial record (orders, commissions, payouts, refunds, ledger entries) is append-only. Corrections are new reversing entries, never UPDATE/DELETE of history.
+6. Financial history is protected. commissions, seller_ledger, price_history, order_status_history and audit_logs are strictly append-only (corrections are new reversing entries). orders, sub_orders, payments and payouts may change STATUS only through server functions, never their amounts after creation; every status change is logged to audit_logs or order_status_history.
 7. Soft deletes (deleted_at) for business entities. updated_at triggers on all tables.
 8. All schema changes go through numbered SQL migration files in supabase/migrations. Never edit the DB via dashboard only.
 9. Payment gateways and couriers are accessed ONLY through adapter interfaces (lib/payments, lib/couriers). No gateway-specific code outside its adapter.
@@ -31,3 +31,6 @@ NON-NEGOTIABLE RULES
 13. Every page has loading, empty and error states. Mobile-first responsive.
 14. Do not implement anything outside the current phase. If something is needed later, create a TODO with the phase number.
 15. At the end of each phase: list files changed, migrations added, manual steps I must do, and anything you were unsure about.
+16. Courier and payment gateway credentials live only in environment variables or Supabase Vault, never in database columns.
+17. Storage upload paths are built on the server, never chosen by the client.
+18. Returns, offers, Qafila joins and guest carts are created only through validated server actions.

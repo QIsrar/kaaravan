@@ -29,7 +29,7 @@ The following core principles govern all backend and frontend implementations:
 5. **Mutation Audit Logging**:
    Every administrative and seller mutation writes an append-only log to `audit_logs` capturing `actor`, `action`, `entity`, `entity_id`, `before`, `after`, `ip`, and `timestamp`.
 6. **Append-Only Financial Records**:
-   Orders, commissions, payouts, refunds, and ledger entries are strictly immutable. Corrections are performed via reversing ledger entries, never `UPDATE` or `DELETE`.
+   Financial history is protected. commissions, seller_ledger, price_history, order_status_history and audit_logs are strictly append-only (corrections are new reversing entries). orders, sub_orders, payments and payouts may change STATUS only through server functions, never their amounts after creation; every status change is logged to audit_logs or order_status_history.
 7. **Soft Deletes & Audited Timestamps**:
    Business entities implement `deleted_at IS NULL` soft deletes, alongside automatic `updated_at` triggers.
 8. **Numbered SQL Migrations**:
@@ -106,6 +106,7 @@ The platform defines four clear user roles:
 | **`guest`** | Browses product catalog, searches, adds items to cart, checks out with guest details. | Public storefront `app/(store)` |
 | **`customer`** | Registered buyer. Manages profile, tracks order journeys, manages addresses. | `app/(store)/account` |
 | **`seller`** | Verified vendor business. Manages catalog, inventory, order fulfillment, and payouts. | `app/(seller)/seller/*` (partitioned by `seller_id`) |
+| **`admin_staff`** | Platform staff with specific permissions from admin_permissions; access to /admin arrives in Phase 7. | `app/(admin)/admin/*` |
 | **`superadmin`** | Platform owner & authorized operations staff. Moderation, dispute resolution, financial ledger, and platform settings. | `app/(admin)/admin/*` |
 
 ### Defense-in-Depth Authentication Flow
@@ -155,3 +156,14 @@ Security does NOT rely solely on edge middleware:
   - **`packed`**: Inspected and boxed by merchant.
   - **`on_the_way`**: Dispatched via courier across regional routes.
   - **`arrived`**: Delivered to customer doorstep.
+
+---
+
+## 6. Deferred Security Items
+
+The following security enforcement items are slated for implementation in subsequent phases:
+- **Phase 5**: Server-built return-evidence paths; automatic rating recalculation on reviews.
+- **Phase 7**: `admin_staff` access to `/admin` with per-route permission checks via `admin_permissions`.
+- **Phase 8**: Lock money columns on `orders`/`sub_orders` after creation; enforce a `sub_order` status state machine; lock `payments`/`payouts` amounts and allow only status changes via server functions, logging each change to `audit_logs`; webhook HMAC signature verification + idempotency.
+- **Phase 11**: Guard triggers for offers (force pending, `seller_id` must match variant's seller, respect `min_offer_minor`) and `qafila_deals`.
+
