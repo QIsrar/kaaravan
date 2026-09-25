@@ -2,7 +2,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-export type UserRole = "superadmin" | "seller" | "customer" | "guest";
+export type UserRole = "superadmin" | "admin_staff" | "seller" | "customer" | "guest";
 
 export interface UserProfile {
   id: string;
@@ -17,6 +17,15 @@ export interface UserProfile {
  * and server actions MUST independently verify identity and role.
  */
 export async function requireAuth(allowedRoles?: UserRole[]): Promise<UserProfile> {
+  return requireRole(allowedRoles || []);
+}
+
+/**
+ * Validates that the current user has one of the allowed roles.
+ * Must only be called from server components, server actions, or route handlers.
+ * Redirects to login or unauthorized if requirements are not met.
+ */
+export async function requireRole(allowedRoles: UserRole[]): Promise<UserProfile> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -27,10 +36,37 @@ export async function requireAuth(allowedRoles?: UserRole[]): Promise<UserProfil
     redirect("/login");
   }
 
-  // Retrieve user role from database/metadata. In Phase 1 foundation:
-  // We check user_metadata.role or public.profiles role if available.
-  const role = (user.user_metadata?.role as UserRole) || "customer";
-  const seller_id = (user.user_metadata?.seller_id as string) || null;
+  // Retrieve user role from database profiles table.
+  const { data: profileData, error: profileError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (profileError || !profileData) {
+    redirect("/login");
+  }
+
+  const role = profileData.role as UserRole;
+
+  // For sellers, we might also want to fetch their seller_id
+  let seller_id = null;
+  if (role === 'seller') {
+    const { data: sellerData } = await supabase
+      .from("sellers")
+      .select("id, status, deleted_at")
+      .eq("owner_profile_id", user.id)
+      .single();
+      
+    if (sellerData) {
+      if (sellerData.status !== 'approved' || sellerData.deleted_at !== null) {
+        redirect("/unauthorized");
+      }
+      seller_id = sellerData.id;
+    } else {
+      redirect("/unauthorized");
+    }
+  }
 
   const profile: UserProfile = {
     id: user.id,

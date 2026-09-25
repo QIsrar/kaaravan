@@ -67,3 +67,18 @@ erDiagram
   
   qafila_deals ||--o{ qafila_participants: has
 ```
+
+## Admin Permissions
+
+The following permissions can be assigned to `admin_staff` in the `admin_permissions` table. A `superadmin` automatically possesses all of these implicitly.
+
+- `manage_users`: Can view and manage customer profiles and buyer trust.
+- `manage_sellers`: Can review, approve, and manage seller businesses, KYC, documents, pickup addresses, and bank accounts.
+- `manage_catalog`: Can manage categories, brands, products, variants, product images, price history, and search synonyms.
+- `manage_orders`: Can manage orders, sub-orders, order items, order status history, cod confirmations, returns, and offers.
+- `manage_finance`: Can manage payments, commissions, seller ledger, payouts, COD remittances, and bank transfer proofs.
+- `manage_logistics`: Can manage couriers, shipments, and shipment events.
+- `manage_disputes`: Can manage disputes and dispute messages.
+- `manage_promotions`: Can manage coupons, coupon redemptions, Qafila deals, and Qafila participants.
+- `manage_content`: Can manage banners and storefront content.
+- `manage_settings`: Can modify global platform settings.
