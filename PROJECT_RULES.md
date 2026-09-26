@@ -33,4 +33,12 @@ NON-NEGOTIABLE RULES
 15. At the end of each phase: list files changed, migrations added, manual steps I must do, and anything you were unsure about.
 16. Courier and payment gateway credentials live only in environment variables or Supabase Vault, never in database columns.
 17. Storage upload paths are built on the server, never chosen by the client.
-18. Returns, offers, Qafila joins and guest carts are created only through validated server actions.
+18. Returns, offers, Qafila joins and guest carts are created only through validated server-side code: lib/services functions called by server actions (web) or /api/v1 routes (mobile). Never by direct client inserts.
+19. Mobile-ready architecture: a separate developer will build a React Native (Expo) app on this same Supabase backend.
+- All business logic (cart, checkout, orders, returns, offers, reviews) lives in framework-independent functions in lib/services/ that take validated input plus a Supabase client and return typed results. No imports from next/* or React in lib/services, lib/validators, lib/types.
+- Web server actions are thin wrappers around these services.
+- Every write operation is also exposed as a route handler under /api/v1/ that accepts 'Authorization: Bearer <supabase access token>', validates with the same Zod schema, and calls the same service. Guest cart tokens work both as an httpOnly cookie (web) and an 'X-Guest-Token' header (mobile).
+- Read-only catalog data may be read directly from Supabase with RLS (no API route needed).
+- Each /api/v1 endpoint is documented in docs/API.md (method, path, auth, request body, response, errors) in the same phase it is built.
+- Design tokens (colors, fonts, radii, spacing) are exported from config/theme.ts as plain TypeScript, and the CSS variables are generated from or kept in sync with it.
+- Generated database types are regenerated with pnpm gen:types after every migration.

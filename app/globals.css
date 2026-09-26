@@ -46,6 +46,11 @@
   --radius-3xl: calc(var(--radius) * 2.0);
 }
 
+/* 
+ * NOTE: The web app uses oklch() colors here in globals.css.
+ * The React Native app uses config/theme.ts which stores these as Hex values.
+ * These files must be kept in sync visually when updating the design system.
+ */
 :root {
   /* KAARAVAN LIGHT PALETTE */
   /* Surfaces & Canvas: Desert sand & warm ivory */

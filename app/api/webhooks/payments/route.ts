@@ -1,6 +1,6 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   // TODO: Phase 8 - implement webhook HMAC signature verification + idempotency and logic.
   return NextResponse.json(
     { error: "Not Implemented" },
