@@ -1,3 +1,8 @@
+/*
+Copyright © 2026 One Tech and AI.
+Confidential and Proprietary. All Rights Reserved.
+Unauthorised copying, disclosure, modification, distribution or use is prohibited.
+*/
 import "server-only";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";

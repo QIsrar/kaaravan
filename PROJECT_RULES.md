@@ -42,3 +42,4 @@ NON-NEGOTIABLE RULES
 - Each /api/v1 endpoint is documented in docs/API.md (method, path, auth, request body, response, errors) in the same phase it is built.
 - Design tokens (colors, fonts, radii, spacing) are exported from config/theme.ts as plain TypeScript, and the CSS variables are generated from or kept in sync with it.
 - Generated database types are regenerated with pnpm gen:types after every migration.
+20. Every new file in lib/services, lib/auth, lib/supabase and core business logic starts with the One Tech and AI copyright header (see lib/auth/roles.ts). Never add it to generated files, config files or third-party components, and never edit pushed migrations.

@@ -1,3 +1,8 @@
+/*
+Copyright © 2026 One Tech and AI.
+Confidential and Proprietary. All Rights Reserved.
+Unauthorised copying, disclosure, modification, distribution or use is prohibited.
+*/
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 

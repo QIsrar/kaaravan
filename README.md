@@ -1,3 +1,6 @@
+## CONFIDENTIAL & PROPRIETARY
+This repository contains confidential intellectual property belonging to One Tech and AI. Access is restricted to authorised personnel. Copying, sharing, reuse, disclosure or distribution without written authorisation is prohibited.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

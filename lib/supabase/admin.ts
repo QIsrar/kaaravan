@@ -1,3 +1,8 @@
+/*
+Copyright © 2026 One Tech and AI.
+Confidential and Proprietary. All Rights Reserved.
+Unauthorised copying, disclosure, modification, distribution or use is prohibited.
+*/
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/types/database";

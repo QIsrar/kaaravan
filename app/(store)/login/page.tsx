@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { PatternDivider } from "@/components/store/pattern-divider";
+import { useTranslations } from "next-intl";
 
 export default function LoginPage() {
+  const tLegal = useTranslations("legal");
   return (
-    <div className="container mx-auto px-4 py-16 flex items-center justify-center min-h-[70vh]">
-      <Card className="w-full max-w-md shadow-lg border-border/80">
+    <div className="container mx-auto px-4 py-16 flex flex-col items-center justify-center min-h-[70vh]">
+      <Card className="w-full max-w-md shadow-lg border-border/80 mb-6">
         <CardHeader className="text-center pb-2">
           <div className="w-12 h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-xl mx-auto mb-3 shadow-sm">
             K
@@ -73,6 +75,10 @@ export default function LoginPage() {
           </Link>
         </CardFooter>
       </Card>
+      
+      <div className="max-w-md text-center text-xs text-muted-foreground px-4">
+        {tLegal("portalCopyright")}
+      </div>
     </div>
   );
 }

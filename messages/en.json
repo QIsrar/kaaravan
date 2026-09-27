@@ -45,5 +45,13 @@
     "sellerLogin": "Seller Access",
     "adminLogin": "Superadmin Access",
     "unauthorized": "You do not have permission to view this page."
+  },
+  "legal": {
+    "copyright": "© 2026 One Tech and AI. All Rights Reserved.",
+    "portalCopyright": "© 2026 One Tech and AI. Confidential and Proprietary. All Rights Reserved. Authorised access only. Access to this platform does not grant ownership or intellectual property rights in the software, algorithms, databases, workflows or underlying technology.",
+    "terms": "Terms of Use",
+    "privacy": "Privacy Policy",
+    "ipNotice": "Intellectual Property Notice",
+    "draftNotice": "Draft — pending legal review"
   }
 }
