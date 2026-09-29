@@ -21,10 +21,7 @@ export function StoreFooter() {
 
           <div className="flex flex-col items-end gap-2">
             <div className="flex items-center gap-6">
-              <Link href="/styleguide" className="hover:text-primary transition-colors">
-                Design System
-              </Link>
-              <Link href="/seller" className="hover:text-primary transition-colors">
+              <Link href="/sell" className="hover:text-primary transition-colors">
                 Sell on Kaaravan
               </Link>
             </div>

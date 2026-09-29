@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 480" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bannerGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0d484e" />
+      <stop offset="100%" stop-color="#072b2f" />
+    </linearGradient>
+    <pattern id="bannerTile" width="60" height="60" patternUnits="userSpaceOnUse">
+      <path d="M30 0 L60 30 L30 60 L0 30 Z" fill="none" stroke="#d99b26" stroke-width="1.5" opacity="0.18" />
+      <circle cx="30" cy="30" r="4" fill="#d99b26" opacity="0.25" />
+    </pattern>
+  </defs>
+  
+  <rect width="1200" height="480" fill="url(#bannerGrad)" />
+  <rect width="1200" height="480" fill="url(#bannerTile)" />
+  
+  <!-- Subtle border trim -->
+  <rect x="24" y="24" width="1152" height="432" rx="20" fill="none" stroke="#d99b26" stroke-width="2" stroke-opacity="0.4" />
+  
+  <g transform="translate(100, 140)">
+    <!-- Tag -->
+    <rect x="0" y="0" width="220" height="32" rx="16" fill="#c25438" />
+    <text x="110" y="20" text-anchor="middle" font-family="sans-serif" font-weight="bold" font-size="12" fill="#ffffff" letter-spacing="1.5">SEASON HIGHLIGHTS</text>
+    
+    <!-- Title -->
+    <text x="0" y="80" font-family="sans-serif" font-weight="900" font-size="44" fill="#ffffff" letter-spacing="-0.5">Handcrafted Across Pakistan</text>
+    
+    <!-- Subtitle -->
+    <text x="0" y="125" font-family="sans-serif" font-size="20" fill="#f6f2e9" opacity="0.9">Direct from master weavers, potters, and cobblers.</text>
+    
+    <!-- Button -->
+    <rect x="0" y="160" width="200" height="48" rx="24" fill="#d99b26" />
+    <text x="100" y="190" text-anchor="middle" font-family="sans-serif" font-weight="bold" font-size="15" fill="#20272b">Discover Now →</text>
+  </g>
+  
+  <!-- Geometric decorative medallion -->
+  <g transform="translate(1020, 240)">
+    <circle r="140" fill="none" stroke="#d99b26" stroke-width="2" stroke-opacity="0.3" stroke-dasharray="8,6" />
+    <circle r="110" fill="none" stroke="#f6f2e9" stroke-width="1" stroke-opacity="0.2" />
+    <circle r="80" fill="#d99b26" fill-opacity="0.1" stroke="#d99b26" stroke-width="1.5" />
+    <path d="M0 -70 L70 0 L0 70 L-70 0 Z" fill="none" stroke="#c25438" stroke-width="2" opacity="0.6" />
+    <circle r="20" fill="#d99b26" opacity="0.8" />
+  </g>
+</svg>

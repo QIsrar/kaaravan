@@ -4,7 +4,7 @@ import React from "react";
 import { Check, Package, Sparkles, Truck, MapPin } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import type { JourneyStop } from "@/lib/couriers/types";
+import { JOURNEY_STOP_MESSAGE_KEYS, type JourneyStop } from "@/lib/couriers/types";
 
 interface JourneyTrackerProps {
   currentStop: JourneyStop;
@@ -46,14 +46,14 @@ export function JourneyTracker({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4 mb-6">
         <div>
           <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
-            The Caravan Trail
+            The Kaaravan Trail
           </span>
           <h4 className="text-base font-semibold text-primary flex items-center gap-2">
             <span>{t("statusMessage")}</span>
             <span className="inline-block w-2 h-2 rounded-full bg-secondary animate-pulse" />
           </h4>
         </div>
-        <div className="text-xs sm:text-right">
+        <div className="text-xs sm:text-end">
           <span className="block font-mono font-medium text-foreground">
             Order #{orderNumber}
           </span>
@@ -64,7 +64,7 @@ export function JourneyTracker({
       {/* Visual Journey Route */}
       <div className="relative my-6 px-2 sm:px-6">
         {/* Connector Trail Line */}
-        <div className="absolute top-6 left-6 right-6 h-1 bg-muted rounded-full -translate-y-1/2 z-0 hidden sm:block">
+        <div className="absolute top-6 start-6 end-6 h-1 bg-muted rounded-full -translate-y-1/2 z-0 hidden sm:block">
           <div
             className="h-full bg-primary transition-all duration-700 rounded-full"
             style={{
@@ -86,7 +86,7 @@ export function JourneyTracker({
                 type="button"
                 onClick={() => onStopChange?.(stop.key)}
                 className={cn(
-                  "group flex sm:flex-col items-center gap-3 text-left sm:text-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl p-1",
+                  "group flex sm:flex-col items-center gap-3 text-start sm:text-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl p-1",
                   onStopChange ? "cursor-pointer" : "cursor-default"
                 )}
               >
@@ -108,7 +108,7 @@ export function JourneyTracker({
                   ) : isCurrent ? (
                     <>
                       <Icon className="w-5 h-5 stroke-[2.2] animate-bounce" />
-                      <span className="absolute -top-1 -right-1 w-3 h-3 bg-secondary rounded-full ring-2 ring-card animate-ping" />
+                      <span className="absolute -top-1 -end-1 w-3 h-3 bg-secondary rounded-full ring-2 ring-card animate-ping" />
                     </>
                   ) : (
                     <Icon className="w-5 h-5" />
@@ -127,7 +127,7 @@ export function JourneyTracker({
                         : "text-muted-foreground"
                     )}
                   >
-                    {t(stop.key)}
+                    {t(JOURNEY_STOP_MESSAGE_KEYS[stop.key])}
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {isCurrent ? (

@@ -12,6 +12,18 @@
 
 export type JourneyStop = "placed" | "packed" | "on_the_way" | "arrived";
 
+/**
+ * Single source of truth mapping each JourneyStop status value to its
+ * messages/journey.* translation key. JourneyStop values are snake_case
+ * (they mirror courier/DB status strings); message keys are camelCase.
+ */
+export const JOURNEY_STOP_MESSAGE_KEYS: Record<JourneyStop, string> = {
+  placed: "placed",
+  packed: "packed",
+  on_the_way: "onTheWay",
+  arrived: "arrived",
+};
+
 export interface Address {
   fullName: string;
   phone: string;

@@ -93,3 +93,55 @@ export async function requireRole(allowedRoles: UserRole[]): Promise<UserProfile
 
   return profile;
 }
+
+export interface SellerPortalStatus {
+  role: UserRole;
+  isApprovedSeller: boolean;
+}
+
+/**
+ * Non-redirecting lookup of the current visitor's role, used purely for UI
+ * decisions (e.g. which seller-portal link to show). Never redirects and
+ * never throws for guests, unlike requireAuth/requireRole.
+ */
+export async function getOptionalUserRole(): Promise<SellerPortalStatus | null> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return null;
+
+  const { data: profileData } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (!profileData) return null;
+
+  const role = profileData.role as UserRole;
+  if (role !== "seller") {
+    return { role, isApprovedSeller: false };
+  }
+
+  const { data: sellerData } = await supabase
+    .from("sellers")
+    .select("status, deleted_at")
+    .eq("owner_profile_id", user.id)
+    .single();
+
+  const isApprovedSeller = Boolean(
+    sellerData && sellerData.status === "approved" && sellerData.deleted_at === null
+  );
+  return { role, isApprovedSeller };
+}
+
+/**
+ * Approved sellers go straight to their portal; everyone else (guests,
+ * customers, pending sellers) goes to the public "become a seller" page.
+ * Prevents the /seller -> /login -> /unauthorized loop for non-sellers.
+ */
+export function getSellerPortalHref(status: SellerPortalStatus | null): "/seller" | "/sell" {
+  return status?.isApprovedSeller ? "/seller" : "/sell";
+}

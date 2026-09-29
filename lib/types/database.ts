@@ -2103,7 +2103,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      search_products: {
+        Args: { lim?: number; off?: number; q: string }
+        Returns: {
+          product_id: string
+          rank: number
+        }[]
+      }
     }
     Enums: {
       cod_confirmation_status:

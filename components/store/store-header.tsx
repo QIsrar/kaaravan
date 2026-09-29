@@ -1,19 +1,100 @@
 "use client";
 
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ShoppingBag, Compass, Store, Shield } from "lucide-react";
+import { useRouter, usePathname } from "next/navigation";
+import { ShoppingBag, Compass, Search, Sparkles, X, Menu, ArrowRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { BRAND_CONFIG } from "@/config/brand";
-import { useCartStore } from "@/lib/store/cart-store";
-import { Badge } from "@/components/ui/badge";
+import { useCartTotalItems } from "@/lib/hooks/use-cart";
+import { useSearchSuggestions } from "@/lib/hooks/use-search-suggestions";
+import { capSearchQuery, MIN_SEARCH_QUERY_LENGTH } from "@/lib/validators/search-constants";
+import { formatPaisa } from "@/lib/format/currency";
+import { Button } from "@/components/ui/button";
+import { Image } from "@/components/ui/image";
 
-export function StoreHeader() {
-  const totalItems = useCartStore((state) => state.getTotalItems());
+const POPULAR_SEARCH_TERMS = [
+  "Blue Pottery Vase",
+  "Peshawari Chappal",
+  "Pashmina Shawl",
+  "Hunza Honey",
+  "Sheesham Wood Tray",
+  "Ajrak Silk Dupatta",
+  "Brass Chai Degchi",
+  "Pink Salt Slab",
+];
+
+interface StoreHeaderProps {
+  sellerPortalHref: "/seller" | "/sell";
+}
+
+export function StoreHeader({ sellerPortalHref }: StoreHeaderProps) {
+  const tNav = useTranslations("nav");
+  const tStore = useTranslations("store");
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const isCategoriesActive = pathname.startsWith("/category");
+  const isSellActive = pathname.startsWith("/sell") || pathname.startsWith("/seller");
+  const isAccountActive =
+    pathname.startsWith("/account") ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/register") ||
+    pathname.startsWith("/forgot-password");
+  const isCartActive = pathname.startsWith("/cart");
+
+  const totalItems = useCartTotalItems();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  const trimmedQuery = capSearchQuery(searchQuery);
+  const showLiveSuggestions = trimmedQuery.length >= MIN_SEARCH_QUERY_LENGTH;
+  const { data: suggestions, isFetching: isSuggestionsLoading } = useSearchSuggestions(
+    showLiveSuggestions ? trimmedQuery : ""
+  );
+
+  // Close search dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target as Node)
+      ) {
+        setIsSearchOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const query = capSearchQuery(searchQuery);
+    if (query.length > 0) {
+      setIsSearchOpen(false);
+      router.push(`/search?q=${encodeURIComponent(query)}`);
+    }
+  };
+
+  const handleSelectTerm = (term: string) => {
+    setSearchQuery(term);
+    setIsSearchOpen(false);
+    router.push(`/search?q=${encodeURIComponent(term)}`);
+  };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border bg-background shadow-xs">
+    <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur-md shadow-2xs">
+      {/* Top micro-bar */}
+      <div className="bg-primary text-primary-foreground text-[11px] py-1 px-4 text-center tracking-wide font-medium flex items-center justify-center gap-2">
+        <Sparkles className="w-3 h-3 text-secondary animate-pulse" />
+        <span>{tStore("promoBar")}</span>
+      </div>
+
       <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
         {/* Brand identity */}
-        <Link href="/" className="flex items-center gap-2 group">
+        <Link href="/" className="flex items-center gap-2 group shrink-0">
           <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg shadow-sm transition-transform group-hover:scale-105">
             <Compass className="w-6 h-6 stroke-[2]" />
           </div>
@@ -27,55 +108,243 @@ export function StoreHeader() {
           </div>
         </Link>
 
-        {/* Navigation links */}
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-          <Link
-            href="/styleguide"
-            className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5"
-          >
-            <span>Style Guide</span>
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-accent text-accent">
-              Phase 1
-            </Badge>
-          </Link>
-          <Link
-            href="/seller"
-            className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5"
-          >
-            <Store className="w-4 h-4" />
-            <span>Seller Portal</span>
-          </Link>
-          <Link
-            href="/admin"
-            className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5"
-          >
-            <Shield className="w-4 h-4" />
-            <span>Admin</span>
-          </Link>
-        </nav>
+        {/* Search bar with Autocomplete */}
+        <div ref={searchContainerRef} className="relative flex-1 max-w-xl hidden md:block">
+          <form onSubmit={handleSearchSubmit} className="relative flex items-center">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setIsSearchOpen(true);
+              }}
+              onFocus={() => setIsSearchOpen(true)}
+              placeholder={tStore("searchPlaceholder")}
+              className="w-full h-10 ps-10 pe-24 rounded-full border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all shadow-2xs placeholder:text-muted-foreground/80"
+            />
+            <Search className="w-4 h-4 text-muted-foreground absolute start-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
 
-        {/* Action icons */}
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute end-16 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+
+            <Button
+              type="submit"
+              size="sm"
+              className="absolute end-1 top-1/2 -translate-y-1/2 h-8 rounded-full px-3.5 bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold"
+            >
+              {tStore("search")}
+            </Button>
+          </form>
+
+          {/* Autocomplete Dropdown */}
+          {isSearchOpen && (
+            <div className="absolute top-full start-0 end-0 mt-1.5 p-3 rounded-2xl border border-border bg-card shadow-lg z-50 animate-in fade-in-50 duration-150 max-h-96 overflow-y-auto">
+              {showLiveSuggestions ? (
+                <>
+                  <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold px-2 block mb-2">
+                    {isSuggestionsLoading
+                      ? tStore("searching")
+                      : suggestions && suggestions.length > 0
+                        ? tStore("suggestedCrafts")
+                        : tStore("noSuggestions")}
+                  </span>
+                  <div className="flex flex-col gap-1">
+                    {suggestions?.map((item) => (
+                      <Link
+                        key={item.id}
+                        href={`/product/${item.slug}`}
+                        onClick={() => setIsSearchOpen(false)}
+                        className="flex items-center gap-3 p-2 rounded-xl hover:bg-muted/60 transition-colors"
+                      >
+                        <div className="relative w-10 h-10 shrink-0 rounded-lg overflow-hidden bg-muted border border-border">
+                          <Image src={item.image} alt={item.title} fill sizes="40px" className="object-cover" />
+                        </div>
+                        <span className="text-xs font-medium text-foreground line-clamp-1 flex-1">
+                          {item.title}
+                        </span>
+                        <span className="text-xs font-mono font-semibold text-foreground shrink-0">
+                          {formatPaisa(item.priceMinor)}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                  {suggestions && suggestions.length > 0 && (
+                    <Link
+                      href={`/search?q=${encodeURIComponent(trimmedQuery)}`}
+                      onClick={() => setIsSearchOpen(false)}
+                      className="mt-1.5 flex items-center justify-center gap-1.5 text-xs font-semibold text-primary hover:underline px-2 py-1.5"
+                    >
+                      <span>{tStore("viewAllResults")}</span>
+                      <ArrowRight className="w-3 h-3 rtl:rotate-180" />
+                    </Link>
+                  )}
+                </>
+              ) : (
+                <>
+                  <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold px-2 block mb-2">
+                    Popular Artisan Searches
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {POPULAR_SEARCH_TERMS.map((term) => (
+                      <button
+                        key={term}
+                        type="button"
+                        onClick={() => handleSelectTerm(term)}
+                        className="text-xs px-3 py-1.5 rounded-full bg-muted/60 hover:bg-primary/10 hover:text-primary text-foreground transition-colors flex items-center gap-1.5"
+                      >
+                        <span>{term}</span>
+                        <ArrowRight className="w-3 h-3 text-muted-foreground" />
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Navigation links & actions */}
         <div className="flex items-center gap-3">
+          <nav className="hidden lg:flex items-center gap-2 text-sm font-medium">
+            <Link
+              href="/category/apparel-textiles"
+              className={`px-3 py-1.5 rounded-full transition-all text-xs font-semibold ${
+                isCategoriesActive
+                  ? "bg-primary text-primary-foreground shadow-2xs"
+                  : "text-muted-foreground hover:text-primary hover:bg-muted/60"
+              }`}
+            >
+              {tNav("categories")}
+            </Link>
+            <Link
+              href={sellerPortalHref}
+              className={`px-3 py-1.5 rounded-full transition-all text-xs font-semibold ${
+                isSellActive
+                  ? "bg-primary text-primary-foreground shadow-2xs"
+                  : "text-muted-foreground hover:text-primary hover:bg-muted/60"
+              }`}
+            >
+              {tNav("sell")}
+            </Link>
+            <Link
+              href="/account"
+              className={`px-3 py-1.5 rounded-full transition-all text-xs font-semibold ${
+                isAccountActive
+                  ? "bg-primary text-primary-foreground shadow-2xs"
+                  : "text-muted-foreground hover:text-primary hover:bg-muted/60"
+              }`}
+            >
+              {tNav("account")}
+            </Link>
+          </nav>
+
+          {/* Cart trigger button */}
           <Link
-            href="/account"
-            className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-lg hover:bg-muted"
-          >
-            Account
-          </Link>
-          <button
-            type="button"
-            className="relative p-2 rounded-xl border border-border/80 hover:bg-muted text-foreground transition-all"
+            href="/cart"
+            className={`relative p-2.5 rounded-xl border transition-all flex items-center justify-center group ${
+              isCartActive
+                ? "border-primary bg-primary/10 ring-2 ring-primary/30 text-primary"
+                : "border-border/80 hover:bg-muted text-foreground"
+            }`}
             aria-label="Shopping Cart"
           >
-            <ShoppingBag className="w-5 h-5 text-primary" />
+            <ShoppingBag className="w-5 h-5 text-primary transition-transform group-hover:scale-105" />
             {totalItems > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-accent text-accent-foreground text-[11px] font-bold rounded-full flex items-center justify-center shadow-sm">
+              <span className="absolute -top-1.5 -end-1.5 min-w-5 h-5 px-1 bg-accent text-accent-foreground text-[11px] font-bold rounded-full flex items-center justify-center shadow-sm">
                 {totalItems}
               </span>
             )}
+          </Link>
+
+          {/* Mobile menu trigger */}
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="p-2 rounded-xl border border-border md:hidden text-foreground hover:bg-muted"
+            aria-label="Toggle Navigation Menu"
+          >
+            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
       </div>
+
+      {/* Mobile search bar */}
+      <div className="md:hidden px-4 pb-3">
+        <form onSubmit={handleSearchSubmit} className="relative flex items-center">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={tStore("searchPlaceholder")}
+            className="w-full h-9 ps-9 pe-16 rounded-full border border-border bg-card text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 placeholder:text-muted-foreground/80"
+          />
+          <Search className="w-3.5 h-3.5 text-muted-foreground absolute start-3 top-1/2 -translate-y-1/2" />
+          <Button
+            type="submit"
+            size="xs"
+            className="absolute end-1 top-1/2 -translate-y-1/2 rounded-full px-2.5 bg-primary text-primary-foreground text-[10px]"
+          >
+            {tStore("search")}
+          </Button>
+        </form>
+      </div>
+
+      {/* Mobile drawer links */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden border-t border-border bg-card p-4 space-y-2">
+          <Link
+            href="/category/apparel-textiles"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className={`block text-xs font-semibold py-2 px-3 rounded-xl transition-colors ${
+              isCategoriesActive
+                ? "bg-primary text-primary-foreground"
+                : "text-foreground hover:bg-muted"
+            }`}
+          >
+            {tNav("categories")}
+          </Link>
+          <Link
+            href={sellerPortalHref}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className={`block text-xs font-semibold py-2 px-3 rounded-xl transition-colors ${
+              isSellActive
+                ? "bg-primary text-primary-foreground"
+                : "text-foreground hover:bg-muted"
+            }`}
+          >
+            {tNav("sell")}
+          </Link>
+          <Link
+            href="/account"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className={`block text-xs font-semibold py-2 px-3 rounded-xl transition-colors ${
+              isAccountActive
+                ? "bg-primary text-primary-foreground"
+                : "text-foreground hover:bg-muted"
+            }`}
+          >
+            {tNav("account")}
+          </Link>
+          <Link
+            href="/cart"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className={`block text-xs font-semibold py-2 px-3 rounded-xl transition-colors ${
+              isCartActive
+                ? "bg-primary text-primary-foreground"
+                : "text-accent hover:bg-muted"
+            }`}
+          >
+            {tNav("cart")} ({totalItems})
+          </Link>
+        </div>
+      )}
     </header>
   );
 }

@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(16);
+SELECT plan(18);
 
 CREATE OR REPLACE FUNCTION tests_set_auth(user_id uuid, role text DEFAULT 'authenticated') RETURNS void AS $$
 BEGIN
@@ -210,6 +210,23 @@ SELECT is(
   'User cannot change their own role to admin_staff'
 );
 
+-- 16. search_products only returns active products (never draft, even on a title match)
+RESET ROLE;
+SELECT tests_set_auth('00000000-0000-0000-0000-000000000000', 'anon');
+SELECT is(
+  (SELECT count(*) FROM public.search_products('Draft', 10, 0)),
+  0::bigint,
+  'search_products never returns draft products'
+);
+
+-- 17. search_products returns matching active products of approved sellers
+-- (membership, not exact-set: the live catalog may contain other real rows
+-- that also legitimately match the word "Active" in their description)
+SELECT is(
+  (SELECT bool_or(product_id = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee') FROM public.search_products('Active', 10, 0)),
+  true,
+  'search_products returns the matching active product'
+);
 
 SELECT * FROM finish();
 ROLLBACK;

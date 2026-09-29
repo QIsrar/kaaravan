@@ -456,12 +456,12 @@ export default function StyleguidePage() {
                 <span className="text-xs text-muted-foreground uppercase tracking-widest font-semibold">
                   Product Image Hero
                 </span>
-                <Badge variant="accent" className="absolute top-3 left-3 shadow-xs">
+                <Badge variant="accent" className="absolute top-3 start-3 shadow-xs">
                   Handcrafted
                 </Badge>
                 <button
                   type="button"
-                  className="absolute top-3 right-3 p-1.5 rounded-full bg-card border border-border text-muted-foreground hover:text-accent shadow-2xs"
+                  className="absolute top-3 end-3 p-1.5 rounded-full bg-card border border-border text-muted-foreground hover:text-accent shadow-2xs"
                   aria-label="Add to wishlist"
                 >
                   <Heart className="w-4 h-4" />
@@ -563,7 +563,7 @@ export default function StyleguidePage() {
                     <TableHead className="font-bold text-xs uppercase text-muted-foreground">Order ID</TableHead>
                     <TableHead className="font-bold text-xs uppercase text-muted-foreground">Customer</TableHead>
                     <TableHead className="font-bold text-xs uppercase text-muted-foreground">Journey Stop</TableHead>
-                    <TableHead className="font-bold text-xs uppercase text-muted-foreground text-right">Amount (PKR)</TableHead>
+                    <TableHead className="font-bold text-xs uppercase text-muted-foreground text-end">Amount (PKR)</TableHead>
                     <TableHead className="font-bold text-xs uppercase text-muted-foreground text-center">Status</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -577,7 +577,7 @@ export default function StyleguidePage() {
                         <span>On the way</span>
                       </span>
                     </TableCell>
-                    <TableCell className="text-right font-mono font-bold text-sm text-foreground">
+                    <TableCell className="text-end font-mono font-bold text-sm text-foreground">
                       PKR 14,200
                     </TableCell>
                     <TableCell className="text-center">
@@ -596,7 +596,7 @@ export default function StyleguidePage() {
                         <span>Arrived</span>
                       </span>
                     </TableCell>
-                    <TableCell className="text-right font-mono font-bold text-sm text-foreground">
+                    <TableCell className="text-end font-mono font-bold text-sm text-foreground">
                       PKR 8,750
                     </TableCell>
                     <TableCell className="text-center">
@@ -615,7 +615,7 @@ export default function StyleguidePage() {
                         <span>Packed</span>
                       </span>
                     </TableCell>
-                    <TableCell className="text-right font-mono font-bold text-sm text-foreground">
+                    <TableCell className="text-end font-mono font-bold text-sm text-foreground">
                       PKR 22,400
                     </TableCell>
                     <TableCell className="text-center">
@@ -643,7 +643,7 @@ export default function StyleguidePage() {
 
           <div
             dir="rtl"
-            className="p-6 rounded-2xl border border-border bg-card shadow-xs space-y-6 text-right font-urdu"
+            className="p-6 rounded-2xl border border-border bg-card shadow-xs space-y-6 text-end font-urdu"
           >
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold mb-3">
