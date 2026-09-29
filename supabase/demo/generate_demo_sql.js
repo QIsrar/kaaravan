@@ -662,6 +662,9 @@ function generateSql() {
 
   // 6. Products & Variants & Images
   sql.push("-- 6. 40 ACTIVE PRODUCTS + 1-3 VARIANTS EACH");
+  sql.push("-- Delete previous detail image rows for demo products");
+  sql.push("DELETE FROM public.product_images WHERE id::text LIKE '91000000-0000-____-0000-000000000002';");
+  sql.push("");
   
   const brandMap = {
     "multan-kashikari": "d1000000-0000-0000-0000-000000000001",
@@ -694,11 +697,11 @@ function generateSql() {
     });
     sql.push("");
 
-    // Images
+    // Images: products 1-13 use the newly AI-generated WebP images; products 14-40 retain existing placeholder SVGs
     const img1Uuid = `91000000-0000-${String(pNum).padStart(4, "0")}-0000-000000000001`;
-    const img2Uuid = `91000000-0000-${String(pNum).padStart(4, "0")}-0000-000000000002`;
+    const imagePath = pNum <= 13 ? `/demo/prod-${pNum}.webp` : `/demo/prod-${pNum}.svg`;
     sql.push(`INSERT INTO public.product_images (id, product_id, path, sort_order)`);
-    sql.push(`VALUES ('${img1Uuid}', '${pUuid}', '/demo/prod-${pNum}.svg', 1), ('${img2Uuid}', '${pUuid}', '/demo/prod-${pNum}-detail.svg', 2)`);
+    sql.push(`VALUES ('${img1Uuid}', '${pUuid}', '${imagePath}', 1)`);
     sql.push(`ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;`);
     sql.push("");
   });

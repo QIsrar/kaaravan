@@ -3,6 +3,7 @@
 These procedures must be followed in every phase of development.
 
 ## MIGRATIONS
+- Every new migration gets a short descriptive name (`pnpm dlx supabase migration new <name>`) and a line in `docs/MIGRATIONS.md`.
 - Never edit a pushed migration. Every schema change is a NEW file in `supabase/migrations` with a later timestamp.
 - Every new table: RLS enabled in the same migration, default deny, policies following the patterns in the Phase 3 migration (`private.is_superadmin()`, `private.current_seller_id()`, `private.has_permission()`, `(select auth.uid())`).
 - Before pushing, dry-run on the linked DB without Docker: create `scratch/dry_run_<name>.sql` containing:
