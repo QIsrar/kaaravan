@@ -96,13 +96,15 @@ export async function requireRole(allowedRoles: UserRole[]): Promise<UserProfile
 
 export interface SellerPortalStatus {
   role: UserRole;
+  email: string | null;
+  fullName: string | null;
   isApprovedSeller: boolean;
 }
 
 /**
  * Non-redirecting lookup of the current visitor's role, used purely for UI
- * decisions (e.g. which seller-portal link to show). Never redirects and
- * never throws for guests, unlike requireAuth/requireRole.
+ * decisions (e.g. which seller-portal link to show, the header user menu).
+ * Never redirects and never throws for guests, unlike requireAuth/requireRole.
  */
 export async function getOptionalUserRole(): Promise<SellerPortalStatus | null> {
   const supabase = await createClient();
@@ -114,15 +116,18 @@ export async function getOptionalUserRole(): Promise<SellerPortalStatus | null> 
 
   const { data: profileData } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, full_name")
     .eq("id", user.id)
     .single();
 
   if (!profileData) return null;
 
   const role = profileData.role as UserRole;
+  const email = user.email ?? null;
+  const fullName = profileData.full_name ?? null;
+
   if (role !== "seller") {
-    return { role, isApprovedSeller: false };
+    return { role, email, fullName, isApprovedSeller: false };
   }
 
   const { data: sellerData } = await supabase
@@ -134,7 +139,7 @@ export async function getOptionalUserRole(): Promise<SellerPortalStatus | null> 
   const isApprovedSeller = Boolean(
     sellerData && sellerData.status === "approved" && sellerData.deleted_at === null
   );
-  return { role, isApprovedSeller };
+  return { role, email, fullName, isApprovedSeller };
 }
 
 /**

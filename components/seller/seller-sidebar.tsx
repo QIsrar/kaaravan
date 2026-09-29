@@ -28,7 +28,7 @@ export function SellerSidebar() {
         })}
       </div>
       <div className="mt-auto p-4 border-t border-border/80 text-[11px] text-muted-foreground">
-        RLS enforced: Seller partition only
+        You can only see your own store&apos;s data
       </div>
     </aside>
   );

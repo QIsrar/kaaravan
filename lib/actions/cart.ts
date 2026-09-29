@@ -37,14 +37,18 @@ export async function getCartAction(): Promise<CartDetails | null> {
   }
 }
 
+// Note: no revalidatePath("/cart") here. The client's TanStack Query cache
+// (lib/hooks/use-cart.ts) is the source of truth for cart UI after mutation;
+// it's updated optimistically and then reconciled from this action's
+// response, so a server-side path revalidation would only add a redundant
+// round trip without the client ever needing it.
+
 export async function addToCartAction(input: AddToCartInput): Promise<CartOperationResult> {
   const validated = addToCartSchema.parse(input);
   const { identifier } = await getCartIdentifier(true);
   const adminClient = createAdminClient();
 
-  const result = await addToCart(adminClient, identifier, validated);
-  revalidatePath("/cart");
-  return result;
+  return addToCart(adminClient, identifier, validated);
 }
 
 export async function updateCartItemAction(input: UpdateCartItemInput): Promise<CartOperationResult> {
@@ -55,9 +59,7 @@ export async function updateCartItemAction(input: UpdateCartItemInput): Promise<
   }
   const adminClient = createAdminClient();
 
-  const result = await updateCartItem(adminClient, identifier, validated);
-  revalidatePath("/cart");
-  return result;
+  return updateCartItem(adminClient, identifier, validated);
 }
 
 export async function removeFromCartAction(input: RemoveCartItemInput): Promise<CartOperationResult> {
@@ -68,9 +70,7 @@ export async function removeFromCartAction(input: RemoveCartItemInput): Promise<
   }
   const adminClient = createAdminClient();
 
-  const result = await removeFromCart(adminClient, identifier, validated);
-  revalidatePath("/cart");
-  return result;
+  return removeFromCart(adminClient, identifier, validated);
 }
 
 export async function clearCartAction(): Promise<{ success: boolean }> {
@@ -78,7 +78,6 @@ export async function clearCartAction(): Promise<{ success: boolean }> {
   if (identifier.profileId || identifier.guestToken) {
     const adminClient = createAdminClient();
     await clearCart(adminClient, identifier);
-    revalidatePath("/cart");
   }
   return { success: true };
 }

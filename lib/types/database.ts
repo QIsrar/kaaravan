@@ -2110,6 +2110,28 @@ export type Database = {
           rank: number
         }[]
       }
+      upsert_cart_item: {
+        Args: {
+          p_guest_token: string
+          p_increment?: boolean
+          p_profile_id: string
+          p_quantity: number
+          p_variant_id: string
+        }
+        Returns: {
+          out_adjusted: boolean
+          out_cart_id: string
+          out_cart_subtotal_minor: number
+          out_grand_total_minor: number
+          out_price_minor: number
+          out_quantity: number
+          out_shipping_minor: number
+          out_stock_available: number
+          out_subtotal_minor: number
+          out_total_items: number
+          out_variant_id: string
+        }[]
+      }
     }
     Enums: {
       cod_confirmation_status:

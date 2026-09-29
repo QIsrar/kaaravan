@@ -10,13 +10,10 @@ function Toaster({ ...props }: ToasterProps) {
       closeButton
       toastOptions={{
         classNames: {
-          toast:
-            "group toast bg-card! text-foreground! border-border! shadow-lg! rounded-2xl!",
-          title: "text-foreground!",
-          description: "text-muted-foreground!",
-          actionButton: "bg-primary! text-primary-foreground!",
-          cancelButton: "bg-muted! text-muted-foreground!",
-          closeButton: "bg-card! text-muted-foreground! border-border!",
+          toast: "group toast bg-card text-foreground border-border shadow-lg rounded-2xl",
+          title: "text-foreground",
+          description: "text-muted-foreground",
+          closeButton: "bg-card text-muted-foreground border-border",
         },
       }}
       {...props}

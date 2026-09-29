@@ -93,6 +93,10 @@ export function CategoryFilters({
     currentBrand || currentMinPrice || currentMaxPrice || currentRating || (currentSort && currentSort !== "newest")
   );
 
+  const hasPriceValue = Boolean(minPrice || maxPrice);
+  const priceUnchanged = minPrice === currentMinPrice && maxPrice === currentMaxPrice;
+  const isPriceApplyDisabled = !hasPriceValue || priceUnchanged;
+
   const FilterPanel = () => (
     <div className="space-y-6">
       {/* Header / Clear */}
@@ -169,7 +173,13 @@ export function CategoryFilters({
               className="w-full text-xs rounded-xl border border-border bg-card p-2 text-foreground focus:ring-1 focus:ring-primary outline-none"
             />
           </div>
-          <Button type="submit" size="xs" variant="outline" className="w-full text-xs font-medium">
+          <Button
+            type="submit"
+            size="xs"
+            variant="outline"
+            disabled={isPriceApplyDisabled}
+            className="w-full text-xs font-medium"
+          >
             Apply Price
           </Button>
         </form>
@@ -239,7 +249,7 @@ export function CategoryFilters({
   return (
     <>
       {/* Desktop Sidebar Panel */}
-      <aside className="hidden lg:block w-64 shrink-0 rounded-2xl border border-border bg-card p-5 shadow-2xs h-fit sticky top-24">
+      <aside className="hidden lg:block w-64 shrink-0 rounded-2xl border border-border bg-card p-5 shadow-2xs sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto overscroll-contain">
         <FilterPanel />
       </aside>
 

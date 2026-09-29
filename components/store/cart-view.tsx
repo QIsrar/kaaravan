@@ -1,76 +1,54 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Image } from "@/components/ui/image";
 import Link from "next/link";
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { Trash2, Store, ArrowRight, ShieldCheck, ShoppingBag, Sparkles } from "lucide-react";
 import { formatPaisa } from "@/lib/format/currency";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 import type { CartDetails } from "@/lib/services/cart";
-import { updateCartItemAction, removeFromCartAction, clearCartAction } from "@/lib/actions/cart";
-import { CART_QUERY_KEY } from "@/lib/hooks/use-cart";
+import {
+  useCartQuery,
+  useUpdateCartItemMutation,
+  useRemoveFromCartMutation,
+  useClearCartMutation,
+} from "@/lib/hooks/use-cart";
 
 interface CartViewProps {
   initialCart: CartDetails | null;
 }
 
 export function CartView({ initialCart }: CartViewProps) {
-  const [cart, setCart] = useState<CartDetails | null>(initialCart);
-  const [loadingVariantId, setLoadingVariantId] = useState<string | null>(null);
-  const [stockNotice, setStockNotice] = useState<string | null>(null);
-  const queryClient = useQueryClient();
+  const { data: cart } = useCartQuery(initialCart);
+  const updateQty = useUpdateCartItemMutation();
+  const removeItem = useRemoveFromCartMutation();
+  const clearCart = useClearCartMutation();
 
-  const handleUpdateQty = async (variantId: string, currentQty: number, delta: number) => {
+  const stockNotice = updateQty.data?.message ?? null;
+  const loadingVariantId =
+    (updateQty.isPending && (updateQty.variables?.variantId ?? null)) ||
+    (removeItem.isPending && (removeItem.variables?.variantId ?? null)) ||
+    null;
+
+  const handleUpdateQty = (variantId: string, currentQty: number, delta: number) => {
     const newQty = currentQty + delta;
     if (newQty < 1) return;
-    setLoadingVariantId(variantId);
-    setStockNotice(null);
-
-    try {
-      const res = await updateCartItemAction({ variantId, quantity: newQty });
-      if (res.cartDetails) {
-        setCart(res.cartDetails);
-      }
-      if (res.message) {
-        setStockNotice(res.message);
-      }
-      await queryClient.invalidateQueries({ queryKey: CART_QUERY_KEY });
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to update quantity";
-      setStockNotice(msg);
-    } finally {
-      setLoadingVariantId(null);
-    }
+    updateQty.mutate({ variantId, quantity: newQty });
   };
 
-  const handleRemoveItem = async (variantId: string) => {
-    setLoadingVariantId(variantId);
-    try {
-      const res = await removeFromCartAction({ variantId });
-      if (res.cartDetails) {
-        setCart(res.cartDetails);
-      }
-      await queryClient.invalidateQueries({ queryKey: CART_QUERY_KEY });
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to remove item";
-      toast.error(msg);
-    } finally {
-      setLoadingVariantId(null);
-    }
-  };
-
-  const handleClearCart = async () => {
-    if (!confirm("Are you sure you want to clear your caravan cart?")) return;
-    try {
-      await clearCartAction();
-      setCart(null);
-      await queryClient.invalidateQueries({ queryKey: CART_QUERY_KEY });
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to clear cart";
-      toast.error(msg);
-    }
+  const handleRemoveItem = (variantId: string) => {
+    removeItem.mutate({ variantId });
   };
 
   if (!cart || cart.totalItems === 0 || cart.sellerGroups.length === 0) {
@@ -250,13 +228,25 @@ export function CartView({ initialCart }: CartViewProps) {
         ))}
 
         <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={handleClearCart}
-            className="text-xs text-muted-foreground hover:text-destructive transition-colors font-medium"
-          >
-            Clear Entire Cart
-          </button>
+          <AlertDialog>
+            <AlertDialogTrigger className="text-xs text-muted-foreground hover:text-destructive transition-colors font-medium">
+              Clear Entire Kart
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Clear your Kaaravan Kart?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This removes every item from your kart. This can&apos;t be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => clearCart.mutate()}>
+                  Clear Kart
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 

@@ -96,11 +96,21 @@ export async function getOrCreateCart(
       .from("carts")
       .insert({ profile_id: profileId, currency: "PKR" })
       .select("id")
-      .single();
+      .maybeSingle();
 
     if (createError) {
+      if (createError.code === "23505") {
+        const { data: existingCart, error: fetchError } = await supabase
+          .from("carts")
+          .select("id")
+          .eq("profile_id", profileId)
+          .single();
+        if (fetchError) throw new Error(`Database error fetching concurrently created user cart: ${fetchError.message}`);
+        return existingCart.id;
+      }
       throw new Error(`Failed to create cart for user: ${createError.message}`);
     }
+    if (!newCart) throw new Error("Failed to create cart for user: No data returned.");
     return newCart.id;
   }
 
@@ -123,11 +133,21 @@ export async function getOrCreateCart(
       .from("carts")
       .insert({ guest_token: guestToken, currency: "PKR" })
       .select("id")
-      .single();
+      .maybeSingle();
 
     if (createError) {
+      if (createError.code === "23505") {
+        const { data: existingCart, error: fetchError } = await supabase
+          .from("carts")
+          .select("id")
+          .eq("guest_token", guestToken)
+          .single();
+        if (fetchError) throw new Error(`Database error fetching concurrently created guest cart: ${fetchError.message}`);
+        return existingCart.id;
+      }
       throw new Error(`Failed to create cart for guest: ${createError.message}`);
     }
+    if (!newCart) throw new Error("Failed to create cart for guest: No data returned.");
     return newCart.id;
   }
 
@@ -337,80 +357,31 @@ export async function addToCart(
   identifier: CartIdentifier,
   input: AddToCartInput
 ): Promise<CartOperationResult> {
-  const cartId = await getOrCreateCart(supabase, identifier);
+  const { profileId, guestToken } = identifier;
+  if (!profileId && !guestToken) {
+    throw new Error("Either profileId or guestToken must be provided to access a cart.");
+  }
 
-  // 1. Verify variant exists and fetch live stock
-  const { data: variant, error: varError } = await supabase
-    .from("product_variants")
-    .select(`
-      id,
-      is_active,
-      stock_quantity,
-      reserved_quantity,
-      product:products (
-        status,
-        seller:sellers (status)
-      )
-    `)
-    .eq("id", input.variantId)
+  const { error } = await supabase
+    .rpc("upsert_cart_item", {
+      p_profile_id: (profileId || null) as string,
+      p_guest_token: (guestToken || null) as string,
+      p_variant_id: input.variantId,
+      p_quantity: input.quantity,
+      p_increment: true,
+    })
     .single();
 
-  if (varError || !variant) {
-    throw new Error("Product variant not found or no longer available.");
-  }
-
-  interface SingleVariantProduct {
-    status: string;
-    seller: { status: string } | null;
-  }
-  const p = variant.product as unknown as SingleVariantProduct | null;
-  if (!variant.is_active || p?.status !== "active" || p?.seller?.status !== "approved") {
-    throw new Error("This item is currently unavailable.");
-  }
-
-  const availableStock = Math.max(0, variant.stock_quantity - variant.reserved_quantity);
-  if (availableStock <= 0) {
-    throw new Error("This item is currently out of stock.");
-  }
-
-  // 2. Check if already in cart
-  const { data: existingItem } = await supabase
-    .from("cart_items")
-    .select("id, quantity")
-    .eq("cart_id", cartId)
-    .eq("variant_id", input.variantId)
-    .maybeSingle();
-
-  const currentCartQty = existingItem?.quantity || 0;
-  const newTotalQty = currentCartQty + input.quantity;
-
-  if (newTotalQty > availableStock) {
-    throw new Error(
-      `Cannot add ${input.quantity} more. Only ${availableStock} in stock (${currentCartQty} already in your cart).`
-    );
-  }
-
-  if (existingItem) {
-    const { error: updateError } = await supabase
-      .from("cart_items")
-      .update({ quantity: newTotalQty })
-      .eq("id", existingItem.id);
-
-    if (updateError) {
-      throw new Error(`Failed to update item quantity in cart: ${updateError.message}`);
+  if (error) {
+    // Pass through friendly errors from the DB function
+    if (
+      error.message.includes("out of stock") ||
+      error.message.includes("unavailable") ||
+      error.message.includes("Quantity must be between")
+    ) {
+      throw new Error(error.message);
     }
-  } else {
-    const { error: insertError } = await supabase
-      .from("cart_items")
-      .insert({
-        cart_id: cartId,
-        variant_id: input.variantId,
-        quantity: input.quantity,
-      });
-
-    if (insertError) {
-      throw new Error(`Failed to add item to cart: ${insertError.message}`);
-    }
+    throw new Error(`Failed to add item to cart: ${error.message}`);
   }
 
   const cartDetails = await getCartDetails(supabase, identifier);
@@ -425,69 +396,37 @@ export async function updateCartItem(
   identifier: CartIdentifier,
   input: UpdateCartItemInput
 ): Promise<CartOperationResult> {
-  const cartId = await getOrCreateCart(supabase, identifier);
-
-  // If quantity is 0 or less, remove item
-  if (input.quantity <= 0) {
-    return removeFromCart(supabase, identifier, { variantId: input.variantId });
+  const { profileId, guestToken } = identifier;
+  if (!profileId && !guestToken) {
+    throw new Error("Either profileId or guestToken must be provided to access a cart.");
   }
 
-  // Check live stock, product active status, and seller approved status
-  const { data: variant, error: varError } = await supabase
-    .from("product_variants")
-    .select(`
-      id,
-      stock_quantity,
-      reserved_quantity,
-      is_active,
-      product:products (
-        id,
-        status,
-        seller:sellers (
-          id,
-          status
-        )
-      )
-    `)
-    .eq("id", input.variantId)
+  const { data, error } = await supabase
+    .rpc("upsert_cart_item", {
+      p_profile_id: (profileId || null) as string,
+      p_guest_token: (guestToken || null) as string,
+      p_variant_id: input.variantId,
+      p_quantity: input.quantity,
+      p_increment: false,
+    })
     .single();
 
-  if (varError || !variant || !variant.is_active) {
-    throw new Error("Product variant is no longer available.");
+  if (error) {
+    if (
+      error.message.includes("out of stock") ||
+      error.message.includes("unavailable") ||
+      error.message.includes("Quantity must be between")
+    ) {
+      throw new Error(error.message);
+    }
+    throw new Error(`Failed to update quantity: ${error.message}`);
   }
 
-  interface VariantJoinedProduct {
-    status: string;
-    seller: { status: string } | null;
-  }
-  const p = variant.product as unknown as VariantJoinedProduct | null;
-  if (!p || p.status !== "active" || !p.seller || p.seller.status !== "approved") {
-    throw new Error("This craft item is currently unavailable.");
-  }
-
-  const availableStock = Math.max(0, variant.stock_quantity - variant.reserved_quantity);
-  const targetQuantity = Math.min(input.quantity, availableStock);
-
-  if (targetQuantity <= 0) {
-    throw new Error("This item is currently out of stock.");
-  }
-
-  const { error: updateError } = await supabase
-    .from("cart_items")
-    .update({ quantity: targetQuantity })
-    .eq("cart_id", cartId)
-    .eq("variant_id", input.variantId);
-
-  if (updateError) {
-    throw new Error(`Failed to update quantity: ${updateError.message}`);
-  }
+  const message = data.out_adjusted
+    ? `Quantity adjusted to maximum available stock (${data.out_quantity}).`
+    : undefined;
 
   const cartDetails = await getCartDetails(supabase, identifier);
-  const message =
-    targetQuantity < input.quantity
-      ? `Quantity adjusted to maximum available stock (${targetQuantity}).`
-      : undefined;
-
   return { success: true, message, cartDetails };
 }
 

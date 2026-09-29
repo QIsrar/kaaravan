@@ -1,7 +1,30 @@
+import { requireAuth } from "@/lib/auth/roles";
+import { createClient } from "@/lib/supabase/server";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Package, ShoppingBag, TrendingUp, AlertCircle } from "lucide-react";
 
-export default function SellerDashboardPage() {
+export default async function SellerDashboardPage() {
+  const profile = await requireAuth(["seller"]);
+  // requireAuth(["seller"]) only resolves for approved sellers with a row in
+  // `sellers`, so seller_id is always set here; the type just can't express that.
+  const sellerId = profile.seller_id as string;
+  const supabase = await createClient();
+
+  const [{ count: activeProductCount }, { count: openOrderCount }] = await Promise.all([
+    supabase
+      .from("products")
+      .select("id", { count: "exact", head: true })
+      .eq("seller_id", sellerId)
+      .eq("status", "active")
+      .is("deleted_at", null),
+    supabase
+      .from("sub_orders")
+      .select("id", { count: "exact", head: true })
+      .eq("seller_id", sellerId)
+      .not("status", "in", "(delivered,cancelled,returned)")
+      .is("deleted_at", null),
+  ]);
+
   return (
     <div className="space-y-6 max-w-6xl">
       <div>
@@ -18,26 +41,26 @@ export default function SellerDashboardPage() {
         <Card className="rounded-2xl border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-semibold uppercase text-muted-foreground">
-              Active Orders
+              Open Orders
             </CardTitle>
             <ShoppingBag className="w-4 h-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">12</div>
-            <p className="text-xs text-muted-foreground mt-1">In caravan transit</p>
+            <div className="text-2xl font-bold text-foreground">{openOrderCount ?? 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">Not yet delivered</p>
           </CardContent>
         </Card>
 
         <Card className="rounded-2xl border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-semibold uppercase text-muted-foreground">
-              Total Products
+              Active Products
             </CardTitle>
             <Package className="w-4 h-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">84</div>
-            <p className="text-xs text-muted-foreground mt-1">Active inventory</p>
+            <div className="text-2xl font-bold text-foreground">{activeProductCount ?? 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">Live in your catalog</p>
           </CardContent>
         </Card>
 
@@ -49,8 +72,8 @@ export default function SellerDashboardPage() {
             <TrendingUp className="w-4 h-4 text-accent" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">PKR 142,500</div>
-            <p className="text-xs text-muted-foreground mt-1">Paisa-exact minor units</p>
+            <div className="text-2xl font-bold text-foreground">—</div>
+            <p className="text-xs text-muted-foreground mt-1">Available once orders are live</p>
           </CardContent>
         </Card>
 
@@ -62,17 +85,10 @@ export default function SellerDashboardPage() {
             <AlertCircle className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">PKR 38,200</div>
-            <p className="text-xs text-muted-foreground mt-1">Scheduled for cycle</p>
+            <div className="text-2xl font-bold text-foreground">—</div>
+            <p className="text-xs text-muted-foreground mt-1">Available once orders are live</p>
           </CardContent>
         </Card>
-      </div>
-
-      <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 text-sm text-primary">
-        <p className="font-medium">Phase 1 Foundation Active</p>
-        <p className="text-xs text-muted-foreground mt-0.5">
-          Row Level Security (RLS) is strictly configured on Postgres. All mutations create immutable audit logs.
-        </p>
       </div>
     </div>
   );

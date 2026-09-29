@@ -99,41 +99,31 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
 
   return (
     <div className="space-y-8">
-      {/* Phase 8 Completion Notice Modal */}
+      {/* Ordering-opens-soon notice */}
       {result?.phase8Notice && (
         <div className="p-6 sm:p-8 rounded-3xl border-2 border-secondary bg-secondary/10 shadow-lg space-y-4 animate-in fade-in-50 duration-300">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-secondary text-secondary-foreground flex items-center justify-center font-bold">
               <CheckCircle2 className="w-6 h-6 stroke-[2.5]" />
             </div>
-            <div>
-              <h3 className="font-heading font-extrabold text-lg sm:text-xl text-foreground">
-                Checkout Validation Successful!
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                Phase 4 Storefront Verification Milestone Complete
-              </p>
-            </div>
+            <h3 className="font-heading font-extrabold text-lg sm:text-xl text-foreground">
+              Online ordering is launching soon
+            </h3>
           </div>
 
           <p className="text-sm text-foreground leading-relaxed">
-            Your address details, seller shipping allocations, and payment method selection have been fully verified server-side.
-            Per Kaaravan development specifications:
+            Your details are ready; you&apos;ll be able to place this order shortly.
           </p>
-
-          <div className="p-4 rounded-2xl bg-card border border-border text-xs font-mono text-primary font-semibold">
-            &ldquo;{result.message}&rdquo;
-          </div>
 
           <div className="pt-2 flex flex-wrap gap-4">
             <Link href="/">
               <Button size="sm" className="rounded-xl bg-primary text-primary-foreground">
-                Continue Browsing Storefront
+                Continue shopping
               </Button>
             </Link>
             <Link href="/cart">
               <Button size="sm" variant="outline" className="rounded-xl">
-                Return to Cart
+                Back to Kart
               </Button>
             </Link>
           </div>
@@ -535,10 +525,10 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
             <div className="text-[11px] text-muted-foreground space-y-2 border-t border-border/60 pt-3">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
-                <span>Zero client price trusting &amp; verified server audit logs</span>
+                <span>Prices are verified securely before every order</span>
               </div>
               <p className="leading-relaxed">
-                Money is calculated in integer paisa from live artisan database tables.
+                Totals shown here always match the seller&apos;s current listed prices.
               </p>
             </div>
           </div>

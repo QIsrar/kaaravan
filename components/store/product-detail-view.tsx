@@ -3,9 +3,6 @@
 import React, { useState } from "react";
 import { Image } from "@/components/ui/image";
 import Link from "next/link";
-import { useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { toast } from "sonner";
 import {
   Star,
   ShieldCheck,
@@ -23,8 +20,7 @@ import { formatPaisa, calculateDiscountPercent } from "@/lib/format/currency";
 import { formatVariantLabel } from "@/lib/format/variant";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { addToCartAction } from "@/lib/actions/cart";
-import { CART_QUERY_KEY } from "@/lib/hooks/use-cart";
+import { useAddToCartMutation } from "@/lib/hooks/use-cart";
 import { showAddedToCartToast } from "@/components/store/added-to-cart-toast";
 import { PAKISTAN_CITIES } from "@/lib/validators/checkout";
 
@@ -93,8 +89,9 @@ const CITY_DELIVERY_DAYS: Record<string, string> = {
 };
 
 export function ProductDetailView({
+  id,
   title,
-  slug: _slug,
+  slug,
   description,
   categoryName,
   categorySlug,
@@ -106,17 +103,15 @@ export function ProductDetailView({
   seller,
   reviews = [],
 }: ProductDetailViewProps) {
-  void _slug;
-  const t = useTranslations("store");
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedCity, setSelectedCity] = useState("Lahore");
   const [isZoomed, setIsZoomed] = useState(false);
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
-  const [isAdding, setIsAdding] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
-  const queryClient = useQueryClient();
+  const addToCart = useAddToCartMutation();
+  const isAdding = addToCart.isPending;
 
   const currentVariant = variants[selectedVariantIndex] || variants[0];
   const galleryImages = images.length > 0 ? images : [{ path: "/placeholder-product.svg", sortOrder: 1 }];
@@ -137,35 +132,45 @@ export function ProductDetailView({
     setZoomPos({ x, y });
   };
 
-  const handleAddToCart = async () => {
+  const handleAddToCart = () => {
     if (!currentVariant || availableStock <= 0) return;
-    setIsAdding(true);
 
-    try {
-      // Authoritative database mutation; UI only reflects "added" once this succeeds.
-      await addToCartAction({
+    // Cart badge and totals update instantly (optimistic); this button's own
+    // "Added" state and the toast wait for server success.
+    addToCart.mutate(
+      {
         variantId: currentVariant.id,
         quantity,
-      });
-
-      await queryClient.invalidateQueries({ queryKey: CART_QUERY_KEY });
-
-      setIsAdded(true);
-      setTimeout(() => setIsAdded(false), 2000);
-
-      showAddedToCartToast({
-        image: activeImage.path,
-        title,
-        variantLabel: formatVariantLabel(currentVariant.attributes, currentVariant.sku),
-        quantity,
-        priceMinor: currentVariant.priceMinor,
-      });
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : t("addToCartError");
-      toast.error(message);
-    } finally {
-      setIsAdding(false);
-    }
+        optimistic: {
+          productId: id,
+          variantId: currentVariant.id,
+          sellerId: seller.id,
+          sellerName: seller.businessName,
+          sellerSlug: seller.slug,
+          productTitle: title,
+          productSlug: slug,
+          sku: currentVariant.sku,
+          image: activeImage.path,
+          priceMinor: currentVariant.priceMinor,
+          compareAtMinor: currentVariant.compareAtMinor,
+          quantity,
+          stockAvailable: availableStock,
+        },
+      },
+      {
+        onSuccess: () => {
+          setIsAdded(true);
+          setTimeout(() => setIsAdded(false), 2000);
+          showAddedToCartToast({
+            image: activeImage.path,
+            title,
+            variantLabel: formatVariantLabel(currentVariant.attributes, currentVariant.sku),
+            quantity,
+            priceMinor: currentVariant.priceMinor,
+          });
+        },
+      }
+    );
   };
 
   return (

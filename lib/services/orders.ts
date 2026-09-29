@@ -54,7 +54,11 @@ export async function submitCheckout(
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     if (msg.includes("Phase 8")) {
-      return { success: true, phase8Notice: true, message: msg };
+      return {
+        success: true,
+        phase8Notice: true,
+        message: "Online ordering is launching soon. Your details are ready; you'll be able to place this order shortly.",
+      };
     }
     throw err;
   }

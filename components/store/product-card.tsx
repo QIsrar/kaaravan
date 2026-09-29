@@ -3,15 +3,12 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Image } from "@/components/ui/image";
-import { useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { Star, ShoppingBag, Check } from "lucide-react";
-import { toast } from "sonner";
 import { formatPaisa, calculateDiscountPercent } from "@/lib/format/currency";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { addToCartAction } from "@/lib/actions/cart";
-import { CART_QUERY_KEY } from "@/lib/hooks/use-cart";
+import { useAddToCartMutation } from "@/lib/hooks/use-cart";
 import { showAddedToCartToast } from "@/components/store/added-to-cart-toast";
 
 export interface ProductCardProps {
@@ -35,6 +32,7 @@ export function ProductCard({
   title,
   slug,
   image,
+  sellerId,
   sellerSlug,
   sellerName,
   priceMinor,
@@ -45,9 +43,9 @@ export function ProductCard({
   primaryVariantLabel,
 }: ProductCardProps) {
   const t = useTranslations("store");
-  const [isAdding, setIsAdding] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
-  const queryClient = useQueryClient();
+  const addToCart = useAddToCartMutation();
+  const isAdding = addToCart.isPending;
 
   const discountPercent = calculateDiscountPercent(priceMinor, compareAtMinor);
 
@@ -62,37 +60,47 @@ export function ProductCard({
     }
   };
 
-  const handleQuickAdd = async (e: React.MouseEvent) => {
+  const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsAdding(true);
 
-    try {
-      // Authoritative database mutation via server action; UI only reflects
-      // "added" once this succeeds, so it never lies about server cart state.
-      await addToCartAction({
+    // The cart badge updates instantly (optimistic cache write in onMutate);
+    // this button's own "Added" state and the toast wait for server success
+    // so they never claim something that didn't actually happen.
+    addToCart.mutate(
+      {
         variantId: primaryVariantId,
         quantity: 1,
-      });
-
-      await queryClient.invalidateQueries({ queryKey: CART_QUERY_KEY });
-
-      setIsAdded(true);
-      setTimeout(() => setIsAdded(false), 1800);
-
-      showAddedToCartToast({
-        image: image || "/placeholder-product.svg",
-        title,
-        variantLabel: primaryVariantLabel,
-        quantity: 1,
-        priceMinor,
-      });
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : t("addToCartError");
-      toast.error(message);
-    } finally {
-      setIsAdding(false);
-    }
+        optimistic: {
+          productId: id,
+          variantId: primaryVariantId,
+          sellerId,
+          sellerName,
+          sellerSlug,
+          productTitle: title,
+          productSlug: slug,
+          sku: "",
+          image: image || "/placeholder-product.svg",
+          priceMinor,
+          compareAtMinor: compareAtMinor ?? null,
+          quantity: 1,
+          stockAvailable: 999,
+        },
+      },
+      {
+        onSuccess: () => {
+          setIsAdded(true);
+          setTimeout(() => setIsAdded(false), 1800);
+          showAddedToCartToast({
+            image: image || "/placeholder-product.svg",
+            title,
+            variantLabel: primaryVariantLabel,
+            quantity: 1,
+            priceMinor,
+          });
+        },
+      }
+    );
   };
 
   return (

@@ -23,7 +23,7 @@ export default async function SellPage() {
       <div className="text-center space-y-4 max-w-3xl mx-auto">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/20 text-secondary-foreground text-xs font-bold border border-secondary/30">
           <Sparkles className="w-3.5 h-3.5 text-secondary" />
-          <span>Seller Onboarding — Coming in Phase 6</span>
+          <span>Seller Onboarding — Coming Soon</span>
         </div>
 
         <h1 className="font-heading text-3xl sm:text-5xl font-extrabold text-foreground tracking-tight leading-tight">
@@ -64,7 +64,7 @@ export default async function SellPage() {
             Fair &amp; Transparent Rates
           </h3>
           <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-            No hidden deductions or predatory fees. Fixed commission rates (5–8%) recorded into an append-only financial ledger.
+            No hidden deductions or predatory fees. Fixed commission rates (5–8%) with a permanent, tamper-proof record of every transaction.
           </p>
         </div>
 
@@ -106,13 +106,13 @@ export default async function SellPage() {
           </h2>
 
           <p className="text-sm text-muted-foreground leading-relaxed">
-            During Phase 4 and Phase 5, our team is curating our founding merchant cohort from Multan Kashikari, Namak Mandi leather artisans, Chiniot woodworkers, and Hunza organic cooperatives. Self-serve vendor registration and inventory management arrives in <strong>Phase 6</strong>.
+            Right now, our team is curating our founding merchant cohort from Multan Kashikari, Namak Mandi leather artisans, Chiniot woodworkers, and Hunza organic cooperatives. Self-serve vendor registration and inventory management are coming soon.
           </p>
 
           <div className="space-y-2 pt-2">
             <div className="flex items-center gap-2 text-xs text-foreground">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>Full merchant autonomy with partitioned data isolation</span>
+              <span>Full autonomy over your own storefront and inventory</span>
             </div>
             <div className="flex items-center gap-2 text-xs text-foreground">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />

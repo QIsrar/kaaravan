@@ -8,8 +8,8 @@ import { JOURNEY_STOP_MESSAGE_KEYS, type JourneyStop } from "@/lib/couriers/type
 
 interface JourneyTrackerProps {
   currentStop: JourneyStop;
+  orderNumber: string;
   className?: string;
-  orderNumber?: string;
   estimatedArrival?: string;
   onStopChange?: (stop: JourneyStop) => void;
 }
@@ -29,8 +29,8 @@ const STOPS: { key: JourneyStop; icon: React.ElementType }[] = [
 export function JourneyTracker({
   currentStop,
   className,
-  orderNumber = "KV-98241",
-  estimatedArrival = "In 2 days",
+  orderNumber,
+  estimatedArrival,
   onStopChange,
 }: JourneyTrackerProps) {
   const t = useTranslations("journey");
@@ -57,7 +57,9 @@ export function JourneyTracker({
           <span className="block font-mono font-medium text-foreground">
             Order #{orderNumber}
           </span>
-          <span className="text-muted-foreground">Est. Arrival: {estimatedArrival}</span>
+          {estimatedArrival && (
+            <span className="text-muted-foreground">Est. Arrival: {estimatedArrival}</span>
+          )}
         </div>
       </div>
 

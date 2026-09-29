@@ -3,15 +3,26 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { ShoppingBag, Compass, Search, Sparkles, X, Menu, ArrowRight } from "lucide-react";
+import { ShoppingBag, Compass, Search, Sparkles, X, Menu, ArrowRight, User, LogOut, Store, LayoutDashboard } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { BRAND_CONFIG } from "@/config/brand";
 import { useCartTotalItems } from "@/lib/hooks/use-cart";
 import { useSearchSuggestions } from "@/lib/hooks/use-search-suggestions";
 import { capSearchQuery, MIN_SEARCH_QUERY_LENGTH } from "@/lib/validators/search-constants";
 import { formatPaisa } from "@/lib/format/currency";
+import { signOutAction } from "@/lib/actions/auth";
+import type { SellerPortalStatus } from "@/lib/auth/roles";
 import { Button } from "@/components/ui/button";
 import { Image } from "@/components/ui/image";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLinkItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 const POPULAR_SEARCH_TERMS = [
   "Blue Pottery Vase",
@@ -26,11 +37,13 @@ const POPULAR_SEARCH_TERMS = [
 
 interface StoreHeaderProps {
   sellerPortalHref: "/seller" | "/sell";
+  user: SellerPortalStatus | null;
 }
 
-export function StoreHeader({ sellerPortalHref }: StoreHeaderProps) {
+export function StoreHeader({ sellerPortalHref, user }: StoreHeaderProps) {
   const tNav = useTranslations("nav");
   const tStore = useTranslations("store");
+  const tAuth = useTranslations("auth");
   const router = useRouter();
   const pathname = usePathname();
 
@@ -120,27 +133,30 @@ export function StoreHeader({ sellerPortalHref }: StoreHeaderProps) {
               }}
               onFocus={() => setIsSearchOpen(true)}
               placeholder={tStore("searchPlaceholder")}
-              className="w-full h-10 ps-10 pe-24 rounded-full border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all shadow-2xs placeholder:text-muted-foreground/80"
+              className="w-full h-10 ps-10 pe-32 rounded-full border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all shadow-2xs placeholder:text-muted-foreground/80"
             />
             <Search className="w-4 h-4 text-muted-foreground absolute start-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
 
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery("")}
-                className="absolute end-16 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
+            <div className="absolute end-1 top-1/2 -translate-y-1/2 flex items-center gap-1">
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="p-1.5 text-muted-foreground hover:text-foreground shrink-0"
+                  aria-label={tStore("clearSearch")}
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
 
-            <Button
-              type="submit"
-              size="sm"
-              className="absolute end-1 top-1/2 -translate-y-1/2 h-8 rounded-full px-3.5 bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold"
-            >
-              {tStore("search")}
-            </Button>
+              <Button
+                type="submit"
+                size="sm"
+                className="h-8 rounded-full px-3.5 bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold shrink-0"
+              >
+                {tStore("search")}
+              </Button>
+            </div>
           </form>
 
           {/* Autocomplete Dropdown */}
@@ -233,16 +249,63 @@ export function StoreHeader({ sellerPortalHref }: StoreHeaderProps) {
             >
               {tNav("sell")}
             </Link>
-            <Link
-              href="/account"
-              className={`px-3 py-1.5 rounded-full transition-all text-xs font-semibold ${
-                isAccountActive
-                  ? "bg-primary text-primary-foreground shadow-2xs"
-                  : "text-muted-foreground hover:text-primary hover:bg-muted/60"
-              }`}
-            >
-              {tNav("account")}
-            </Link>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  className={`px-3 py-1.5 rounded-full transition-all text-xs font-semibold flex items-center gap-1.5 ${
+                    isAccountActive
+                      ? "bg-primary text-primary-foreground shadow-2xs"
+                      : "text-muted-foreground hover:text-primary hover:bg-muted/60"
+                  }`}
+                >
+                  <User className="w-3.5 h-3.5" />
+                  <span>{user.fullName || tNav("account")}</span>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuLabel>
+                    <p className="text-sm font-semibold text-foreground truncate">
+                      {user.fullName || tNav("account")}
+                    </p>
+                    {user.email && (
+                      <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                    )}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLinkItem render={<Link href="/account" />}>
+                    <User className="w-3.5 h-3.5" />
+                    <span>{tAuth("myAccount")}</span>
+                  </DropdownMenuLinkItem>
+                  {user.isApprovedSeller && (
+                    <DropdownMenuLinkItem render={<Link href="/seller" />}>
+                      <Store className="w-3.5 h-3.5" />
+                      <span>{tNav("sellerPortal")}</span>
+                    </DropdownMenuLinkItem>
+                  )}
+                  {user.role === "superadmin" && (
+                    <DropdownMenuLinkItem render={<Link href="/admin" />}>
+                      <LayoutDashboard className="w-3.5 h-3.5" />
+                      <span>{tNav("adminPanel")}</span>
+                    </DropdownMenuLinkItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => signOutAction()}>
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>{tAuth("signOut")}</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link
+                href="/account"
+                className={`px-3 py-1.5 rounded-full transition-all text-xs font-semibold ${
+                  isAccountActive
+                    ? "bg-primary text-primary-foreground shadow-2xs"
+                    : "text-muted-foreground hover:text-primary hover:bg-muted/60"
+                }`}
+              >
+                {tNav("account")}
+              </Link>
+            )}
           </nav>
 
           {/* Cart trigger button */}
@@ -332,6 +395,24 @@ export function StoreHeader({ sellerPortalHref }: StoreHeaderProps) {
           >
             {tNav("account")}
           </Link>
+          {user?.isApprovedSeller && (
+            <Link
+              href="/seller"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block text-xs font-semibold py-2 px-3 rounded-xl transition-colors text-foreground hover:bg-muted"
+            >
+              {tNav("sellerPortal")}
+            </Link>
+          )}
+          {user?.role === "superadmin" && (
+            <Link
+              href="/admin"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block text-xs font-semibold py-2 px-3 rounded-xl transition-colors text-foreground hover:bg-muted"
+            >
+              {tNav("adminPanel")}
+            </Link>
+          )}
           <Link
             href="/cart"
             onClick={() => setIsMobileMenuOpen(false)}
@@ -343,6 +424,18 @@ export function StoreHeader({ sellerPortalHref }: StoreHeaderProps) {
           >
             {tNav("cart")} ({totalItems})
           </Link>
+          {user && (
+            <button
+              type="button"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                signOutAction();
+              }}
+              className="w-full text-start text-xs font-semibold py-2 px-3 rounded-xl transition-colors text-destructive hover:bg-destructive/10"
+            >
+              {tAuth("signOut")}
+            </button>
+          )}
         </div>
       )}
     </header>

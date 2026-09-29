@@ -42,7 +42,7 @@ export function CategoryGrid({ categories }: CategoryGridProps) {
             {cat.name}
           </h3>
 
-          <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-muted-foreground group-hover:text-secondary transition-colors">
+          <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-muted-foreground group-hover:text-primary group-hover:underline underline-offset-2 transition-colors">
             <span>Explore crafts</span>
             <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </div>

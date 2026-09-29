@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BRAND_CONFIG } from "@/config/brand";
-import { Store } from "lucide-react";
+import { Store, LogOut } from "lucide-react";
+import { signOutAction } from "@/lib/actions/auth";
 
 interface SellerHeaderProps {
   sellerName?: string;
@@ -25,6 +26,15 @@ export function SellerHeader({ sellerName = "Merchant Partner" }: SellerHeaderPr
           </div>
           <span className="font-medium hidden sm:inline">{sellerName}</span>
         </div>
+        <form action={signOutAction}>
+          <button
+            type="submit"
+            className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-destructive transition-colors px-2.5 py-1.5 rounded-lg hover:bg-destructive/10"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Sign out</span>
+          </button>
+        </form>
       </div>
     </header>
   );

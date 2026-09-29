@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(18);
+SELECT plan(29);
 
 CREATE OR REPLACE FUNCTION tests_set_auth(user_id uuid, role text DEFAULT 'authenticated') RETURNS void AS $$
 BEGIN
@@ -40,7 +40,14 @@ INSERT INTO public.sub_orders (id, order_id, seller_id, status, subtotal_minor, 
 
 INSERT INTO public.product_variants (id, product_id, sku, price_minor) VALUES
   ('50000000-0000-0000-0000-000000000000', 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'SKU-1', 100);
-  
+
+-- Fixtures for upsert_cart_item(): an active, in-stock variant and a variant
+-- on a draft (never purchasable) product.
+INSERT INTO public.product_variants (id, product_id, sku, price_minor, stock_quantity, reserved_quantity, is_active) VALUES
+  ('50000000-0000-0000-0000-000000000099', 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'SKU-CART-TEST', 500, 10, 2, true);
+INSERT INTO public.product_variants (id, product_id, sku, price_minor, stock_quantity, is_active) VALUES
+  ('50000000-0000-0000-0000-000000000098', 'dddddddd-dddd-dddd-dddd-dddddddddddd', 'SKU-DRAFT-TEST', 300, 10, true);
+
 INSERT INTO public.order_items (id, sub_order_id, variant_id, product_title, variant_attributes, unit_price_minor, quantity, line_total_minor) VALUES
   ('40000000-0000-0000-0000-000000000000', '20000000-0000-0000-0000-000000000000', '50000000-0000-0000-0000-000000000000', 'Title', '{}', 100, 1, 100);
 
@@ -226,6 +233,114 @@ SELECT is(
   (SELECT bool_or(product_id = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee') FROM public.search_products('Active', 10, 0)),
   true,
   'search_products returns the matching active product'
+);
+
+-- 18. upsert_cart_item: increment-add creates the line at the requested qty
+RESET ROLE;
+SET local role postgres;
+SELECT is(
+  (SELECT out_quantity FROM public.upsert_cart_item(
+    NULL, 'test-guest-token-cart-speed', '50000000-0000-0000-0000-000000000099', 3, true
+  )),
+  3,
+  'upsert_cart_item increment-add sets quantity to the requested amount'
+);
+
+-- 19. upsert_cart_item: a second increment-add adds onto the existing line
+SELECT is(
+  (SELECT out_quantity FROM public.upsert_cart_item(
+    NULL, 'test-guest-token-cart-speed', '50000000-0000-0000-0000-000000000099', 2, true
+  )),
+  5,
+  'upsert_cart_item increment-add accumulates onto the existing line'
+);
+
+-- 20. upsert_cart_item: absolute set beyond available stock is capped
+-- (available = 10 stock - 2 reserved = 8)
+SELECT is(
+  (SELECT out_quantity FROM public.upsert_cart_item(
+    NULL, 'test-guest-token-cart-speed', '50000000-0000-0000-0000-000000000099', 99, false
+  )),
+  8,
+  'upsert_cart_item caps an over-stock request at available stock'
+);
+
+-- 21. ...and reports the cap via out_adjusted
+SELECT is(
+  (SELECT out_adjusted FROM public.upsert_cart_item(
+    NULL, 'test-guest-token-cart-speed', '50000000-0000-0000-0000-000000000099', 99, false
+  )),
+  true,
+  'upsert_cart_item reports an over-stock request as adjusted'
+);
+
+-- 22. upsert_cart_item: absolute set to 0 removes the line entirely
+SELECT is(
+  (SELECT out_quantity FROM public.upsert_cart_item(
+    NULL, 'test-guest-token-cart-speed', '50000000-0000-0000-0000-000000000099', 0, false
+  )),
+  0,
+  'upsert_cart_item with quantity 0 removes the line'
+);
+
+-- 23. ...and the cart_items row is actually gone, not just reported as 0
+SELECT is(
+  (SELECT count(*) FROM public.cart_items ci
+     JOIN public.carts c ON c.id = ci.cart_id
+     WHERE c.guest_token = 'test-guest-token-cart-speed'
+       AND ci.variant_id = '50000000-0000-0000-0000-000000000099'),
+  0::bigint,
+  'upsert_cart_item with quantity 0 actually deletes the cart_items row'
+);
+
+-- 24. upsert_cart_item: a variant on a draft (non-purchasable) product is rejected
+SELECT throws_ok(
+  $$ SELECT * FROM public.upsert_cart_item(
+    NULL, 'test-guest-token-cart-speed', '50000000-0000-0000-0000-000000000098', 1, true
+  ) $$,
+  NULL,
+  'This item is currently unavailable.',
+  'upsert_cart_item rejects a variant belonging to a non-active product'
+);
+
+-- 25. upsert_cart_item: out-of-stock increment raises and keeps the existing line
+SELECT public.upsert_cart_item(NULL, 'test-guest-out-of-stock', '50000000-0000-0000-0000-000000000099', 8, true);
+UPDATE public.product_variants SET stock_quantity = 2, reserved_quantity = 2 WHERE id = '50000000-0000-0000-0000-000000000099';
+SELECT throws_ok(
+  $$ SELECT * FROM public.upsert_cart_item(
+    NULL, 'test-guest-out-of-stock', '50000000-0000-0000-0000-000000000099', 1, true
+  ) $$,
+  'P0001',
+  'This item is currently out of stock.',
+  'upsert_cart_item increment raises when out of stock'
+);
+
+SELECT is(
+  (SELECT quantity FROM public.cart_items ci
+     JOIN public.carts c ON c.id = ci.cart_id
+     WHERE c.guest_token = 'test-guest-out-of-stock'
+       AND ci.variant_id = '50000000-0000-0000-0000-000000000099'),
+  8,
+  'existing line is kept unchanged when out of stock'
+);
+
+-- 26. two inserts of a cart for the same profile cannot both succeed
+SELECT throws_ok(
+  $$ INSERT INTO public.carts (profile_id, currency) VALUES ('33333333-3333-3333-3333-333333333333', 'PKR'); 
+     INSERT INTO public.carts (profile_id, currency) VALUES ('33333333-3333-3333-3333-333333333333', 'PKR'); $$,
+  '23505',
+  NULL,
+  'duplicate cart inserts for the same profile fail'
+);
+
+-- 27. quantity 100 is rejected
+SELECT throws_ok(
+  $$ SELECT * FROM public.upsert_cart_item(
+    NULL, 'test-guest-qty-100', '50000000-0000-0000-0000-000000000099', 100, false
+  ) $$,
+  'P0001',
+  'Quantity must be between 0 and 99.',
+  'upsert_cart_item rejects quantity > 99'
 );
 
 SELECT * FROM finish();

@@ -12,7 +12,7 @@ export default async function StoreLayout({
 
   return (
     <div className="flex flex-col min-h-screen">
-      <StoreHeader sellerPortalHref={sellerPortalHref} />
+      <StoreHeader sellerPortalHref={sellerPortalHref} user={userRole} />
       <main className="flex-1">{children}</main>
       <StoreFooter />
     </div>

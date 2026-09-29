@@ -37,6 +37,7 @@
     "suggestedCrafts": "Suggested Crafts",
     "noSuggestions": "No matching crafts found",
     "viewAllResults": "View all results",
+    "clearSearch": "Clear search",
     "categories": "Explore Categories",
     "allCategories": "All Categories",
     "featuredDeals": "Handcrafted Deals & Offers",
@@ -53,6 +54,9 @@
     "adding": "Adding...",
     "added": "Added to Kart!",
     "addToCartError": "Could not add this item to your kart. Please try again.",
+    "updateQuantityError": "Could not update quantity. Please try again.",
+    "removeItemError": "Could not remove this item. Please try again.",
+    "clearCartError": "Could not clear your kart. Please try again.",
     "viewKart": "View Kart",
     "close": "Close",
     "buyNow": "Buy Now",
@@ -120,7 +124,7 @@
     "sellOnKaaravan": "Sell on Kaaravan",
     "sellHeroTitle": "Bring Your Craft to the Kaaravan",
     "sellHeroSubtitle": "The modern marketplace built for Pakistani artisans, workshops, and verified merchants.",
-    "sellComingSoon": "Seller Portal Onboarding (Coming in Phase 6)",
+    "sellComingSoon": "Seller Portal Onboarding (Coming Soon)",
     "sellComingSoonDesc": "We are currently preparing verified onboarding for merchants across Multan, Peshawar, Lahore, Karachi, and Hunza. Pre-register your workshop below.",
     "sellerStore": "Artisan Merchant Workshop"
   },
@@ -135,12 +139,18 @@
     "journeyTracker": "Order Journey Tracker",
     "patterns": "Pattern Dividers & Accents"
   },
+  "account": {
+    "title": "My Account",
+    "welcomeBack": "Welcome back to the Kaaravan, {email}"
+  },
   "auth": {
     "login": "Sign In",
     "logout": "Sign Out",
     "sellerLogin": "Seller Access",
     "adminLogin": "Superadmin Access",
-    "unauthorized": "You do not have permission to view this page."
+    "unauthorized": "You do not have permission to view this page.",
+    "myAccount": "My Account",
+    "signOut": "Sign out"
   },
   "legal": {
     "copyright": "© 2026 One Tech and AI. All Rights Reserved.",
