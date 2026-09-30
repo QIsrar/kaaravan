@@ -109,7 +109,7 @@ export function SettingsManager({
     try {
       await updateProfileAction({
         full_name: trimmedName,
-        phone: trimmedPhone || undefined,
+        phone: trimmedPhone === "" ? null : trimmedPhone,
       });
       toast.success(t("profileSuccess"));
     } catch (err: unknown) {

@@ -29,3 +29,10 @@ export const checkoutSchema = z.object({
 });
 
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
+
+export const guestOrderLookupSchema = z.object({
+  orderNumber: z.string().trim().min(1).max(50).regex(/^[A-Za-z0-9-]+$/),
+  email: z.string().trim().email().max(254)
+});
+
+export type GuestOrderLookupInput = z.infer<typeof guestOrderLookupSchema>;

@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { requestReturn } from "@/lib/services/customer_orders";
 import { getApiAuthUser } from "@/lib/auth/api-auth";
 import { z } from "zod";
+import { postgresUuidSchema } from "@/lib/validators/cart";
 
 const returnSchema = z.object({
-  orderItemId: z.string().regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/, "Invalid item ID"),
+  orderItemId: postgresUuidSchema,
   reason: z.string().min(10).max(500),
   quantity: z.number().int().min(1)
 });
@@ -15,6 +16,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     if (!user || !supabase) return NextResponse.json({ success: false, error: authError }, { status: 401 });
 
     const { id: subOrderId } = await params;
+    const validatedId = postgresUuidSchema.parse(subOrderId);
     const formData = await req.formData();
     
     const parsed = returnSchema.parse({
@@ -25,7 +27,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     const files = formData.getAll("evidenceFiles") as File[];
     
-    await requestReturn(supabase, user.id, subOrderId, parsed.orderItemId, parsed.reason, parsed.quantity, files);
+    await requestReturn(supabase, user.id, validatedId, parsed.orderItemId, parsed.reason, parsed.quantity, files);
     
     return NextResponse.json({ success: true, message: "Return requested" });
   } catch (error: unknown) {

@@ -12,6 +12,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { cancelSubOrder, requestReturn, lookupGuestOrder } from "@/lib/services/customer_orders";
 import { requireAuth } from "@/lib/auth/roles";
 import { z } from "zod";
+import { guestOrderLookupSchema } from "@/lib/validators/order";
 
 const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
@@ -58,6 +59,11 @@ export async function requestReturnAction(formData: FormData) {
 }
 
 export async function lookupGuestOrderAction(orderNumber: string, email: string) {
+  const parsed = guestOrderLookupSchema.safeParse({ orderNumber, email });
+  if (!parsed.success) {
+    throw new Error("Order not found");
+  }
+
   const adminClient = createAdminClient();
-  return await lookupGuestOrder(adminClient, orderNumber, email);
+  return await lookupGuestOrder(adminClient, parsed.data.orderNumber, parsed.data.email);
 }

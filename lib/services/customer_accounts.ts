@@ -238,14 +238,22 @@ export async function requestAccountDeletion(
   profileId: string,
   reason?: string
 ) {
-  const { error } = await supabase
+  const existing = await getAccountDeletionRequest(supabase, profileId);
+  if (existing && existing.status === 'pending') {
+    return existing;
+  }
+
+  const { data, error } = await supabase
     .from("account_deletion_requests")
     .insert({
       profile_id: profileId,
       reason: reason ? reason.trim() : null,
       status: "pending",
-    });
+    })
+    .select()
+    .single();
   if (error) throw error;
+  return data;
 }
 
 export async function createReview(

@@ -192,7 +192,8 @@ export async function cancelSubOrder(supabase: SupabaseClient<Database>, profile
     action: "cancel_sub_order",
     entity: "sub_orders",
     entity_id: subOrderId,
-    after: { reason, status_from: subOrder.status }
+    before: { status: subOrder.status },
+    after: { status: "cancelled", reason }
   });
   
   if (auditErr) throw auditErr;
@@ -293,6 +294,7 @@ export async function requestReturn(
     evidencePaths.push(path);
   }
 
+  // Requested amount only. Phase 8 refund approval must recalculate from the database and never trust this stored value.
   const refundMinor = orderItem.unit_price_minor * quantity;
 
   const { error: insertErr } = await adminClient
@@ -308,4 +310,13 @@ export async function requestReturn(
     });
   
   if (insertErr) throw insertErr;
+
+  const { error: auditErr } = await adminClient.from("audit_logs").insert({
+    actor_id: profileId,
+    action: "request_return",
+    entity: "returns",
+    entity_id: returnId,
+    after: { order_item_id: orderItemId, quantity, refund_minor: refundMinor }
+  });
+  if (auditErr) throw auditErr;
 }
