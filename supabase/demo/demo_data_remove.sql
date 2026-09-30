@@ -60,7 +60,8 @@ SET
 WHERE id IN (
   '10def90d-80e6-49d0-8ee4-b49c2a476367',
   'caf061d7-2d72-4edd-8a8e-a0817f297fe7',
-  '39d5d603-a839-443c-8547-5c2139a49c5b'
+  '39d5d603-a839-443c-8547-5c2139a49c5b',
+  'cc7ff7ac-a8ee-43ca-85cb-2750bf0beb81'
 );
 
 -- 8. Block Login for Demo Accounts in auth.users
@@ -69,12 +70,20 @@ SET banned_until = 'infinity'
 WHERE id IN (
   '10def90d-80e6-49d0-8ee4-b49c2a476367',
   'caf061d7-2d72-4edd-8a8e-a0817f297fe7',
-  '39d5d603-a839-443c-8547-5c2139a49c5b'
+  '39d5d603-a839-443c-8547-5c2139a49c5b',
+  'cc7ff7ac-a8ee-43ca-85cb-2750bf0beb81'
 );
+-- 9. Archive Demo Orders
+UPDATE public.orders
+SET deleted_at = NOW()
+WHERE id::text LIKE '71000000-0000-0000-0000-%';
 
+UPDATE public.sub_orders
+SET deleted_at = NOW()
+WHERE id::text LIKE '72000000-0000-0000-0000-%';
 COMMIT;
 
--- 9. Confirmation Summary
+-- 10. Confirmation Summary
 SELECT
   (SELECT COUNT(*) FROM public.products WHERE id::text LIKE 'c1000000-0000-0000-0000-%' AND status = 'archived') AS archived_products,
   (SELECT COUNT(*) FROM public.product_variants WHERE id::text LIKE 'f1000000-0000-____-0000-%' AND SUBSTRING(id::text, 15, 1) = '0' AND is_active = FALSE) AS deactivated_variants,
@@ -82,4 +91,5 @@ SELECT
   (SELECT COUNT(*) FROM public.categories WHERE (id::text LIKE 'b1000000-0000-0000-0000-%' OR id::text LIKE 'b2000000-0000-0000-0000-%') AND deleted_at IS NOT NULL) AS deleted_categories,
   (SELECT COUNT(*) FROM public.brands WHERE id::text LIKE 'd1000000-0000-0000-0000-%' AND deleted_at IS NOT NULL) AS deleted_brands,
   (SELECT COUNT(*) FROM public.banners WHERE id::text LIKE 'e1000000-0000-0000-0000-%' AND is_active = FALSE) AS deactivated_banners,
-  (SELECT COUNT(*) FROM auth.users WHERE id IN ('10def90d-80e6-49d0-8ee4-b49c2a476367', 'caf061d7-2d72-4edd-8a8e-a0817f297fe7', '39d5d603-a839-443c-8547-5c2139a49c5b') AND banned_until = 'infinity') AS banned_users;
+  (SELECT COUNT(*) FROM auth.users WHERE id IN ('10def90d-80e6-49d0-8ee4-b49c2a476367', 'caf061d7-2d72-4edd-8a8e-a0817f297fe7', '39d5d603-a839-443c-8547-5c2139a49c5b', 'cc7ff7ac-a8ee-43ca-85cb-2750bf0beb81') AND banned_until = 'infinity') AS banned_users,
+  (SELECT COUNT(*) FROM public.orders WHERE id::text LIKE '71000000-0000-0000-0000-%' AND deleted_at IS NOT NULL) AS archived_orders;

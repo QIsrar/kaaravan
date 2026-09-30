@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(29);
+SELECT plan(33);
 
 CREATE OR REPLACE FUNCTION tests_set_auth(user_id uuid, role text DEFAULT 'authenticated') RETURNS void AS $$
 BEGIN
@@ -341,6 +341,51 @@ SELECT throws_ok(
   'P0001',
   'Quantity must be between 0 and 99.',
   'upsert_cart_item rejects quantity > 99'
+);
+
+-- 28. Customer cannot read another customer's wishlist
+RESET ROLE;
+SELECT tests_set_auth('44444444-4444-4444-4444-444444444444', 'authenticated');
+INSERT INTO public.wishlists (profile_id, variant_id) VALUES ('44444444-4444-4444-4444-444444444444', '50000000-0000-0000-0000-000000000000');
+RESET ROLE;
+SELECT tests_set_auth('33333333-3333-3333-3333-333333333333', 'authenticated');
+SELECT is(
+  (SELECT count(*) FROM public.wishlists),
+  0::bigint,
+  'Customer cannot read another customer''s wishlist'
+);
+
+-- 29. rating recalculates when a review is published
+RESET ROLE;
+SET local role postgres;
+INSERT INTO public.order_items (id, sub_order_id, variant_id, product_title, variant_attributes, unit_price_minor, quantity, line_total_minor) VALUES
+  ('40000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000000', '50000000-0000-0000-0000-000000000000', 'Title 2', '{}', 100, 1, 100);
+
+INSERT INTO public.reviews (product_id, order_item_id, profile_id, rating, status) VALUES 
+('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', '40000000-0000-0000-0000-000000000000', '33333333-3333-3333-3333-333333333333', 5, 'published');
+SELECT is(
+  (SELECT rating_avg FROM public.products WHERE id = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
+  5.00::numeric,
+  'Rating recalculates when a review is published'
+);
+
+-- 30. unpublished reviews do not count
+INSERT INTO public.reviews (product_id, order_item_id, profile_id, rating, status) VALUES 
+('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', '40000000-0000-0000-0000-000000000001', '44444444-4444-4444-4444-444444444444', 1, 'pending');
+SELECT is(
+  (SELECT rating_avg FROM public.products WHERE id = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
+  5.00::numeric,
+  'Unpublished reviews do not affect rating'
+);
+
+-- 31. customer cannot insert account deletion request with status processed
+RESET ROLE;
+SELECT tests_set_auth('33333333-3333-3333-3333-333333333333', 'authenticated');
+SELECT throws_ok(
+  $$ INSERT INTO public.account_deletion_requests (profile_id, status) VALUES ('33333333-3333-3333-3333-333333333333', 'processed') $$,
+  '42501',
+  NULL,
+  'Customer cannot insert an account deletion request with status processed'
 );
 
 SELECT * FROM finish();

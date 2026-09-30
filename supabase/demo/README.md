@@ -23,7 +23,8 @@ Demo data for development only.
     "deleted_categories": 10,
     "deleted_brands": 6,
     "deactivated_banners": 3,
-    "banned_users": 3
+    "banned_users": 4,
+    "archived_orders": 3
   }
 ]
 ```

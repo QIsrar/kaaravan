@@ -679,4 +679,38 @@ INSERT INTO public.product_images (id, product_id, path, sort_order)
 VALUES ('91000000-0000-0040-0000-000000000001', 'c1000000-0000-0000-0000-000000000040', '/demo/prod-40.svg', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
+-- 7. DEMO CUSTOMER & ORDERS
+-- Customer profile
+INSERT INTO public.profiles (id, full_name, phone, role, status)
+VALUES ('cc7ff7ac-a8ee-43ca-85cb-2750bf0beb81', 'Demo Customer', '+920000000004', 'customer', 'active')
+ON CONFLICT (id) DO UPDATE SET role = 'customer'::role_type, status = 'active', full_name = EXCLUDED.full_name, phone = EXCLUDED.phone;
+
+INSERT INTO public.orders (id, order_number, profile_id, shipping_address, billing_address, payment_method, payment_status, subtotal_minor, shipping_minor, total_minor)
+VALUES
+  ('71000000-0000-0000-0000-000000000001', 'ORD-DEMO-001', 'cc7ff7ac-a8ee-43ca-85cb-2750bf0beb81', '{"fullName":"Demo Customer","phone":"+920000000004","province":"Punjab","city":"Lahore","area":"Gulberg III","street":"House 1, Street 1","postalCode":"54660"}'::jsonb, '{"fullName":"Demo Customer","phone":"+920000000004","province":"Punjab","city":"Lahore","area":"Gulberg III","street":"House 1, Street 1","postalCode":"54660"}'::jsonb, 'cod', 'pending', 345000, 25000, 370000),
+  ('71000000-0000-0000-0000-000000000002', 'ORD-DEMO-002', 'cc7ff7ac-a8ee-43ca-85cb-2750bf0beb81', '{"fullName":"Demo Customer","phone":"+920000000004","province":"Punjab","city":"Lahore","area":"Gulberg III","street":"House 1, Street 1","postalCode":"54660"}'::jsonb, '{"fullName":"Demo Customer","phone":"+920000000004","province":"Punjab","city":"Lahore","area":"Gulberg III","street":"House 1, Street 1","postalCode":"54660"}'::jsonb, 'card', 'paid', 420000, 25000, 445000),
+  ('71000000-0000-0000-0000-000000000003', 'ORD-DEMO-003', 'cc7ff7ac-a8ee-43ca-85cb-2750bf0beb81', '{"fullName":"Demo Customer","phone":"+920000000004","province":"Punjab","city":"Lahore","area":"Gulberg III","street":"House 1, Street 1","postalCode":"54660"}'::jsonb, '{"fullName":"Demo Customer","phone":"+920000000004","province":"Punjab","city":"Lahore","area":"Gulberg III","street":"House 1, Street 1","postalCode":"54660"}'::jsonb, 'cod', 'paid', 1450000, 25000, 1475000)
+ON CONFLICT (order_number) DO UPDATE SET payment_status = EXCLUDED.payment_status;
+
+INSERT INTO public.sub_orders (id, order_id, seller_id, status, subtotal_minor, shipping_minor, total_minor)
+VALUES
+  ('72000000-0000-0000-0000-000000000001', '71000000-0000-0000-0000-000000000001', 'a1111111-1111-1111-1111-111111111111', 'pending', 345000, 25000, 370000),
+  ('72000000-0000-0000-0000-000000000002', '71000000-0000-0000-0000-000000000002', 'a2222222-2222-2222-2222-222222222222', 'shipped', 420000, 25000, 445000),
+  ('72000000-0000-0000-0000-000000000003', '71000000-0000-0000-0000-000000000003', 'a3333333-3333-3333-3333-333333333333', 'delivered', 1450000, 25000, 1475000)
+ON CONFLICT (id) DO UPDATE SET status = EXCLUDED.status;
+
+INSERT INTO public.order_items (id, sub_order_id, variant_id, product_title, variant_attributes, unit_price_minor, quantity, line_total_minor)
+VALUES
+  ('73000000-0000-0000-0000-000000000001', '72000000-0000-0000-0000-000000000001', 'f1000000-0000-0001-0000-000000000001', 'Multani Handcrafted Blue Pottery Flower Vase (Kashikari 10")', '{"color": "Cobalt Blue", "size": "10 inch"}'::jsonb, 345000, 1, 345000),
+  ('73000000-0000-0000-0000-000000000002', '72000000-0000-0000-0000-000000000002', 'f1000000-0000-0015-0000-000000000001', 'Peshawari Chappal - Traditional Leather Kaptaan Edition', '{"color": "Matte Black", "size": "41"}'::jsonb, 420000, 1, 420000),
+  ('73000000-0000-0000-0000-000000000003', '72000000-0000-0000-0000-000000000003', 'f1000000-0000-0028-0000-000000000001', 'Pure Hand-Woven Kashmir Pashmina Shawl (Sozni Embroidery)', '{"color": "Natural Ivory", "dimensions": "2m x 1m"}'::jsonb, 1450000, 1, 1450000)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.order_status_history (id, sub_order_id, from_status, to_status, note, created_at)
+VALUES
+  ('74000000-0000-0000-0000-000000000001', '72000000-0000-0000-0000-000000000001', 'awaiting_confirmation', 'pending', 'Demo setup', NOW()),
+  ('74000000-0000-0000-0000-000000000002', '72000000-0000-0000-0000-000000000002', 'pending', 'shipped', 'Demo setup', NOW() - INTERVAL '1 day'),
+  ('74000000-0000-0000-0000-000000000003', '72000000-0000-0000-0000-000000000003', 'shipped', 'delivered', 'Demo setup', NOW() - INTERVAL '2 days')
+ON CONFLICT (id) DO NOTHING;
+
 COMMIT;

@@ -191,3 +191,72 @@ This document outlines the REST API endpoints available under `/api/v1/` for mob
   ```
   Ranked via the `search_products()` Postgres function: full-text search (`websearch_to_tsquery`) plus `pg_trgm` word-similarity typo tolerance, active products of approved sellers only. Used by the storefront header's live autocomplete (debounced ~250ms) and the `/search` results page (via `lib/services/search.ts`, not this route, since the results page runs server-side).
 - **Errors:** `400 Bad Request`
+
+---
+
+## Customer Accounts (Phase 5)
+
+### 1. Addresses
+- **GET** `/api/v1/customers/addresses`
+  - **Auth:** Required (`Bearer <token>`)
+  - **Response:** `200 OK` Returns array of customer addresses.
+- **POST** `/api/v1/customers/addresses`
+  - **Auth:** Required (`Bearer <token>`)
+  - **Body:** `{ "fullName": "...", "phone": "...", ... }`
+  - **Response:** `200 OK` Returns created address.
+- **PATCH** `/api/v1/customers/addresses/:id`
+  - **Auth:** Required (`Bearer <token>`)
+  - **Body:** Partial address fields.
+  - **Response:** `200 OK`
+- **DELETE** `/api/v1/customers/addresses/:id`
+  - **Auth:** Required (`Bearer <token>`)
+  - **Response:** `200 OK`
+
+### 2. Orders
+- **GET** `/api/v1/customers/orders`
+  - **Auth:** Required (`Bearer <token>`)
+  - **Response:** `200 OK` Returns list of orders and sub-orders.
+- **GET** `/api/v1/customers/orders/:id`
+  - **Auth:** Required (`Bearer <token>`)
+  - **Response:** `200 OK` Returns order details.
+- **POST** `/api/v1/customers/orders/:id/cancel`
+  - **Auth:** Required (`Bearer <token>`)
+  - **Params:** `:id` is the SUB-ORDER id.
+  - **Body:** `{ "reason": "..." }`
+  - **Response:** `200 OK`
+  - **Errors:** `400 Bad Request` if invalid UUID, or order is shipped/delivered. `401 Unauthorized`.
+- **POST** `/api/v1/customers/orders/:id/return`
+  - **Auth:** Required (`Bearer <token>`)
+  - **Params:** `:id` is the SUB-ORDER id.
+  - **Body:** `multipart/form-data` with `orderItemId` (uuid), `reason` (string), `quantity` (number), and `evidenceFiles` (multiple file inputs).
+  - **Response:** `200 OK`
+  - **Errors:** `400 Bad Request` if invalid UUID, not delivered, past return window, or already requested. `401 Unauthorized`.
+- **POST** `/api/v1/customers/guest-order`
+  - **Auth:** None
+  - **Body:** `{ "orderNumber": "...", "email": "..." }`
+  - **Response:** `200 OK` Returns order details for guests.
+
+### 3. Wishlist
+- **GET** `/api/v1/customers/wishlist`
+  - **Auth:** Required (`Bearer <token>`)
+  - **Response:** `200 OK` Returns wishlist items.
+- **POST** `/api/v1/customers/wishlist`
+  - **Auth:** Required (`Bearer <token>`)
+  - **Body:** `{ "variantId": "uuid" }`
+  - **Response:** `200 OK`
+- **DELETE** `/api/v1/customers/wishlist/:variantId`
+  - **Auth:** Required (`Bearer <token>`)
+  - **Response:** `200 OK`
+
+### 4. Reviews
+- **POST** `/api/v1/customers/reviews`
+  - **Auth:** Required (`Bearer <token>`)
+  - **Body:** `{ "productId": "uuid", "orderItemId": "uuid", "rating": 5, "title": "...", "body": "..." }`
+  - **Response:** `200 OK`
+
+### 5. Account Deletion
+- **POST** `/api/v1/customers/account-deletion`
+  - **Auth:** Required (`Bearer <token>`)
+  - **Body:** `{ "reason": "..." }` (Optional)
+  - **Response:** `200 OK`
+
