@@ -161,9 +161,10 @@ Security does NOT rely solely on edge middleware:
 
 ## 6. Deferred Security Items
 
-The following security enforcement items are slated for implementation in subsequent phases:
-- **Phase 5**: Server-built return-evidence paths; automatic rating recalculation on reviews.
+The following security enforcement items are tracked across platform phases:
+- **Phase 5 (Done)**: Server-built return-evidence paths; automatic rating recalculation trigger.
 - **Phase 7**: `admin_staff` access to `/admin` with per-route permission checks via `admin_permissions`.
-- **Phase 8**: Lock money columns on `orders`/`sub_orders` after creation; enforce a `sub_order` status state machine; lock `payments`/`payouts` amounts and allow only status changes via server functions, logging each change to `audit_logs`; webhook HMAC signature verification + idempotency.
+- **Phase 8**: Lock money columns on `orders`/`sub_orders` after creation; enforce a `sub_order` status state machine; lock `payments`/`payouts` amounts and allow only status changes via server functions, logging each change to `audit_logs`; webhook HMAC signature verification + idempotency; order numbers must be random/non-sequential (e.g. KV-7F3K9Q); cancelling must release reserved stock; guest-cart merge must drop a seller's own products; decide whether login is required before checkout.
+- **Phase 10**: `audit_logs` and `order_status_history` must be immutable even for the service role; rate-limit `/track-order` and the guest-order API; check evidence file contents (magic bytes), not only the declared MIME type.
 - **Phase 11**: Guard triggers for offers (force pending, `seller_id` must match variant's seller, respect `min_offer_minor`) and `qafila_deals`.
 

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Image } from "@/components/ui/image";
 import Link from "next/link";
 import {
@@ -23,6 +24,8 @@ import { Button } from "@/components/ui/button";
 import { useAddToCartMutation } from "@/lib/hooks/use-cart";
 import { showAddedToCartToast } from "@/components/store/added-to-cart-toast";
 import { PAKISTAN_CITIES } from "@/lib/validators/checkout";
+import { WishlistButton } from "@/components/store/wishlist-button";
+import { useCurrentSeller } from "@/lib/hooks/use-current-seller";
 
 export interface DetailVariant {
   id: string;
@@ -103,6 +106,7 @@ export function ProductDetailView({
   seller,
   reviews = [],
 }: ProductDetailViewProps) {
+  const t = useTranslations("store");
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -112,6 +116,9 @@ export function ProductDetailView({
   const [isAdded, setIsAdded] = useState(false);
   const addToCart = useAddToCartMutation();
   const isAdding = addToCart.isPending;
+
+  const { data: currentSeller } = useCurrentSeller();
+  const isOwnProduct = Boolean(currentSeller && currentSeller.id === seller.id);
 
   const currentVariant = variants[selectedVariantIndex] || variants[0];
   const galleryImages = images.length > 0 ? images : [{ path: "/placeholder-product.svg", sortOrder: 1 }];
@@ -133,7 +140,7 @@ export function ProductDetailView({
   };
 
   const handleAddToCart = () => {
-    if (!currentVariant || availableStock <= 0) return;
+    if (!currentVariant || availableStock <= 0 || isOwnProduct) return;
 
     // Cart badge and totals update instantly (optimistic); this button's own
     // "Added" state and the toast wait for server success.
@@ -357,53 +364,66 @@ export function ProductDetailView({
             )}
           </div>
 
-          {/* Quantity Selector + Add to Cart Button */}
-          <div className="flex items-center gap-4 pt-2">
-            <div className="flex items-center rounded-xl border border-border bg-card p-1">
-              <button
-                type="button"
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-foreground hover:bg-muted font-bold text-sm"
-                aria-label="Decrease quantity"
-              >
-                -
-              </button>
-              <span className="w-10 text-center font-bold text-sm text-foreground">
-                {quantity}
-              </span>
-              <button
-                type="button"
-                onClick={() => setQuantity(Math.min(availableStock, quantity + 1))}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-foreground hover:bg-muted font-bold text-sm"
-                aria-label="Increase quantity"
-              >
-                +
-              </button>
+          {/* Quantity Selector + Add to Cart Button (hidden on seller's own product) */}
+          {isOwnProduct ? (
+            <div className="p-3.5 rounded-2xl border border-secondary/40 bg-secondary/10 flex items-center gap-2.5 text-xs text-foreground font-semibold">
+              <Store className="w-4 h-4 text-primary shrink-0" />
+              <span>{t("yourProductBadge")}</span>
             </div>
+          ) : (
+            <div className="flex items-center gap-4 pt-2">
+              <div className="flex items-center rounded-xl border border-border bg-card p-1">
+                <button
+                  type="button"
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-foreground hover:bg-muted font-bold text-sm"
+                  aria-label="Decrease quantity"
+                >
+                  -
+                </button>
+                <span className="w-10 text-center font-bold text-sm text-foreground">
+                  {quantity}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setQuantity(Math.min(availableStock, quantity + 1))}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-foreground hover:bg-muted font-bold text-sm"
+                  aria-label="Increase quantity"
+                >
+                  +
+                </button>
+              </div>
 
-            <Button
-              size="lg"
-              onClick={handleAddToCart}
-              disabled={isAdding || availableStock <= 0}
-              className={`flex-1 rounded-xl h-11 text-sm font-bold shadow-md transition-all ${
-                isAdded
-                  ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                  : "bg-accent text-accent-foreground hover:bg-accent/90"
-              }`}
-            >
-              {isAdded ? (
-                <>
-                  <Check className="w-4 h-4 stroke-[2.5]" />
-                  <span className="ms-2">Added to Kaaravan Kart!</span>
-                </>
-              ) : (
-                <>
-                  <ShoppingBag className="w-4 h-4" />
-                  <span className="ms-2">Add to Kaaravan Kart</span>
-                </>
-              )}
-            </Button>
-          </div>
+              <Button
+                size="lg"
+                onClick={handleAddToCart}
+                disabled={isAdding || availableStock <= 0}
+                className={`flex-1 rounded-xl h-11 text-sm font-bold shadow-md transition-all ${
+                  isAdded
+                    ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                    : "bg-accent text-accent-foreground hover:bg-accent/90"
+                }`}
+              >
+                {isAdded ? (
+                  <>
+                    <Check className="w-4 h-4 stroke-[2.5]" />
+                    <span className="ms-2">{t("added")}</span>
+                  </>
+                ) : (
+                  <>
+                    <ShoppingBag className="w-4 h-4" />
+                    <span className="ms-2">{t("addToCart")}</span>
+                  </>
+                )}
+              </Button>
+
+              <WishlistButton
+                variantId={currentVariant.id}
+                className="h-11 w-11 rounded-xl border border-border bg-card shrink-0 hover:bg-muted"
+                iconClassName="w-5 h-5"
+              />
+            </div>
+          )}
 
           {/* Delivery Estimation by Pakistani City */}
           <div className="p-4 rounded-2xl border border-border bg-card shadow-2xs space-y-3">

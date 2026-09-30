@@ -44,3 +44,6 @@ NON-NEGOTIABLE RULES
 - Generated database types are regenerated with pnpm gen:types after every migration.
 20. Every new file in lib/services, lib/auth, lib/supabase and core business logic starts with the One Tech and AI copyright header (see lib/auth/roles.ts). Never add it to generated files, config files or third-party components, and never edit pushed migrations.
 21. Stay inside this repository. Never read files outside the project folder (other projects, other conversations' logs, user folders) unless the user explicitly asks.
+22. Never put keys, tokens or passwords in commands, scripts or chat output. Test scripts read them from .env.local via process.env and must never print them.
+23. Never create, delete or modify auth users or their passwords, and never change account settings, unless the user explicitly asks in that message.
+24. Test scripts live only in ./scratch (git-ignored) inside this repo; delete them after use.

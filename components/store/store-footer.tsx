@@ -21,6 +21,9 @@ export function StoreFooter() {
 
           <div className="flex flex-col items-end gap-2">
             <div className="flex items-center gap-6">
+              <Link href="/track-order" className="hover:text-primary transition-colors">
+                Track Order
+              </Link>
               <Link href="/sell" className="hover:text-primary transition-colors">
                 Sell on Kaaravan
               </Link>

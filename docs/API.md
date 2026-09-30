@@ -197,66 +197,360 @@ This document outlines the REST API endpoints available under `/api/v1/` for mob
 ## Customer Accounts (Phase 5)
 
 ### 1. Addresses
-- **GET** `/api/v1/customers/addresses`
-  - **Auth:** Required (`Bearer <token>`)
-  - **Response:** `200 OK` Returns array of customer addresses.
-- **POST** `/api/v1/customers/addresses`
-  - **Auth:** Required (`Bearer <token>`)
-  - **Body:** `{ "fullName": "...", "phone": "...", ... }`
-  - **Response:** `200 OK` Returns created address.
-- **PATCH** `/api/v1/customers/addresses/:id`
-  - **Auth:** Required (`Bearer <token>`)
-  - **Body:** Partial address fields.
-  - **Response:** `200 OK`
-- **DELETE** `/api/v1/customers/addresses/:id`
-  - **Auth:** Required (`Bearer <token>`)
-  - **Response:** `200 OK`
 
-### 2. Orders
-- **GET** `/api/v1/customers/orders`
-  - **Auth:** Required (`Bearer <token>`)
-  - **Response:** `200 OK` Returns list of orders and sub-orders.
-- **GET** `/api/v1/customers/orders/:id`
-  - **Auth:** Required (`Bearer <token>`)
-  - **Response:** `200 OK` Returns order details.
-- **POST** `/api/v1/customers/orders/:id/cancel`
-  - **Auth:** Required (`Bearer <token>`)
-  - **Params:** `:id` is the SUB-ORDER id.
-  - **Body:** `{ "reason": "..." }`
-  - **Response:** `200 OK`
-  - **Errors:** `400 Bad Request` if invalid UUID, or order is shipped/delivered. `401 Unauthorized`.
-- **POST** `/api/v1/customers/orders/:id/return`
-  - **Auth:** Required (`Bearer <token>`)
-  - **Params:** `:id` is the SUB-ORDER id.
-  - **Body:** `multipart/form-data` with `orderItemId` (uuid), `reason` (string), `quantity` (number), and `evidenceFiles` (multiple file inputs).
-  - **Response:** `200 OK`
-  - **Errors:** `400 Bad Request` if invalid UUID, not delivered, past return window, or already requested. `401 Unauthorized`.
-- **POST** `/api/v1/customers/guest-order`
-  - **Auth:** None
-  - **Body:** `{ "orderNumber": "...", "email": "..." }`
-  - **Response:** `200 OK` Returns order details for guests.
+#### List Customer Addresses
+- **Method:** `GET`
+- **Path:** `/api/v1/customers/addresses`
+- **Auth:** Required (`Authorization: Bearer <token>`)
+- **Request Body:** None
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "data": [
+      {
+        "id": "uuid",
+        "profile_id": "uuid",
+        "label": "Home",
+        "full_name": "Tariq Mahmood",
+        "phone": "03001234567",
+        "province": "Punjab",
+        "city": "Lahore",
+        "area": "Gulberg III",
+        "street": "14 Main Boulevard",
+        "postal_code": "54000",
+        "is_default": true,
+        "created_at": "2026-09-30T10:00:00Z",
+        "updated_at": "2026-09-30T10:00:00Z"
+      }
+    ]
+  }
+  ```
+- **Errors:**
+  - `401 Unauthorized`: Missing or invalid bearer token.
+
+#### Create Address
+- **Method:** `POST`
+- **Path:** `/api/v1/customers/addresses`
+- **Auth:** Required (`Authorization: Bearer <token>`)
+- **Request Body:** (Validated with `createAddressSchema`, unknown keys stripped)
+  ```json
+  {
+    "full_name": "Tariq Mahmood",
+    "phone": "03001234567",
+    "province": "Punjab",
+    "city": "Lahore",
+    "area": "Gulberg III",
+    "street": "14 Main Boulevard",
+    "postal_code": "54000",
+    "is_default": true,
+    "label": "Home"
+  }
+  ```
+- **Response:** `201 Created` / `200 OK`
+  ```json
+  {
+    "success": true,
+    "data": { /* Created AddressRow */ }
+  }
+  ```
+- **Errors:**
+  - `400 Bad Request`: Validation failure (e.g. invalid Pakistani phone, invalid city/province).
+  - `401 Unauthorized`: Missing or invalid bearer token.
+
+#### Update Address
+- **Method:** `PATCH`
+- **Path:** `/api/v1/customers/addresses/:id`
+- **Auth:** Required (`Authorization: Bearer <token>`)
+- **Request Body:** (Validated with `updateAddressSchema`, unknown keys stripped)
+  ```json
+  {
+    "street": "Updated Street 15",
+    "is_default": true
+  }
+  ```
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "data": { /* Updated AddressRow */ }
+  }
+  ```
+- **Errors:**
+  - `400 Bad Request`: Validation failure.
+  - `401 Unauthorized`: Missing or invalid bearer token.
+  - `404 Not Found`: Address not found or does not belong to caller.
+
+#### Delete Address
+- **Method:** `DELETE`
+- **Path:** `/api/v1/customers/addresses/:id`
+- **Auth:** Required (`Authorization: Bearer <token>`)
+- **Request Body:** None
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "message": "Address deleted successfully"
+  }
+  ```
+- **Errors:**
+  - `401 Unauthorized`: Missing or invalid bearer token.
+  - `404 Not Found`: Address not found.
+
+---
+
+### 2. Orders & Order Tracking
+
+#### List Customer Orders
+- **Method:** `GET`
+- **Path:** `/api/v1/customers/orders`
+- **Auth:** Required (`Authorization: Bearer <token>`)
+- **Request Body:** None
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "data": [
+      {
+        "id": "uuid",
+        "order_number": "ORD-DEMO-001",
+        "subtotal_minor": 690000,
+        "shipping_minor": 25000,
+        "total_minor": 715000,
+        "currency": "PKR",
+        "payment_method": "cod",
+        "payment_status": "pending",
+        "placed_at": "2026-09-30T10:00:00Z",
+        "sub_orders": [
+          {
+            "id": "uuid",
+            "seller_id": "uuid",
+            "status": "pending",
+            "subtotal_minor": 690000,
+            "shipping_minor": 25000,
+            "total_minor": 715000,
+            "sellers": {
+              "business_name": "Multan Kashikari & Crafts",
+              "logo": "/demo/seller-kashikari.svg"
+            },
+            "order_items": [
+              {
+                "id": "uuid",
+                "variant_id": "uuid",
+                "product_title": "Chinioti Hand-Carved Sheesham Wood Serving Tray Set",
+                "quantity": 1,
+                "unit_price_minor": 690000,
+                "line_total_minor": 690000
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+  ```
+- **Errors:**
+  - `401 Unauthorized`: Missing or invalid bearer token.
+
+#### Get Order Details
+- **Method:** `GET`
+- **Path:** `/api/v1/customers/orders/:id`
+- **Auth:** Required (`Authorization: Bearer <token>`)
+- **Request Body:** None
+- **Response:** `200 OK` (Returns full order details with sub_orders, order_status_history, returns, shipping/billing address, and seller return windows).
+- **Errors:**
+  - `401 Unauthorized`: Missing or invalid bearer token.
+  - `404 Not Found`: Order not found or does not belong to caller.
+
+#### Cancel Sub-Order
+- **Method:** `POST`
+- **Path:** `/api/v1/customers/orders/:id/cancel`
+- **Auth:** Required (`Authorization: Bearer <token>`)
+- **Params:** `:id` is the sub-order UUID.
+- **Request Body:**
+  ```json
+  {
+    "reason": "Item ordered by mistake, requested immediate cancellation."
+  }
+  ```
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "message": "Sub-order cancelled successfully"
+  }
+  ```
+- **Errors:**
+  - `400 Bad Request`: Sub-order is not in `awaiting_confirmation` or `pending` status, or cancellation reason is less than 10 characters.
+  - `401 Unauthorized`: Missing or invalid bearer token.
+  - `404 Not Found`: Sub-order not found or not owned by user.
+
+#### Request Item Return
+- **Method:** `POST`
+- **Path:** `/api/v1/customers/orders/:id/return`
+- **Auth:** Required (`Authorization: Bearer <token>`)
+- **Params:** `:id` is the sub-order UUID.
+- **Request Body:** `multipart/form-data`
+  - `orderItemId`: UUID of the order item being returned.
+  - `reason`: String (10 to 500 characters).
+  - `quantity`: Positive integer.
+  - `evidenceFiles`: Optional files (JPG, PNG, WebP, PDF; up to 5 MB per file).
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "data": {
+      "id": "uuid",
+      "status": "pending",
+      "refund_minor": 690000,
+      "evidence_paths": ["returns/.../evidence.webp"]
+    }
+  }
+  ```
+- **Errors:**
+  - `400 Bad Request`: Order is not delivered, return window expired, duplicate return request already active, or file exceeds size/type restrictions.
+  - `401 Unauthorized`: Missing or invalid bearer token.
+
+#### Public Order Journey Lookup (Guest Tracking)
+- **Method:** `POST`
+- **Path:** `/api/v1/customers/guest-order`
+- **Auth:** None (Public tracking endpoint)
+- **Request Body:**
+  ```json
+  {
+    "orderNumber": "ORD-DEMO-001",
+    "email": "customer1@demo.kaaravan.pk"
+  }
+  ```
+- **Response:** `200 OK` (Strict privacy-safe reduced payload; internal IDs, addresses, phones, emails, and financial totals are never returned)
+  ```json
+  {
+    "success": true,
+    "data": {
+      "order_number": "ORD-DEMO-001",
+      "placed_at": "2026-09-30T10:00:00Z",
+      "sub_orders": [
+        {
+          "seller_business_name": "Multan Kashikari & Crafts",
+          "status": "pending",
+          "order_status_history": [
+            {
+              "to_status": "pending",
+              "created_at": "2026-09-30T10:00:00Z"
+            }
+          ],
+          "items": [
+            {
+              "product_title": "Chinioti Hand-Carved Sheesham Wood Serving Tray Set",
+              "quantity": 1
+            }
+          ]
+        }
+      ]
+    }
+  }
+  ```
+- **Errors:**
+  - `404 Not Found`: `{ "success": false, "error": "Order not found" }` (Generic message returned for all failure cases to prevent account enumeration).
+
+---
 
 ### 3. Wishlist
-- **GET** `/api/v1/customers/wishlist`
-  - **Auth:** Required (`Bearer <token>`)
-  - **Response:** `200 OK` Returns wishlist items.
-- **POST** `/api/v1/customers/wishlist`
-  - **Auth:** Required (`Bearer <token>`)
-  - **Body:** `{ "variantId": "uuid" }`
-  - **Response:** `200 OK`
-- **DELETE** `/api/v1/customers/wishlist/:variantId`
-  - **Auth:** Required (`Bearer <token>`)
-  - **Response:** `200 OK`
+
+#### Get Wishlist
+- **Method:** `GET`
+- **Path:** `/api/v1/customers/wishlist`
+- **Auth:** Required (`Authorization: Bearer <token>`)
+- **Request Body:** None
+- **Response:** `200 OK` Returns list of wishlisted items with product details and images.
+- **Errors:**
+  - `401 Unauthorized`: Missing or invalid bearer token.
+
+#### Add to Wishlist
+- **Method:** `POST`
+- **Path:** `/api/v1/customers/wishlist`
+- **Auth:** Required (`Authorization: Bearer <token>`)
+- **Request Body:**
+  ```json
+  {
+    "variantId": "f1000000-0000-0001-0000-000000000001"
+  }
+  ```
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true
+  }
+  ```
+- **Errors:**
+  - `400 Bad Request`: Seller attempting to wishlist own product (`"You can't buy your own products"`).
+  - `401 Unauthorized`: Missing or invalid bearer token.
+
+#### Remove from Wishlist
+- **Method:** `DELETE`
+- **Path:** `/api/v1/customers/wishlist/:variantId`
+- **Auth:** Required (`Authorization: Bearer <token>`)
+- **Response:** `200 OK`
+- **Errors:**
+  - `401 Unauthorized`: Missing or invalid bearer token.
+
+---
 
 ### 4. Reviews
-- **POST** `/api/v1/customers/reviews`
-  - **Auth:** Required (`Bearer <token>`)
-  - **Body:** `{ "productId": "uuid", "orderItemId": "uuid", "rating": 5, "title": "...", "body": "..." }`
-  - **Response:** `200 OK`
+
+#### Create Product Review
+- **Method:** `POST`
+- **Path:** `/api/v1/customers/reviews`
+- **Auth:** Required (`Authorization: Bearer <token>`)
+- **Request Body:** (Validated with `createReviewSchema`, unknown fields stripped)
+  ```json
+  {
+    "product_id": "c1000000-0000-0000-0000-000000000001",
+    "order_item_id": "71000000-0000-0000-0000-000000000001",
+    "rating": 5,
+    "title": "Magnificent craft quality",
+    "body": "The blue pottery finish and ceramic glazing were authentic and stunning."
+  }
+  ```
+  *Note:* Review status is enforced server-side as `pending` for moderation. Client submissions of `status`, `id`, `profile_id`, or `created_at` are rejected or stripped.
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "data": {
+      "id": "uuid",
+      "status": "pending",
+      "rating": 5,
+      "created_at": "2026-09-30T10:00:00Z"
+    }
+  }
+  ```
+- **Errors:**
+  - `400 Bad Request`: Validation failure, or seller attempting to review their own product (`"You can't review your own products"`).
+  - `401 Unauthorized`: Missing or invalid bearer token.
+
+---
 
 ### 5. Account Deletion
-- **POST** `/api/v1/customers/account-deletion`
-  - **Auth:** Required (`Bearer <token>`)
-  - **Body:** `{ "reason": "..." }` (Optional)
-  - **Response:** `200 OK`
+
+#### Request Account Deletion
+- **Method:** `POST`
+- **Path:** `/api/v1/customers/account-deletion`
+- **Auth:** Required (`Authorization: Bearer <token>`)
+- **Request Body:**
+  ```json
+  {
+    "reason": "Closing my account"
+  }
+  ```
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "message": "Account deletion request recorded"
+  }
+  ```
+- **Errors:**
+  - `401 Unauthorized`: Missing or invalid bearer token.
+
 

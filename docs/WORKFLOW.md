@@ -32,6 +32,7 @@ These procedures must be followed in every phase of development.
 - Never put secrets in code or database columns. If hosting, environments or access change, update `docs/ASSET_RECORD.md`.
 
 ## END OF PHASE
+- Test scripts go in ./scratch only, read secrets from process.env, never print them, and never delete audit_logs or order_status_history rows during cleanup.
 - Run `pnpm build` and `pnpm lint`; fix everything.
 - Report: files changed, migrations added, new `/api/v1` endpoints, manual steps for me, anything you were unsure about.
 - Check `docs/ARCHITECTURE.md` "Deferred security items" for this phase and confirm each is done.

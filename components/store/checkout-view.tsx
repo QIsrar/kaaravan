@@ -15,7 +15,9 @@ import {
   CheckCircle2,
   ArrowRight,
   AlertCircle,
+  Info,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Image } from "@/components/ui/image";
 import {
   checkoutSchema,
@@ -23,18 +25,27 @@ import {
   PAKISTAN_PROVINCES,
   CITIES_BY_PROVINCE,
 } from "@/lib/validators/checkout";
-import { submitCheckoutAction, type CheckoutResult } from "@/lib/actions/checkout";
+import { submitCheckoutAction } from "@/lib/actions/checkout";
 import type { CartDetails } from "@/lib/services/cart";
 import { formatPaisa } from "@/lib/format/currency";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+} from "@/components/ui/alert-dialog";
 
 interface CheckoutViewProps {
   cart: CartDetails | null;
 }
 
 export function CheckoutView({ cart }: CheckoutViewProps) {
+  const tCheckout = useTranslations("checkout");
   const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<CheckoutResult | null>(null);
+  const [isNoticeDialogOpen, setIsNoticeDialogOpen] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const {
@@ -74,8 +85,8 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
     setSubmitting(true);
     setErrorMsg(null);
     try {
-      const res = await submitCheckoutAction(data);
-      setResult(res);
+      await submitCheckoutAction(data);
+      setIsNoticeDialogOpen(true);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Checkout submission failed.";
       setErrorMsg(msg);
@@ -99,36 +110,44 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
 
   return (
     <div className="space-y-8">
-      {/* Ordering-opens-soon notice */}
-      {result?.phase8Notice && (
-        <div className="p-6 sm:p-8 rounded-3xl border-2 border-secondary bg-secondary/10 shadow-lg space-y-4 animate-in fade-in-50 duration-300">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-secondary text-secondary-foreground flex items-center justify-center font-bold">
+      {/* Top Info Banner from Page Load */}
+      <div className="p-3.5 sm:p-4 rounded-2xl border border-secondary/40 bg-secondary/10 flex items-center gap-3 text-xs">
+        <div className="w-8 h-8 rounded-xl bg-secondary text-secondary-foreground flex items-center justify-center shrink-0">
+          <Info className="w-4 h-4" />
+        </div>
+        <p className="font-medium text-foreground leading-relaxed">
+          {tCheckout("launchNotice")}
+        </p>
+      </div>
+
+      {/* On Submit AlertDialog */}
+      <AlertDialog open={isNoticeDialogOpen} onOpenChange={setIsNoticeDialogOpen}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <div className="w-12 h-12 rounded-2xl bg-secondary text-secondary-foreground flex items-center justify-center mx-auto mb-2">
               <CheckCircle2 className="w-6 h-6 stroke-[2.5]" />
             </div>
-            <h3 className="font-heading font-extrabold text-lg sm:text-xl text-foreground">
-              Online ordering is launching soon
-            </h3>
-          </div>
-
-          <p className="text-sm text-foreground leading-relaxed">
-            Your details are ready; you&apos;ll be able to place this order shortly.
-          </p>
-
-          <div className="pt-2 flex flex-wrap gap-4">
-            <Link href="/">
-              <Button size="sm" className="rounded-xl bg-primary text-primary-foreground">
-                Continue shopping
+            <AlertDialogTitle className="text-center font-heading text-lg font-bold text-foreground">
+              {tCheckout("launchNoticeTitle")}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center text-xs text-muted-foreground leading-relaxed">
+              {tCheckout("launchNoticeDesc")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex flex-col sm:flex-row gap-2 pt-2">
+            <Link href="/" className="w-full sm:w-auto">
+              <Button className="w-full rounded-xl bg-primary text-primary-foreground text-xs font-semibold h-9 px-4">
+                {tCheckout("continueShopping")}
               </Button>
             </Link>
-            <Link href="/cart">
-              <Button size="sm" variant="outline" className="rounded-xl">
-                Back to Kart
+            <Link href="/cart" className="w-full sm:w-auto">
+              <Button variant="outline" className="w-full rounded-xl text-xs font-semibold h-9 px-4">
+                {tCheckout("backToKart")}
               </Button>
             </Link>
-          </div>
-        </div>
-      )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {errorMsg && (
         <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/30 text-destructive text-xs font-medium flex items-center gap-2">

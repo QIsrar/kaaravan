@@ -362,6 +362,29 @@ export async function addToCart(
     throw new Error("Either profileId or guestToken must be provided to access a cart.");
   }
 
+  // Prevent sellers from buying their own products
+  if (profileId) {
+    const { data: seller } = await supabase
+      .from("sellers")
+      .select("id")
+      .eq("owner_profile_id", profileId)
+      .is("deleted_at", null)
+      .maybeSingle();
+
+    if (seller) {
+      const { data: variant } = await supabase
+        .from("product_variants")
+        .select("product_id, products!inner(seller_id)")
+        .eq("id", input.variantId)
+        .single();
+
+      const productSellerId = (variant?.products as unknown as { seller_id: string })?.seller_id;
+      if (productSellerId && productSellerId === seller.id) {
+        throw new Error("You can't buy your own products");
+      }
+    }
+  }
+
   const { error } = await supabase
     .rpc("upsert_cart_item", {
       p_profile_id: (profileId || null) as string,

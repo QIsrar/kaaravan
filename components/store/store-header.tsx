@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { ShoppingBag, Compass, Search, Sparkles, X, Menu, ArrowRight, User, LogOut, Store, LayoutDashboard } from "lucide-react";
+import { ShoppingBag, Compass, Search, Sparkles, X, Menu, ArrowRight, User, LogOut, Store, LayoutDashboard, Package, Heart, MapPin, Star, Settings } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { BRAND_CONFIG } from "@/config/brand";
 import { useCartTotalItems } from "@/lib/hooks/use-cart";
@@ -44,6 +44,7 @@ export function StoreHeader({ sellerPortalHref, user }: StoreHeaderProps) {
   const tNav = useTranslations("nav");
   const tStore = useTranslations("store");
   const tAuth = useTranslations("auth");
+  const tAccount = useTranslations("account");
   const router = useRouter();
   const pathname = usePathname();
 
@@ -273,7 +274,27 @@ export function StoreHeader({ sellerPortalHref, user }: StoreHeaderProps) {
                   <DropdownMenuSeparator />
                   <DropdownMenuLinkItem render={<Link href="/account" />}>
                     <User className="w-3.5 h-3.5" />
-                    <span>{tAuth("myAccount")}</span>
+                    <span>{tAccount("overview")}</span>
+                  </DropdownMenuLinkItem>
+                  <DropdownMenuLinkItem render={<Link href="/account/orders" />}>
+                    <Package className="w-3.5 h-3.5" />
+                    <span>{tAccount("orders")}</span>
+                  </DropdownMenuLinkItem>
+                  <DropdownMenuLinkItem render={<Link href="/account/wishlist" />}>
+                    <Heart className="w-3.5 h-3.5" />
+                    <span>{tAccount("wishlist")}</span>
+                  </DropdownMenuLinkItem>
+                  <DropdownMenuLinkItem render={<Link href="/account/addresses" />}>
+                    <MapPin className="w-3.5 h-3.5" />
+                    <span>{tAccount("addresses")}</span>
+                  </DropdownMenuLinkItem>
+                  <DropdownMenuLinkItem render={<Link href="/account/reviews" />}>
+                    <Star className="w-3.5 h-3.5" />
+                    <span>{tAccount("reviews")}</span>
+                  </DropdownMenuLinkItem>
+                  <DropdownMenuLinkItem render={<Link href="/account/settings" />}>
+                    <Settings className="w-3.5 h-3.5" />
+                    <span>{tAccount("settings")}</span>
                   </DropdownMenuLinkItem>
                   {user.isApprovedSeller && (
                     <DropdownMenuLinkItem render={<Link href="/seller" />}>
@@ -384,16 +405,89 @@ export function StoreHeader({ sellerPortalHref, user }: StoreHeaderProps) {
           >
             {tNav("sell")}
           </Link>
+          {user ? (
+            <div className="pt-1 pb-1 space-y-1">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground px-3 block">
+                {tNav("account")}
+              </span>
+              <Link
+                href="/account"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`block text-xs font-semibold py-1.5 px-3 rounded-xl transition-colors ${
+                  pathname === "/account" ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"
+                }`}
+              >
+                {tAccount("overview")}
+              </Link>
+              <Link
+                href="/account/orders"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`block text-xs font-semibold py-1.5 px-3 rounded-xl transition-colors ${
+                  pathname.startsWith("/account/orders") ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"
+                }`}
+              >
+                {tAccount("orders")}
+              </Link>
+              <Link
+                href="/account/wishlist"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`block text-xs font-semibold py-1.5 px-3 rounded-xl transition-colors ${
+                  pathname.startsWith("/account/wishlist") ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"
+                }`}
+              >
+                {tAccount("wishlist")}
+              </Link>
+              <Link
+                href="/account/addresses"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`block text-xs font-semibold py-1.5 px-3 rounded-xl transition-colors ${
+                  pathname.startsWith("/account/addresses") ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"
+                }`}
+              >
+                {tAccount("addresses")}
+              </Link>
+              <Link
+                href="/account/reviews"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`block text-xs font-semibold py-1.5 px-3 rounded-xl transition-colors ${
+                  pathname.startsWith("/account/reviews") ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"
+                }`}
+              >
+                {tAccount("reviews")}
+              </Link>
+              <Link
+                href="/account/settings"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`block text-xs font-semibold py-1.5 px-3 rounded-xl transition-colors ${
+                  pathname.startsWith("/account/settings") ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"
+                }`}
+              >
+                {tAccount("settings")}
+              </Link>
+            </div>
+          ) : (
+            <Link
+              href="/account"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`block text-xs font-semibold py-2 px-3 rounded-xl transition-colors ${
+                isAccountActive
+                  ? "bg-primary text-primary-foreground"
+                  : "text-foreground hover:bg-muted"
+              }`}
+            >
+              {tNav("account")}
+            </Link>
+          )}
           <Link
-            href="/account"
+            href="/track-order"
             onClick={() => setIsMobileMenuOpen(false)}
             className={`block text-xs font-semibold py-2 px-3 rounded-xl transition-colors ${
-              isAccountActive
+              pathname.startsWith("/track-order")
                 ? "bg-primary text-primary-foreground"
                 : "text-foreground hover:bg-muted"
             }`}
           >
-            {tNav("account")}
+            {tAccount("trackOrder")}
           </Link>
           {user?.isApprovedSeller && (
             <Link

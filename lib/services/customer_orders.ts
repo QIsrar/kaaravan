@@ -46,7 +46,9 @@ export async function getCustomerOrderDetails(supabase: SupabaseClient<Database>
             products (id, title, slug, product_images (path))
           )
         ),
-        sellers (business_name, logo)
+        sellers (business_name, logo, return_window_days),
+        order_status_history (id, from_status, to_status, note, created_at),
+        returns (id, order_item_id, reason, status, refund_minor, evidence_paths, created_at)
       )
     `)
     .eq("profile_id", profileId)
@@ -57,31 +59,89 @@ export async function getCustomerOrderDetails(supabase: SupabaseClient<Database>
   return data;
 }
 
-export async function lookupGuestOrder(supabaseAdmin: SupabaseClient<Database>, orderNumber: string, email: string) {
+export interface PublicTrackOrderItem {
+  product_title: string;
+  quantity: number;
+}
+
+export interface PublicTrackStatusHistory {
+  to_status: string;
+  created_at: string;
+}
+
+export interface PublicTrackSubOrder {
+  seller_business_name: string;
+  status: Database["public"]["Enums"]["sub_order_status"];
+  order_status_history: PublicTrackStatusHistory[];
+  items: PublicTrackOrderItem[];
+}
+
+export interface PublicTrackOrder {
+  order_number: string;
+  placed_at: string;
+  sub_orders: PublicTrackSubOrder[];
+}
+
+export async function lookupGuestOrder(
+  supabaseAdmin: SupabaseClient<Database>,
+  orderNumber: string,
+  email: string
+): Promise<PublicTrackOrder> {
   const normalizedEmail = email.trim().toLowerCase();
   
   const { data, error } = await supabaseAdmin
     .from("orders")
     .select(`
-      id, order_number, profile_id, guest_email, subtotal_minor, shipping_minor, total_minor, currency, shipping_address, billing_address, payment_method, payment_status, placed_at,
+      order_number, profile_id, guest_email, placed_at,
       sub_orders (
-        id, order_id, seller_id, status, subtotal_minor, shipping_minor, total_minor, created_at, updated_at,
+        status,
         order_items (
-          id, sub_order_id, variant_id, product_title, variant_attributes, unit_price_minor, quantity, line_total_minor, created_at,
-          product_variants (
-            id, sku, price_minor, compare_at_minor, attributes,
-            products (id, title, slug, product_images (path))
-          )
+          product_title, quantity
         ),
-        sellers (business_name, logo)
+        sellers (business_name),
+        order_status_history (to_status, created_at)
       )
     `)
     .eq("order_number", orderNumber)
-    .eq("guest_email", normalizedEmail)
     .single();
   
   if (error || !data) throw new Error("Order not found");
-  return data;
+
+  let matches = false;
+  if (data.guest_email && data.guest_email.toLowerCase() === normalizedEmail) {
+    matches = true;
+  } else if (data.profile_id) {
+    const { data: userData } = await supabaseAdmin.auth.admin.getUserById(data.profile_id);
+    if (userData?.user?.email?.toLowerCase() === normalizedEmail) {
+      matches = true;
+    }
+  }
+
+  if (!matches) {
+    throw new Error("Order not found");
+  }
+
+  return {
+    order_number: data.order_number,
+    placed_at: data.placed_at,
+    sub_orders: (data.sub_orders || []).map((sub) => ({
+      seller_business_name: sub.sellers?.business_name || "Seller",
+      status: sub.status,
+      order_status_history: (sub.order_status_history || [])
+        .sort(
+          (a, b) =>
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        )
+        .map((h) => ({
+          to_status: h.to_status,
+          created_at: h.created_at,
+        })),
+      items: (sub.order_items || []).map((item) => ({
+        product_title: item.product_title,
+        quantity: item.quantity,
+      })),
+    })),
+  };
 }
 
 export async function cancelSubOrder(supabase: SupabaseClient<Database>, profileId: string, subOrderId: string, reason: string) {
@@ -211,6 +271,7 @@ export async function requestReturn(
   const returnId = crypto.randomUUID(); 
 
   for (const file of evidenceFiles) {
+    if (!file || file.size === 0 || !file.name) continue;
     if (!allowedTypes.includes(file.type)) {
       throw new Error(`Invalid file type: ${file.name}`);
     }

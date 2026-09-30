@@ -8,7 +8,8 @@ Unauthorised copying, disclosure, modification, distribution or use is prohibite
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { cancelSubOrder, requestReturn } from "@/lib/services/customer_orders";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { cancelSubOrder, requestReturn, lookupGuestOrder } from "@/lib/services/customer_orders";
 import { requireAuth } from "@/lib/auth/roles";
 import { z } from "zod";
 
@@ -54,4 +55,9 @@ export async function requestReturnAction(formData: FormData) {
   
   revalidatePath("/account/orders", "page");
   revalidatePath("/account/orders/[id]", "page");
+}
+
+export async function lookupGuestOrderAction(orderNumber: string, email: string) {
+  const adminClient = createAdminClient();
+  return await lookupGuestOrder(adminClient, orderNumber, email);
 }

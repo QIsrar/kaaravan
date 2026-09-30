@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAddToCartMutation } from "@/lib/hooks/use-cart";
 import { showAddedToCartToast } from "@/components/store/added-to-cart-toast";
+import { WishlistButton } from "@/components/store/wishlist-button";
+import { useCurrentSeller } from "@/lib/hooks/use-current-seller";
 
 export interface ProductCardProps {
   id: string;
@@ -47,6 +49,9 @@ export function ProductCard({
   const addToCart = useAddToCartMutation();
   const isAdding = addToCart.isPending;
 
+  const { data: currentSeller } = useCurrentSeller();
+  const isOwnProduct = Boolean(currentSeller && currentSeller.id === sellerId);
+
   const discountPercent = calculateDiscountPercent(priceMinor, compareAtMinor);
 
   const recordRecentlyViewed = () => {
@@ -60,15 +65,14 @@ export function ProductCard({
     }
   };
 
-  const handleQuickAdd = (e: React.MouseEvent) => {
+  const handleQuickAdd = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
-    // The cart badge updates instantly (optimistic cache write in onMutate);
-    // this button's own "Added" state and the toast wait for server success
-    // so they never claim something that didn't actually happen.
-    addToCart.mutate(
-      {
+    if (isAdding || isAdded || isOwnProduct) return;
+
+    try {
+      await addToCart.mutateAsync({
         variantId: primaryVariantId,
         quantity: 1,
         optimistic: {
@@ -79,43 +83,45 @@ export function ProductCard({
           sellerSlug,
           productTitle: title,
           productSlug: slug,
-          sku: "",
-          image: image || "/placeholder-product.svg",
+          sku: primaryVariantLabel,
+          image,
           priceMinor,
           compareAtMinor: compareAtMinor ?? null,
           quantity: 1,
-          stockAvailable: 999,
+          stockAvailable: 99,
         },
-      },
-      {
-        onSuccess: () => {
-          setIsAdded(true);
-          setTimeout(() => setIsAdded(false), 1800);
-          showAddedToCartToast({
-            image: image || "/placeholder-product.svg",
-            title,
-            variantLabel: primaryVariantLabel,
-            quantity: 1,
-            priceMinor,
-          });
-        },
-      }
-    );
+      });
+
+      setIsAdded(true);
+      showAddedToCartToast({
+        title,
+        priceMinor,
+        image,
+        variantLabel: primaryVariantLabel,
+        quantity: 1,
+      });
+
+      setTimeout(() => {
+        setIsAdded(false);
+      }, 2500);
+    } catch {
+      // Error is caught and toasted by useAddToCartMutation
+    }
   };
 
   return (
-    <div className="group rounded-2xl border border-border bg-card shadow-2xs hover:shadow-md transition-all duration-300 flex flex-col overflow-hidden relative">
-      {/* Product Image Frame */}
+    <div className="group relative flex flex-col justify-between rounded-3xl border border-border bg-card shadow-2xs hover:shadow-md transition-all duration-300 overflow-hidden">
+      {/* Product Image & Badges */}
       <Link
         href={`/product/${slug}`}
         onClick={recordRecentlyViewed}
-        className="relative block aspect-square w-full overflow-hidden bg-muted/40 border-b border-border/60"
+        className="relative block aspect-square w-full overflow-hidden bg-muted/40"
       >
         <Image
           src={image || "/placeholder-product.svg"}
           alt={title}
           fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
         />
 
@@ -127,6 +133,13 @@ export function ProductCard({
           >
             {discountPercent}% OFF
           </Badge>
+        )}
+
+        {/* Wishlist Button (hidden on seller's own product) */}
+        {!isOwnProduct && (
+          <div className="absolute top-3 end-3 z-10">
+            <WishlistButton variantId={primaryVariantId} />
+          </div>
         )}
       </Link>
 
@@ -178,29 +191,31 @@ export function ProductCard({
               )}
             </div>
 
-            <Button
-              size="sm"
-              onClick={handleQuickAdd}
-              disabled={isAdding}
-              className={
-                isAdded
-                  ? "bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-8 px-2.5 transition-colors"
-                  : "bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-8 px-2.5"
-              }
-              aria-label={`${t("addToCart")}: ${title}`}
-            >
-              {isAdded ? (
-                <>
-                  <Check className="w-3.5 h-3.5 stroke-[2.5]" />
-                  <span className="text-xs font-bold ms-1 hidden sm:inline">{t("addedShort")}</span>
-                </>
-              ) : (
-                <>
-                  <ShoppingBag className="w-3.5 h-3.5" />
-                  <span className="text-xs font-semibold ms-1 hidden sm:inline">{t("addShort")}</span>
-                </>
-              )}
-            </Button>
+            {!isOwnProduct && (
+              <Button
+                size="sm"
+                onClick={handleQuickAdd}
+                disabled={isAdding}
+                className={
+                  isAdded
+                    ? "bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-8 px-2.5 transition-colors"
+                    : "bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-8 px-2.5"
+                }
+                aria-label={`${t("addToCart")}: ${title}`}
+              >
+                {isAdded ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <span className="text-xs font-bold ms-1 hidden sm:inline">{t("addedShort")}</span>
+                  </>
+                ) : (
+                  <>
+                    <ShoppingBag className="w-3.5 h-3.5" />
+                    <span className="text-xs font-semibold ms-1 hidden sm:inline">{t("addShort")}</span>
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </div>
       </div>
