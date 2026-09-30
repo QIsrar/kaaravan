@@ -580,6 +580,18 @@ function generateSql() {
   sql.push("BEGIN;");
   sql.push("");
 
+  const demoDir = path.resolve(process.cwd(), "public/demo");
+  const usedImages = [];
+  const placeholderImages = [];
+
+  function recordImage(resolvedPath, isPlaceholder) {
+    usedImages.push(resolvedPath);
+    if (isPlaceholder) {
+      placeholderImages.push(resolvedPath);
+    }
+    return resolvedPath;
+  }
+
   // 1. Profiles for the 3 demo sellers
   sql.push("-- 1. DEMO SELLER PROFILES");
   sql.push("-- Setting role = 'seller' on existing auth users");
@@ -599,9 +611,9 @@ function generateSql() {
   sql.push("-- 2. APPROVED DEMO SELLERS");
   sql.push("INSERT INTO public.sellers (id, owner_profile_id, business_name, slug, logo, description, business_type, status, commission_rate_bps, return_window_days, rating_avg)");
   sql.push("VALUES");
-  sql.push("  ('a1111111-1111-1111-1111-111111111111', '10def90d-80e6-49d0-8ee4-b49c2a476367', 'Multan Kashikari & Crafts', 'multan-kashikari', '/demo/seller-kashikari.svg', 'Master artisans of authentic Multani blue pottery, hand-carved camel skin lamps, and traditional ceramic tableware.', 'Artisan Guild', 'approved', 800, 7, 4.90),");
-  sql.push("  ('a2222222-2222-2222-2222-222222222222', 'caf061d7-2d72-4edd-8a8e-a0817f297fe7', 'Khyber Heritage Leather', 'khyber-heritage-leather', '/demo/seller-peshawar-leather.svg', 'Handmade Peshawari chappals, Norozi sandals, and premium full-grain buffalo leather goods crafted in Namak Mandi, Peshawar.', 'Heritage Workshop', 'approved', 750, 7, 4.85),");
-  sql.push("  ('a3333333-3333-3333-3333-333333333333', '39d5d603-a839-443c-8547-5c2139a49c5b', 'Hunza Valley Organics & Textiles', 'hunza-organics-textiles', '/demo/seller-hunza-organics.svg', 'Pure mountain blossom honey, sun-dried apricots, hand-spun Pashmina shawls, and wild herbs from Gilgit-Baltistan.', 'Cooperative Enterprise', 'approved', 600, 10, 4.95)");
+  sql.push(`  ('a1111111-1111-1111-1111-111111111111', '10def90d-80e6-49d0-8ee4-b49c2a476367', 'Multan Kashikari & Crafts', 'multan-kashikari', '${recordImage('/demo/seller-kashikari.svg', false)}', 'Master artisans of authentic Multani blue pottery, hand-carved camel skin lamps, and traditional ceramic tableware.', 'Artisan Guild', 'approved', 800, 7, 4.90),`);
+  sql.push(`  ('a2222222-2222-2222-2222-222222222222', 'caf061d7-2d72-4edd-8a8e-a0817f297fe7', 'Khyber Heritage Leather', 'khyber-heritage-leather', '${recordImage('/demo/seller-peshawar-leather.svg', false)}', 'Handmade Peshawari chappals, Norozi sandals, and premium full-grain buffalo leather goods crafted in Namak Mandi, Peshawar.', 'Heritage Workshop', 'approved', 750, 7, 4.85),`);
+  sql.push(`  ('a3333333-3333-3333-3333-333333333333', '39d5d603-a839-443c-8547-5c2139a49c5b', 'Hunza Valley Organics & Textiles', 'hunza-organics-textiles', '${recordImage('/demo/seller-hunza-organics.svg', false)}', 'Pure mountain blossom honey, sun-dried apricots, hand-spun Pashmina shawls, and wild herbs from Gilgit-Baltistan.', 'Cooperative Enterprise', 'approved', 600, 10, 4.95)`);
   sql.push("ON CONFLICT (id) DO UPDATE SET");
   sql.push("  business_name = EXCLUDED.business_name,");
   sql.push("  slug = EXCLUDED.slug,");
@@ -611,16 +623,68 @@ function generateSql() {
   sql.push("  rating_avg = EXCLUDED.rating_avg;");
   sql.push("");
 
+  function resolveProductImage(pNum) {
+    const webpName = `prod-${pNum}.webp`;
+    if (fs.existsSync(path.join(demoDir, webpName))) {
+      return recordImage(`/demo/${webpName}`, false);
+    }
+    return recordImage(`/demo/prod-${pNum}.svg`, true);
+  }
+
+  function resolveCategoryImage(cat) {
+    const candidate1 = `cat-${cat.slug}.webp`;
+    const candidate2 = cat.fallbackSvg.replace(/\.svg$/, ".webp");
+    if (fs.existsSync(path.join(demoDir, candidate1))) {
+      return recordImage(`/demo/${candidate1}`, false);
+    }
+    if (fs.existsSync(path.join(demoDir, candidate2))) {
+      return recordImage(`/demo/${candidate2}`, false);
+    }
+    return recordImage(`/demo/${cat.fallbackSvg}`, true);
+  }
+
+  function resolveBannerImage(banner) {
+    const candidate1 = `banner-${banner.num}.webp`;
+    const candidate2 = banner.fallbackSvg.replace(/\.svg$/, ".webp");
+    if (fs.existsSync(path.join(demoDir, candidate1))) {
+      return recordImage(`/demo/${candidate1}`, false);
+    }
+    if (fs.existsSync(path.join(demoDir, candidate2))) {
+      return recordImage(`/demo/${candidate2}`, false);
+    }
+    return recordImage(`/demo/${banner.fallbackSvg}`, true);
+  }
+
+  function resolveBrandLogo(brand) {
+    const candidate1 = `cat-${brand.catSlug}.webp`;
+    const candidate2 = brand.fallbackSvg.replace(/\.svg$/, ".webp");
+    if (fs.existsSync(path.join(demoDir, candidate1))) {
+      return recordImage(`/demo/${candidate1}`, false);
+    }
+    if (fs.existsSync(path.join(demoDir, candidate2))) {
+      return recordImage(`/demo/${candidate2}`, false);
+    }
+    return recordImage(`/demo/${brand.fallbackSvg}`, true);
+  }
+
   // 3. Brands
   sql.push("-- 3. BRANDS");
   sql.push("INSERT INTO public.brands (id, name, slug, logo)");
   sql.push("VALUES");
-  sql.push("  ('d1000000-0000-0000-0000-000000000001', 'Multan Kashikari', 'multan-kashikari', '/demo/cat-blue-pottery.svg'),");
-  sql.push("  ('d1000000-0000-0000-0000-000000000002', 'Chiniot Heritage', 'chiniot-heritage', '/demo/cat-brass-woodcraft.svg'),");
-  sql.push("  ('d1000000-0000-0000-0000-000000000003', 'Khyber Craft', 'khyber-craft', '/demo/cat-handcrafted-footwear.svg'),");
-  sql.push("  ('d1000000-0000-0000-0000-000000000004', 'Hunza Mountain Reserve', 'hunza-reserve', '/demo/cat-pure-spices.svg'),");
-  sql.push("  ('d1000000-0000-0000-0000-000000000005', 'Sindh Heritage', 'sindh-heritage', '/demo/cat-womens-artisanal.svg'),");
-  sql.push("  ('d1000000-0000-0000-0000-000000000006', 'Lahore Weavers Guild', 'lahore-weavers', '/demo/cat-apparel.svg')");
+  const brandsData = [
+    { id: "d1000000-0000-0000-0000-000000000001", name: "Multan Kashikari", slug: "multan-kashikari", fallbackSvg: "cat-blue-pottery.svg", catSlug: "blue-pottery-ceramics" },
+    { id: "d1000000-0000-0000-0000-000000000002", name: "Chiniot Heritage", slug: "chiniot-heritage", fallbackSvg: "cat-brass-woodcraft.svg", catSlug: "brass-woodcraft" },
+    { id: "d1000000-0000-0000-0000-000000000003", name: "Khyber Craft", slug: "khyber-craft", fallbackSvg: "cat-handcrafted-footwear.svg", catSlug: "handcrafted-footwear" },
+    { id: "d1000000-0000-0000-0000-000000000004", name: "Hunza Mountain Reserve", slug: "hunza-reserve", fallbackSvg: "cat-pure-spices.svg", catSlug: "pure-spices-honey" },
+    { id: "d1000000-0000-0000-0000-000000000005", name: "Sindh Heritage", slug: "sindh-heritage", fallbackSvg: "cat-womens-artisanal.svg", catSlug: "womens-artisanal" },
+    { id: "d1000000-0000-0000-0000-000000000006", name: "Lahore Weavers Guild", slug: "lahore-weavers", fallbackSvg: "cat-apparel.svg", catSlug: "apparel-textiles" },
+  ];
+  const brandLines = brandsData.map((b, idx) => {
+    const isLast = idx === brandsData.length - 1;
+    const img = resolveBrandLogo(b);
+    return `  ('${b.id}', ${sqlEscape(b.name)}, '${b.slug}', '${img}')${isLast ? '' : ','}`;
+  });
+  sql.push(brandLines.join("\n"));
   sql.push("ON CONFLICT (id) DO UPDATE SET");
   sql.push("  name = EXCLUDED.name,");
   sql.push("  slug = EXCLUDED.slug,");
@@ -632,21 +696,38 @@ function generateSql() {
   sql.push("-- Level 1 (Parents)");
   sql.push("INSERT INTO public.categories (id, parent_id, name, slug, image, sort_order, commission_rate_bps, is_active)");
   sql.push("VALUES");
-  sql.push("  ('b1000000-0000-0000-0000-000000000001', NULL, 'Apparel & Textiles', 'apparel-textiles', '/demo/cat-apparel.svg', 1, 600, TRUE),");
-  sql.push("  ('b1000000-0000-0000-0000-000000000002', NULL, 'Leather & Footwear', 'leather-footwear', '/demo/cat-leather.svg', 2, 700, TRUE),");
-  sql.push("  ('b1000000-0000-0000-0000-000000000003', NULL, 'Home & Pottery', 'home-pottery', '/demo/cat-home.svg', 3, 750, TRUE),");
-  sql.push("  ('b1000000-0000-0000-0000-000000000004', NULL, 'Spices & Organic Foods', 'spices-organic', '/demo/cat-spices.svg', 4, 500, TRUE)");
+  const categoriesLevel1 = [
+    { id: "b1000000-0000-0000-0000-000000000001", name: "Apparel & Textiles", slug: "apparel-textiles", fallbackSvg: "cat-apparel.svg", sortOrder: 1, commissionBps: 600 },
+    { id: "b1000000-0000-0000-0000-000000000002", name: "Leather & Footwear", slug: "leather-footwear", fallbackSvg: "cat-leather.svg", sortOrder: 2, commissionBps: 700 },
+    { id: "b1000000-0000-0000-0000-000000000003", name: "Home & Pottery", slug: "home-pottery", fallbackSvg: "cat-home.svg", sortOrder: 3, commissionBps: 750 },
+    { id: "b1000000-0000-0000-0000-000000000004", name: "Spices & Organic Foods", slug: "spices-organic", fallbackSvg: "cat-spices.svg", sortOrder: 4, commissionBps: 500 },
+  ];
+  const parentLines = categoriesLevel1.map((cat, idx) => {
+    const isLast = idx === categoriesLevel1.length - 1;
+    const img = resolveCategoryImage(cat);
+    return `  ('${cat.id}', NULL, ${sqlEscape(cat.name)}, '${cat.slug}', '${img}', ${cat.sortOrder}, ${cat.commissionBps}, TRUE)${isLast ? '' : ','}`;
+  });
+  sql.push(parentLines.join("\n"));
   sql.push("ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, slug = EXCLUDED.slug, image = EXCLUDED.image, is_active = TRUE;");
   sql.push("");
+
   sql.push("-- Level 2 (Subcategories)");
   sql.push("INSERT INTO public.categories (id, parent_id, name, slug, image, sort_order, commission_rate_bps, is_active)");
   sql.push("VALUES");
-  sql.push("  ('b2000000-0000-0000-0000-000000000005', 'b1000000-0000-0000-0000-000000000001', 'Men''s Traditional Wear', 'mens-traditional', '/demo/cat-mens-traditional.svg', 1, 600, TRUE),");
-  sql.push("  ('b2000000-0000-0000-0000-000000000006', 'b1000000-0000-0000-0000-000000000001', 'Women''s Artisanal Shawls & Dupattas', 'womens-artisanal', '/demo/cat-womens-artisanal.svg', 2, 600, TRUE),");
-  sql.push("  ('b2000000-0000-0000-0000-000000000007', 'b1000000-0000-0000-0000-000000000002', 'Handcrafted Heritage Footwear', 'handcrafted-footwear', '/demo/cat-handcrafted-footwear.svg', 3, 700, TRUE),");
-  sql.push("  ('b2000000-0000-0000-0000-000000000008', 'b1000000-0000-0000-0000-000000000003', 'Multan Blue Pottery & Ceramics', 'blue-pottery-ceramics', '/demo/cat-blue-pottery.svg', 4, 750, TRUE),");
-  sql.push("  ('b2000000-0000-0000-0000-000000000009', 'b1000000-0000-0000-0000-000000000003', 'Brass, Copper & Woodcraft', 'brass-woodcraft', '/demo/cat-brass-woodcraft.svg', 5, 750, TRUE),");
-  sql.push("  ('b2000000-0000-0000-0000-000000000010', 'b1000000-0000-0000-0000-000000000004', 'Pure Mountain Spices & Honey', 'pure-spices-honey', '/demo/cat-pure-spices.svg', 6, 500, TRUE)");
+  const categoriesLevel2 = [
+    { id: "b2000000-0000-0000-0000-000000000005", parentId: "b1000000-0000-0000-0000-000000000001", name: "Men's Traditional Wear", slug: "mens-traditional", fallbackSvg: "cat-mens-traditional.svg", sortOrder: 1, commissionBps: 600 },
+    { id: "b2000000-0000-0000-0000-000000000006", parentId: "b1000000-0000-0000-0000-000000000001", name: "Women's Artisanal Shawls & Dupattas", slug: "womens-artisanal", fallbackSvg: "cat-womens-artisanal.svg", sortOrder: 2, commissionBps: 600 },
+    { id: "b2000000-0000-0000-0000-000000000007", parentId: "b1000000-0000-0000-0000-000000000002", name: "Handcrafted Heritage Footwear", slug: "handcrafted-footwear", fallbackSvg: "cat-handcrafted-footwear.svg", sortOrder: 3, commissionBps: 700 },
+    { id: "b2000000-0000-0000-0000-000000000008", parentId: "b1000000-0000-0000-0000-000000000003", name: "Multan Blue Pottery & Ceramics", slug: "blue-pottery-ceramics", fallbackSvg: "cat-blue-pottery.svg", sortOrder: 4, commissionBps: 750 },
+    { id: "b2000000-0000-0000-0000-000000000009", parentId: "b1000000-0000-0000-0000-000000000003", name: "Brass, Copper & Woodcraft", slug: "brass-woodcraft", fallbackSvg: "cat-brass-woodcraft.svg", sortOrder: 5, commissionBps: 750 },
+    { id: "b2000000-0000-0000-0000-000000000010", parentId: "b1000000-0000-0000-0000-000000000004", name: "Pure Mountain Spices & Honey", slug: "pure-spices-honey", fallbackSvg: "cat-pure-spices.svg", sortOrder: 6, commissionBps: 500 },
+  ];
+  const subLines = categoriesLevel2.map((cat, idx) => {
+    const isLast = idx === categoriesLevel2.length - 1;
+    const img = resolveCategoryImage(cat);
+    return `  ('${cat.id}', '${cat.parentId}', ${sqlEscape(cat.name)}, '${cat.slug}', '${img}', ${cat.sortOrder}, ${cat.commissionBps}, TRUE)${isLast ? '' : ','}`;
+  });
+  sql.push(subLines.join("\n"));
   sql.push("ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, slug = EXCLUDED.slug, image = EXCLUDED.image, is_active = TRUE;");
   sql.push("");
 
@@ -654,9 +735,17 @@ function generateSql() {
   sql.push("-- 5. HOME BANNERS");
   sql.push("INSERT INTO public.banners (id, title, image_url, link_url, sort_order, is_active)");
   sql.push("VALUES");
-  sql.push("  ('e1000000-0000-0000-0000-000000000001', 'Handcrafted Across Pakistan', '/demo/banner-caravan-1.svg', '/category/home-pottery', 1, TRUE),");
-  sql.push("  ('e1000000-0000-0000-0000-000000000002', 'Pure Mountain Harvests', '/demo/banner-caravan-2.svg', '/category/spices-organic', 2, TRUE),");
-  sql.push("  ('e1000000-0000-0000-0000-000000000003', 'The Heritage Leatherwork', '/demo/banner-caravan-3.svg', '/category/leather-footwear', 3, TRUE)");
+  const bannersData = [
+    { id: "e1000000-0000-0000-0000-000000000001", num: 1, title: "Handcrafted Across Pakistan", fallbackSvg: "banner-caravan-1.svg", linkUrl: "/category/home-pottery", sortOrder: 1 },
+    { id: "e1000000-0000-0000-0000-000000000002", num: 2, title: "Pure Mountain Harvests", fallbackSvg: "banner-caravan-2.svg", linkUrl: "/category/spices-organic", sortOrder: 2 },
+    { id: "e1000000-0000-0000-0000-000000000003", num: 3, title: "The Heritage Leatherwork", fallbackSvg: "banner-caravan-3.svg", linkUrl: "/category/leather-footwear", sortOrder: 3 },
+  ];
+  const bannerLines = bannersData.map((b, idx) => {
+    const isLast = idx === bannersData.length - 1;
+    const img = resolveBannerImage(b);
+    return `  ('${b.id}', ${sqlEscape(b.title)}, '${img}', '${b.linkUrl}', ${b.sortOrder}, TRUE)${isLast ? '' : ','}`;
+  });
+  sql.push(bannerLines.join("\n"));
   sql.push("ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, image_url = EXCLUDED.image_url, link_url = EXCLUDED.link_url, is_active = TRUE;");
   sql.push("");
 
@@ -697,9 +786,9 @@ function generateSql() {
     });
     sql.push("");
 
-    // Images: products 1-13 use the newly AI-generated WebP images; products 14-40 retain existing placeholder SVGs
+    // Images: dynamically resolves to .webp if present in public/demo/, otherwise falls back to placeholder .svg
     const img1Uuid = `91000000-0000-${String(pNum).padStart(4, "0")}-0000-000000000001`;
-    const imagePath = pNum <= 13 ? `/demo/prod-${pNum}.webp` : `/demo/prod-${pNum}.svg`;
+    const imagePath = resolveProductImage(pNum);
     sql.push(`INSERT INTO public.product_images (id, product_id, path, sort_order)`);
     sql.push(`VALUES ('${img1Uuid}', '${pUuid}', '${imagePath}', 1)`);
     sql.push(`ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;`);
@@ -759,10 +848,42 @@ function generateSql() {
 
   sql.push("COMMIT;");
   sql.push("");
-  return sql.join("\n");
+  return {
+    sql: sql.join("\n"),
+    usedImages,
+    placeholderImages
+  };
 }
 
-const sqlOutput = generateSql();
+const { sql: sqlOutput, usedImages, placeholderImages } = generateSql();
 const outPath = path.resolve(process.cwd(), "supabase/demo/demo_data.sql");
 fs.writeFileSync(outPath, sqlOutput, "utf8");
 console.log(`Generated demo data SQL: ${outPath} (${sqlOutput.length} bytes)`);
+
+// Verification of all referenced image paths
+console.log("\n=== IMAGE PATH VERIFICATION ===");
+let missingCount = 0;
+const uniqueImages = [...new Set(usedImages)];
+for (const imgPath of uniqueImages) {
+  const diskPath = path.resolve(process.cwd(), `public${imgPath}`);
+  if (!fs.existsSync(diskPath)) {
+    console.error(`ERROR: Path does not exist on disk: ${imgPath} -> ${diskPath}`);
+    missingCount++;
+  }
+}
+
+if (missingCount === 0) {
+  console.log(`SUCCESS: All ${uniqueImages.length} unique image paths verified to exist on disk.`);
+} else {
+  console.error(`FAILED: ${missingCount} image paths are missing on disk!`);
+  process.exit(1);
+}
+
+const uniquePlaceholders = [...new Set(placeholderImages)];
+console.log(`\nImages currently resolved to WebP: ${uniqueImages.length - uniquePlaceholders.length}`);
+console.log(`Images still on SVG placeholders: ${uniquePlaceholders.length}`);
+if (uniquePlaceholders.length > 0) {
+  console.log("\nList of paths still on SVG placeholders:");
+  uniquePlaceholders.forEach((p, idx) => console.log(`  ${idx + 1}. ${p}`));
+}
+

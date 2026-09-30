@@ -284,7 +284,7 @@ VALUES ('f1000000-0000-0014-0000-000000000001', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0014-0000-000000000001', 'c1000000-0000-0000-0000-000000000014', '/demo/prod-14.svg', 1)
+VALUES ('91000000-0000-0014-0000-000000000001', 'c1000000-0000-0000-0000-000000000014', '/demo/prod-14.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- Product #15: Peshawari Chappal - Traditional Leather Kaptaan Edition
@@ -303,7 +303,7 @@ VALUES ('f1000000-0000-0015-0000-000000000003', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0015-0000-000000000001', 'c1000000-0000-0000-0000-000000000015', '/demo/prod-15.svg', 1)
+VALUES ('91000000-0000-0015-0000-000000000001', 'c1000000-0000-0000-0000-000000000015', '/demo/prod-15.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- Product #16: Peshawari Norozi Double-Sole Handcrafted Chappal
@@ -319,7 +319,7 @@ VALUES ('f1000000-0000-0016-0000-000000000002', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0016-0000-000000000001', 'c1000000-0000-0000-0000-000000000016', '/demo/prod-16.svg', 1)
+VALUES ('91000000-0000-0016-0000-000000000001', 'c1000000-0000-0000-0000-000000000016', '/demo/prod-16.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- Product #17: Sialkot Handcrafted Full-Grain Leather Messenger Laptop Bag
@@ -335,7 +335,7 @@ VALUES ('f1000000-0000-0017-0000-000000000002', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0017-0000-000000000001', 'c1000000-0000-0000-0000-000000000017', '/demo/prod-17.svg', 1)
+VALUES ('91000000-0000-0017-0000-000000000001', 'c1000000-0000-0000-0000-000000000017', '/demo/prod-17.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- Product #18: Balochi Hand-Embroidered Traditional Men''s Waistcoat
@@ -354,7 +354,7 @@ VALUES ('f1000000-0000-0018-0000-000000000003', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0018-0000-000000000001', 'c1000000-0000-0000-0000-000000000018', '/demo/prod-18.svg', 1)
+VALUES ('91000000-0000-0018-0000-000000000001', 'c1000000-0000-0000-0000-000000000018', '/demo/prod-18.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- Product #19: Traditional Kolhapuri Tilla Embroidered Khussa for Men
@@ -370,7 +370,7 @@ VALUES ('f1000000-0000-0019-0000-000000000002', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0019-0000-000000000001', 'c1000000-0000-0000-0000-000000000019', '/demo/prod-19.svg', 1)
+VALUES ('91000000-0000-0019-0000-000000000001', 'c1000000-0000-0000-0000-000000000019', '/demo/prod-19.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- Product #20: Handcrafted Vegetable Tanned Bifold Leather Wallet
@@ -386,7 +386,7 @@ VALUES ('f1000000-0000-0020-0000-000000000002', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0020-0000-000000000001', 'c1000000-0000-0000-0000-000000000020', '/demo/prod-20.svg', 1)
+VALUES ('91000000-0000-0020-0000-000000000001', 'c1000000-0000-0000-0000-000000000020', '/demo/prod-20.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- Product #21: Pure Karakul Wool Jinnah Cap (Traditional Qaraqul)
@@ -402,7 +402,7 @@ VALUES ('f1000000-0000-0021-0000-000000000002', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0021-0000-000000000001', 'c1000000-0000-0000-0000-000000000021', '/demo/prod-21.svg', 1)
+VALUES ('91000000-0000-0021-0000-000000000001', 'c1000000-0000-0000-0000-000000000021', '/demo/prod-21.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- Product #22: Namak Mandi Peshawari Zalmi Cut Chappal
@@ -418,7 +418,7 @@ VALUES ('f1000000-0000-0022-0000-000000000002', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0022-0000-000000000001', 'c1000000-0000-0000-0000-000000000022', '/demo/prod-22.svg', 1)
+VALUES ('91000000-0000-0022-0000-000000000001', 'c1000000-0000-0000-0000-000000000022', '/demo/prod-22.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- Product #23: Hand-Crafted Full-Grain Leather Belt (Solid Brass Buckle)
@@ -437,7 +437,7 @@ VALUES ('f1000000-0000-0023-0000-000000000003', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0023-0000-000000000001', 'c1000000-0000-0000-0000-000000000023', '/demo/prod-23.svg', 1)
+VALUES ('91000000-0000-0023-0000-000000000001', 'c1000000-0000-0000-0000-000000000023', '/demo/prod-23.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- Product #24: Gojra Handloom Heavy Khaddar Men''s Unstitched Suit
@@ -453,7 +453,7 @@ VALUES ('f1000000-0000-0024-0000-000000000002', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0024-0000-000000000001', 'c1000000-0000-0000-0000-000000000024', '/demo/prod-24.svg', 1)
+VALUES ('91000000-0000-0024-0000-000000000001', 'c1000000-0000-0000-0000-000000000024', '/demo/prod-24.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- Product #25: Peshawari Traditional Leather Duffle Gym & Travel Bag
@@ -466,7 +466,7 @@ VALUES ('f1000000-0000-0025-0000-000000000001', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0025-0000-000000000001', 'c1000000-0000-0000-0000-000000000025', '/demo/prod-25.svg', 1)
+VALUES ('91000000-0000-0025-0000-000000000001', 'c1000000-0000-0000-0000-000000000025', '/demo/prod-25.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- Product #26: Chitrali Woolen Pakol Cap & Feather Crest
@@ -482,7 +482,7 @@ VALUES ('f1000000-0000-0026-0000-000000000002', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0026-0000-000000000001', 'c1000000-0000-0000-0000-000000000026', '/demo/prod-26.svg', 1)
+VALUES ('91000000-0000-0026-0000-000000000001', 'c1000000-0000-0000-0000-000000000026', '/demo/prod-26.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- Product #27: Hand-Stitched Leather Passport Holder & Travel Wallet
