@@ -1,12 +1,14 @@
 import { DollarSign } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { SellerComingSoon } from "@/components/seller/seller-coming-soon";
 
-export default function SellerFinancesPage() {
+export default async function SellerFinancesPage() {
+  const t = await getTranslations("seller");
   return (
     <SellerComingSoon
       icon={DollarSign}
-      title="Finances & Payouts"
-      description="This section is coming soon. Your sales and payout history will be available once orders are live."
+      title={t("comingSoon.financesTitle")}
+      description={t("comingSoon.financesDesc")}
     />
   );
 }

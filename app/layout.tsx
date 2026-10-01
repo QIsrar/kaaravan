@@ -9,20 +9,20 @@ import "./globals.css";
 
 const sansFont = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-sans",
+  variable: "--font-jakarta",
   display: "swap",
 });
 
 const headingFont = Outfit({
   subsets: ["latin"],
-  variable: "--font-heading",
+  variable: "--font-outfit",
   display: "swap",
 });
 
 const urduFont = Noto_Nastaliq_Urdu({
   subsets: ["arabic"],
   weight: ["400", "700"],
-  variable: "--font-urdu",
+  variable: "--font-nastaliq",
   display: "swap",
 });
 

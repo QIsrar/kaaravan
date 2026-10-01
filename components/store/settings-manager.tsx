@@ -252,7 +252,7 @@ export function SettingsManager({
                 required
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="e.g. Asad Ullah Khan"
+                placeholder={t("namePlaceholder")}
                 className="w-full text-xs rounded-xl border border-border bg-background p-2.5 text-foreground focus:ring-1 focus:ring-primary outline-none"
                 disabled={isSavingProfile}
               />
@@ -265,10 +265,11 @@ export function SettingsManager({
               <input
                 id="phone"
                 type="tel"
+                dir="ltr"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="03001234567"
-                className="w-full text-xs rounded-xl border border-border bg-background p-2.5 text-foreground focus:ring-1 focus:ring-primary outline-none"
+                className="w-full text-xs rounded-xl border border-border bg-background p-2.5 text-foreground focus:ring-1 focus:ring-primary outline-none text-start"
                 disabled={isSavingProfile}
               />
             </div>

@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Image } from "@/components/ui/image";
 import { ArrowUpRight } from "lucide-react";
 
@@ -15,6 +18,8 @@ interface CategoryGridProps {
 }
 
 export function CategoryGrid({ categories }: CategoryGridProps) {
+  const t = useTranslations("store");
+
   return (
     <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
       {categories.map((cat) => (
@@ -39,12 +44,12 @@ export function CategoryGrid({ categories }: CategoryGridProps) {
           </div>
 
           <h3 className="font-heading font-bold text-sm sm:text-base text-foreground group-hover:text-primary transition-colors line-clamp-1">
-            {cat.name}
+            <bdi dir="auto">{cat.name}</bdi>
           </h3>
 
           <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-muted-foreground group-hover:text-primary group-hover:underline underline-offset-2 transition-colors">
-            <span>Explore crafts</span>
-            <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            <span>{t("exploreCrafts")}</span>
+            <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 rtl:-scale-x-100" />
           </div>
         </Link>
       ))}

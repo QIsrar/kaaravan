@@ -1285,6 +1285,7 @@ export type Database = {
           deleted_at: string | null
           id: string
           is_active: boolean
+          low_stock_threshold: number
           min_offer_minor: number | null
           offers_enabled: boolean
           price_minor: number
@@ -1303,6 +1304,7 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           is_active?: boolean
+          low_stock_threshold?: number
           min_offer_minor?: number | null
           offers_enabled?: boolean
           price_minor: number
@@ -1321,6 +1323,7 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           is_active?: boolean
+          low_stock_threshold?: number
           min_offer_minor?: number | null
           offers_enabled?: boolean
           price_minor?: number
@@ -1906,6 +1909,7 @@ export type Database = {
       }
       sellers: {
         Row: {
+          agreement_accepted_at: string | null
           business_name: string
           business_type: string | null
           commission_rate_bps: number | null
@@ -1922,6 +1926,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          agreement_accepted_at?: string | null
           business_name: string
           business_type?: string | null
           commission_rate_bps?: number | null
@@ -1938,6 +1943,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          agreement_accepted_at?: string | null
           business_name?: string
           business_type?: string | null
           commission_rate_bps?: number | null
@@ -2174,12 +2180,39 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_seller_dashboard_stats: {
+        Args: { p_seller_id: string }
+        Returns: Json
+      }
       search_products: {
         Args: { lim?: number; off?: number; q: string }
         Returns: {
           product_id: string
           rank: number
         }[]
+      }
+      submit_seller_application: {
+        Args: {
+          p_account_title: string
+          p_area: string
+          p_bank_name: string
+          p_business_name: string
+          p_business_type: string
+          p_city: string
+          p_cnic: string
+          p_description: string
+          p_full_name: string
+          p_iban: string
+          p_ip_address: string
+          p_ntn: string
+          p_phone: string
+          p_postal_code: string
+          p_profile_id: string
+          p_province: string
+          p_slug: string
+          p_street: string
+        }
+        Returns: string
       }
       upsert_cart_item: {
         Args: {

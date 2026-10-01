@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Image } from "@/components/ui/image";
 import Link from "next/link";
 import { ShieldCheck, Star, RotateCcw, Store, Sparkles, ChevronRight } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { ProductCard, type ProductCardProps } from "@/components/store/product-card";
 import { PatternDivider } from "@/components/store/pattern-divider";
@@ -75,6 +76,8 @@ export async function generateMetadata({ params }: StorePageProps): Promise<Meta
 export default async function SellerStorePage({ params, searchParams }: StorePageProps) {
   const { slug } = await params;
   const query = await searchParams;
+  const tStore = await getTranslations("store");
+  const tNav = await getTranslations("nav");
   const supabase = await createClient();
 
   // 1. Fetch seller profile
@@ -217,12 +220,12 @@ export default async function SellerStorePage({ params, searchParams }: StorePag
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
         <Link href="/" className="hover:text-primary transition-colors">
-          Home
+          {tNav("home")}
         </Link>
         <ChevronRight className="w-3.5 h-3.5 rtl:rotate-180" />
-        <span className="text-muted-foreground">Artisan Guilds</span>
+        <span className="text-muted-foreground">{tStore("artisanGuilds")}</span>
         <ChevronRight className="w-3.5 h-3.5 rtl:rotate-180" />
-        <span className="text-foreground font-semibold">{seller.business_name}</span>
+        <span className="text-foreground font-semibold"><bdi dir="auto">{seller.business_name}</bdi></span>
       </nav>
 
       {/* Seller Header Banner */}
@@ -247,14 +250,14 @@ export default async function SellerStorePage({ params, searchParams }: StorePag
           <div className="space-y-2 flex-1">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-2xs">
               <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Verified Artisan Guild Merchant</span>
+              <span>{tStore("verifiedGuildMerchant")}</span>
             </div>
 
             <h1 className="font-heading text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight">
-              {seller.business_name}
+              <bdi dir="auto">{seller.business_name}</bdi>
             </h1>
 
-            <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
+            <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed" dir="auto">
               {seller.description || "Generational craft masters producing authentic Pakistani cultural pieces with verified provenance."}
             </p>
 
@@ -262,15 +265,15 @@ export default async function SellerStorePage({ params, searchParams }: StorePag
             <div className="flex flex-wrap items-center gap-4 pt-2 text-xs font-semibold text-foreground">
               <div className="flex items-center gap-1.5 bg-card/80 border border-border px-3 py-1.5 rounded-xl">
                 <Star className="w-4 h-4 text-amber-500 fill-current" />
-                <span>{Number(seller.rating_avg).toFixed(1)} Merchant Rating</span>
+                <span>{tStore("merchantRating", { rating: Number(seller.rating_avg).toFixed(1) })}</span>
               </div>
               <div className="flex items-center gap-1.5 bg-card/80 border border-border px-3 py-1.5 rounded-xl">
                 <RotateCcw className="w-4 h-4 text-primary" />
-                <span>{seller.return_window_days ?? 7}-Day Return Policy</span>
+                <span>{tStore("returnDays", { count: seller.return_window_days ?? 7 })}</span>
               </div>
               <div className="flex items-center gap-1.5 bg-card/80 border border-border px-3 py-1.5 rounded-xl">
                 <Sparkles className="w-4 h-4 text-secondary" />
-                <span>{allProducts.length} Active Crafts</span>
+                <span>{tStore("craftsAvailable", { count: allProducts.length })}</span>
               </div>
             </div>
           </div>
@@ -287,11 +290,11 @@ export default async function SellerStorePage({ params, searchParams }: StorePag
               <Store className="w-4 h-4" />
             </div>
             <h2 className="font-heading text-xl sm:text-2xl font-bold text-foreground">
-              {seller.business_name} Masterworks Atelier
+              {tStore("masterworksAtelier", { name: seller.business_name })}
             </h2>
           </div>
           <span className="text-xs text-muted-foreground font-medium">
-            Showing {filteredProducts.length} of {allProducts.length} masterworks
+            {tStore("showingMasterworks", { count: filteredProducts.length, total: allProducts.length })}
           </span>
         </div>
 
@@ -316,16 +319,16 @@ export default async function SellerStorePage({ params, searchParams }: StorePag
             ) : (
               <div className="p-12 text-center rounded-3xl border border-dashed border-border bg-card/60 space-y-3">
                 <p className="text-sm font-semibold text-foreground">
-                  No crafts match your filter criteria in this workshop.
+                  {tStore("noCraftsInWorkshop")}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Try clearing the search query or expanding the price range.
+                  {tStore("noCraftsInWorkshopDesc")}
                 </p>
                 <Link
                   href={`/store/${seller.slug}`}
                   className="inline-block text-xs text-primary font-bold hover:underline pt-2"
                 >
-                  View All Masterworks
+                  {tStore("viewAllMasterworks")}
                 </Link>
               </div>
             )}

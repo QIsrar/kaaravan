@@ -75,7 +75,7 @@ export function HeroBanner({ banners }: HeroBannerProps) {
           </button>
 
           {/* Dots Indicator */}
-          <div className="absolute bottom-4 start-1/2 -translate-x-1/2 flex items-center gap-2 z-10">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10">
             {banners.map((_, idx) => (
               <button
                 key={idx}

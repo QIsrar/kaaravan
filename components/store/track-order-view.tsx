@@ -215,6 +215,7 @@ export function TrackOrderView() {
                   <CardContent className="p-4 sm:p-6 space-y-6">
                     <JourneyTracker
                       currentStop={stage}
+                      status={subStatus}
                       orderNumber={orderData.order_number}
                     />
 

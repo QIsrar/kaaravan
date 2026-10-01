@@ -8,34 +8,19 @@ export default async function CustomerSettingsPage() {
   const profile = await requireAuth(["customer", "seller", "superadmin"]);
   const supabase = await createClient();
 
-  const [{ data: userProfile }, deletionRequest, { data: sellerData }] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("id, full_name, phone, role")
-      .eq("id", profile.id)
-      .single(),
-    getAccountDeletionRequest(supabase, profile.id),
-    profile.role === "seller"
-      ? supabase
-          .from("sellers")
-          .select("business_name")
-          .eq("owner_profile_id", profile.id)
-          .is("deleted_at", null)
-          .maybeSingle()
-      : Promise.resolve({ data: null }),
-  ]);
+  const deletionRequest = await getAccountDeletionRequest(supabase, profile.id);
 
   return (
     <SettingsManager
       initialProfile={{
         id: profile.id,
         email: profile.email || null,
-        fullName: userProfile?.full_name || null,
-        phone: userProfile?.phone || null,
-        role: userProfile?.role || profile.role,
+        fullName: profile.fullName || null,
+        phone: profile.phone || null,
+        role: profile.role,
       }}
       initialDeletionRequest={deletionRequest || null}
-      sellerBusinessName={sellerData?.business_name || null}
+      sellerBusinessName={profile.seller_business_name || null}
     />
   );
 }

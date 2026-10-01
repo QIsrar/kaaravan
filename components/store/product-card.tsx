@@ -151,7 +151,14 @@ export function ProductCard({
             href={`/store/${sellerSlug}`}
             className="text-[11px] font-medium text-muted-foreground hover:text-primary transition-colors block mb-1 truncate"
           >
-            By <span className="underline decoration-dotted underline-offset-2">{sellerName}</span>
+            {t.rich("byArtisan", {
+              seller: sellerName,
+              artisan: (chunks) => (
+                <bdi dir="auto" className="underline decoration-dotted underline-offset-2">
+                  {chunks}
+                </bdi>
+              ),
+            })}
           </Link>
 
           {/* Product Title */}
@@ -160,7 +167,7 @@ export function ProductCard({
             onClick={recordRecentlyViewed}
             className="font-heading font-semibold text-sm text-foreground line-clamp-2 hover:text-primary transition-colors leading-snug"
           >
-            {title}
+            <bdi dir="auto">{title}</bdi>
           </Link>
         </div>
 

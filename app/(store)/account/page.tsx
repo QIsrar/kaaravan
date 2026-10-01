@@ -42,26 +42,13 @@ export default async function AccountOverviewPage() {
   const tOrders = await getTranslations("orders");
   const supabase = await createClient();
 
-  // Fetch customer orders, wishlist counts, profile, and optional seller info
-  const [orders, { count: wishlistCount }, { data: profileRow }, { data: sellerData }] = await Promise.all([
+  // Fetch customer orders and wishlist counts in parallel
+  const [orders, { count: wishlistCount }] = await Promise.all([
     getCustomerOrders(supabase, profile.id),
     supabase
       .from("wishlists")
       .select("*", { count: "exact", head: true })
       .eq("profile_id", profile.id),
-    supabase
-      .from("profiles")
-      .select("full_name")
-      .eq("id", profile.id)
-      .single(),
-    profile.role === "seller"
-      ? supabase
-          .from("sellers")
-          .select("business_name")
-          .eq("owner_profile_id", profile.id)
-          .is("deleted_at", null)
-          .maybeSingle()
-      : Promise.resolve({ data: null }),
   ]);
 
   // Identify active sub-orders for journey tracking (non-terminal: pending, confirmed, packed, shipped)
@@ -104,8 +91,8 @@ export default async function AccountOverviewPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">
-            {profileRow?.full_name
-              ? t("welcomeName", { name: profileRow.full_name })
+            {profile.fullName
+              ? t("welcomeName", { name: profile.fullName })
               : t("welcomeBack", { email: profile.email || "" })}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
@@ -138,7 +125,7 @@ export default async function AccountOverviewPage() {
             <div>
               <h3 className="font-heading font-bold text-sm text-foreground">
                 {t("sellerBanner", {
-                  name: sellerData?.business_name || "Artisan Workshop",
+                  name: profile.seller_business_name || "Artisan Workshop",
                 })}
               </h3>
             </div>
@@ -177,6 +164,7 @@ export default async function AccountOverviewPage() {
                 </div>
                 <JourneyTracker
                   currentStop={item.stage}
+                  status={item.status}
                   orderNumber={item.orderNumber}
                 />
               </div>

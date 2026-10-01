@@ -15,6 +15,7 @@ import { mergeGuestCartAction } from "@/lib/actions/cart";
 import { getSafeRedirect } from "@/lib/utils";
 
 function LoginForm() {
+  const tAuth = useTranslations("auth");
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectParam = getSafeRedirect(searchParams.get("redirect"));
@@ -109,7 +110,7 @@ function LoginForm() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="trader@kaaravan.pk"
+              placeholder={tAuth("emailPlaceholder")}
               className="rounded-xl border-border"
               disabled={isLoading}
             />
@@ -173,10 +174,11 @@ function LoginForm() {
 
 export default function LoginPage() {
   const tLegal = useTranslations("legal");
+  const tAuth = useTranslations("auth");
 
   return (
     <div className="container mx-auto px-4 py-16 flex flex-col items-center justify-center min-h-[70vh]">
-      <Suspense fallback={<div className="text-sm text-muted-foreground">Loading login...</div>}>
+      <Suspense fallback={<div className="text-sm text-muted-foreground">{tAuth("loadingLogin")}</div>}>
         <LoginForm />
       </Suspense>
       <div className="max-w-md text-center text-xs text-muted-foreground px-4">

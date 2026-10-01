@@ -495,7 +495,7 @@ VALUES ('f1000000-0000-0027-0000-000000000001', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0027-0000-000000000001', 'c1000000-0000-0000-0000-000000000027', '/demo/prod-27.svg', 1)
+VALUES ('91000000-0000-0027-0000-000000000001', 'c1000000-0000-0000-0000-000000000027', '/demo/prod-27.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- Product #28: Pure Hand-Woven Kashmir Pashmina Shawl (Sozni Embroidery)
@@ -511,7 +511,7 @@ VALUES ('f1000000-0000-0028-0000-000000000002', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0028-0000-000000000001', 'c1000000-0000-0000-0000-000000000028', '/demo/prod-28.svg', 1)
+VALUES ('91000000-0000-0028-0000-000000000001', 'c1000000-0000-0000-0000-000000000028', '/demo/prod-28.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- Product #29: Ajrak Hand-Block Printed Pure Silk Dupatta (Sindh Heritage)
@@ -524,7 +524,7 @@ VALUES ('f1000000-0000-0029-0000-000000000001', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0029-0000-000000000001', 'c1000000-0000-0000-0000-000000000029', '/demo/prod-29.svg', 1)
+VALUES ('91000000-0000-0029-0000-000000000001', 'c1000000-0000-0000-0000-000000000029', '/demo/prod-29.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- Product #30: Hunza Valley Sun-Dried Organic Apricots & Cold-Pressed Oil Gift Box
@@ -540,7 +540,7 @@ VALUES ('f1000000-0000-0030-0000-000000000002', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0030-0000-000000000001', 'c1000000-0000-0000-0000-000000000030', '/demo/prod-30.svg', 1)
+VALUES ('91000000-0000-0030-0000-000000000001', 'c1000000-0000-0000-0000-000000000030', '/demo/prod-30.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- Product #31: Gilgit Wild Mountain Blossom Raw Honeycomb (Natural 800g)
@@ -556,7 +556,7 @@ VALUES ('f1000000-0000-0031-0000-000000000002', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0031-0000-000000000001', 'c1000000-0000-0000-0000-000000000031', '/demo/prod-31.svg', 1)
+VALUES ('91000000-0000-0031-0000-000000000001', 'c1000000-0000-0000-0000-000000000031', '/demo/prod-31.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- Product #32: Himalayan Pink Rock Salt Culinary Cooking Slab & Ceramic Grinder
@@ -569,7 +569,7 @@ VALUES ('f1000000-0000-0032-0000-000000000001', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0032-0000-000000000001', 'c1000000-0000-0000-0000-000000000032', '/demo/prod-32.svg', 1)
+VALUES ('91000000-0000-0032-0000-000000000001', 'c1000000-0000-0000-0000-000000000032', '/demo/prod-32.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- Product #33: Hand-Embroidered Zari Phulkari Velvet Shawl (Lahore Heritage)
@@ -585,7 +585,7 @@ VALUES ('f1000000-0000-0033-0000-000000000002', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0033-0000-000000000001', 'c1000000-0000-0000-0000-000000000033', '/demo/prod-33.svg', 1)
+VALUES ('91000000-0000-0033-0000-000000000001', 'c1000000-0000-0000-0000-000000000033', '/demo/prod-33.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- Product #34: Skardu Karakoram Mountain Wild Green Tea & Herbs (Tin 250g)
@@ -598,7 +598,7 @@ VALUES ('f1000000-0000-0034-0000-000000000001', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0034-0000-000000000001', 'c1000000-0000-0000-0000-000000000034', '/demo/prod-34.svg', 1)
+VALUES ('91000000-0000-0034-0000-000000000001', 'c1000000-0000-0000-0000-000000000034', '/demo/prod-34.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- Product #35: Bahawalpur Chunri Silk Stole (Hand-Tied Bandhani)
@@ -611,7 +611,7 @@ VALUES ('f1000000-0000-0035-0000-000000000001', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0035-0000-000000000001', 'c1000000-0000-0000-0000-000000000035', '/demo/prod-35.svg', 1)
+VALUES ('91000000-0000-0035-0000-000000000001', 'c1000000-0000-0000-0000-000000000035', '/demo/prod-35.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- Product #36: Sindhi Ralli Patchwork Quilt (Handmade King Bedspread)
@@ -624,7 +624,7 @@ VALUES ('f1000000-0000-0036-0000-000000000001', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0036-0000-000000000001', 'c1000000-0000-0000-0000-000000000036', '/demo/prod-36.svg', 1)
+VALUES ('91000000-0000-0036-0000-000000000001', 'c1000000-0000-0000-0000-000000000036', '/demo/prod-36.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- Product #37: Organic Kasuri Methi & Peshawari Garam Masala Spice Pack
@@ -637,7 +637,7 @@ VALUES ('f1000000-0000-0037-0000-000000000001', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0037-0000-000000000001', 'c1000000-0000-0000-0000-000000000037', '/demo/prod-37.svg', 1)
+VALUES ('91000000-0000-0037-0000-000000000001', 'c1000000-0000-0000-0000-000000000037', '/demo/prod-37.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- Product #38: Sindhi Mirror-Work (Sheesha) Hand-Embroidered Tote Bag
@@ -650,7 +650,7 @@ VALUES ('f1000000-0000-0038-0000-000000000001', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0038-0000-000000000001', 'c1000000-0000-0000-0000-000000000038', '/demo/prod-38.svg', 1)
+VALUES ('91000000-0000-0038-0000-000000000001', 'c1000000-0000-0000-0000-000000000038', '/demo/prod-38.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- Product #39: Naran Valley Hand-Knitted Warm Woolen Socks (Pair of 3)
@@ -663,7 +663,7 @@ VALUES ('f1000000-0000-0039-0000-000000000001', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0039-0000-000000000001', 'c1000000-0000-0000-0000-000000000039', '/demo/prod-39.svg', 1)
+VALUES ('91000000-0000-0039-0000-000000000001', 'c1000000-0000-0000-0000-000000000039', '/demo/prod-39.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- Product #40: Rawalpindi Brass Samovar Tea Urn (Charcoal Heated 4L)

@@ -107,6 +107,7 @@ export function ProductDetailView({
   reviews = [],
 }: ProductDetailViewProps) {
   const t = useTranslations("store");
+  const tNav = useTranslations("nav");
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -185,14 +186,16 @@ export function ProductDetailView({
       {/* Breadcrumb Navigation */}
       <nav className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
         <Link href="/" className="hover:text-primary transition-colors">
-          Home
+          {tNav("home")}
         </Link>
         <ChevronRight className="w-3.5 h-3.5 rtl:rotate-180" />
         <Link href={`/category/${categorySlug}`} className="hover:text-primary transition-colors">
-          {categoryName}
+          <bdi dir="auto">{categoryName}</bdi>
         </Link>
         <ChevronRight className="w-3.5 h-3.5 rtl:rotate-180" />
-        <span className="text-foreground font-semibold line-clamp-1">{title}</span>
+        <span className="text-foreground font-semibold line-clamp-1">
+          <bdi dir="auto">{title}</bdi>
+        </span>
       </nav>
 
       {/* Main Grid: Gallery on start, Details on end */}
@@ -273,7 +276,7 @@ export function ProductDetailView({
               </span>
             )}
             <h1 className="font-heading text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight leading-snug">
-              {title}
+              <bdi dir="auto">{title}</bdi>
             </h1>
 
             {/* Ratings Summary */}
@@ -335,7 +338,7 @@ export function ProductDetailView({
                           : "bg-card border-border text-foreground hover:bg-muted"
                       }`}
                     >
-                      {label}
+                      <bdi dir="auto">{label}</bdi>
                     </button>
                   );
                 })}
@@ -442,7 +445,7 @@ export function ProductDetailView({
             <div className="flex items-center gap-3">
               <label htmlFor="city-select" className="text-xs text-muted-foreground shrink-0 flex items-center gap-1">
                 <MapPin className="w-3.5 h-3.5 text-accent" />
-                <span>Your City:</span>
+                <span>{t("yourCity")}</span>
               </label>
               <select
                 id="city-select"
@@ -488,23 +491,23 @@ export function ProductDetailView({
               <div>
                 <div className="flex items-center gap-1.5">
                   <span className="font-heading font-bold text-sm text-foreground">
-                    {seller.businessName}
+                    <bdi dir="auto">{seller.businessName}</bdi>
                   </span>
-                  <span title="Verified Artisan Merchant">
+                  <span title={t("verifiedMerchant")}>
                     <ShieldCheck className="w-4 h-4 text-primary" />
                   </span>
                 </div>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
                   <span>Rating: {seller.ratingAvg.toFixed(1)} ★</span>
                   <span>&bull;</span>
-                  <span>{seller.returnWindowDays}-day returns</span>
+                  <span>{t("returnDays", { count: seller.returnWindowDays })}</span>
                 </div>
               </div>
             </div>
 
             <Link href={`/store/${seller.slug}`}>
               <Button variant="outline" size="sm" className="rounded-xl text-xs font-semibold">
-                Visit Store
+                <span>{t("visitStore")}</span>
               </Button>
             </Link>
           </div>
@@ -515,9 +518,9 @@ export function ProductDetailView({
       <section className="p-6 sm:p-8 rounded-3xl border border-border bg-card shadow-2xs space-y-4">
         <h3 className="font-heading text-xl font-bold text-foreground flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-primary" />
-          <span>Craftsmanship &amp; Provenance Details</span>
+          <span>{t("craftsmanshipDetails")}</span>
         </h3>
-        <p className="text-sm sm:text-base text-muted-foreground leading-relaxed whitespace-pre-line">
+        <p dir="auto" className="text-sm sm:text-base text-muted-foreground leading-relaxed whitespace-pre-line">
           {description || "Authentic Pakistani handicraft created by generational artisans using traditional tools, regional raw materials, and time-honoured techniques."}
         </p>
 
@@ -525,22 +528,22 @@ export function ProductDetailView({
           <div className="flex items-center gap-3">
             <ShieldCheck className="w-5 h-5 text-primary" />
             <div>
-              <p className="text-xs font-bold text-foreground">Authenticity Assured</p>
-              <p className="text-[11px] text-muted-foreground">Certified regional guild craft</p>
+              <p className="text-xs font-bold text-foreground">{t("authenticityAssured")}</p>
+              <p className="text-[11px] text-muted-foreground">{t("certifiedGuildCraft")}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <RotateCcw className="w-5 h-5 text-primary" />
             <div>
-              <p className="text-xs font-bold text-foreground">{seller.returnWindowDays}-Day Returns</p>
-              <p className="text-[11px] text-muted-foreground">Full refund if damaged in transit</p>
+              <p className="text-xs font-bold text-foreground">{t("returnDays", { count: seller.returnWindowDays })}</p>
+              <p className="text-[11px] text-muted-foreground">{t("damageTransitRefund")}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <Truck className="w-5 h-5 text-primary" />
             <div>
-              <p className="text-xs font-bold text-foreground">Safe Packaging</p>
-              <p className="text-[11px] text-muted-foreground">Transit-hardened delivery boxing</p>
+              <p className="text-xs font-bold text-foreground">{t("safePackaging")}</p>
+              <p className="text-[11px] text-muted-foreground">{t("transitHardenedBoxing")}</p>
             </div>
           </div>
         </div>
@@ -551,7 +554,7 @@ export function ProductDetailView({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
           <div>
             <h3 className="font-heading text-xl font-bold text-foreground">
-              Customer Reviews &amp; Experiences
+              {t("customerReviews")}
             </h3>
             <div className="flex items-center gap-2 mt-1">
               <div className="flex items-center text-amber-500">
@@ -580,7 +583,7 @@ export function ProductDetailView({
               <div key={rev.id} className="pt-4 first:pt-0 space-y-1.5">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-xs text-foreground">
-                    {rev.authorName}
+                    <bdi dir="auto">{rev.authorName}</bdi>
                   </span>
                   <span className="text-[11px] text-muted-foreground">
                     {new Date(rev.createdAt).toLocaleDateString("en-PK")}
@@ -598,10 +601,10 @@ export function ProductDetailView({
                 </div>
                 {rev.title && (
                   <h4 className="font-heading font-semibold text-sm text-foreground">
-                    {rev.title}
+                    <bdi dir="auto">{rev.title}</bdi>
                   </h4>
                 )}
-                <p className="text-xs text-muted-foreground leading-relaxed">
+                <p dir="auto" className="text-xs text-muted-foreground leading-relaxed">
                   {rev.body}
                 </p>
               </div>
@@ -609,7 +612,7 @@ export function ProductDetailView({
           </div>
         ) : (
           <div className="p-8 text-center rounded-2xl bg-muted/30 border border-dashed border-border text-xs text-muted-foreground">
-            No published reviews yet. Be the first customer to review this handcrafted craft after your caravan delivery.
+            {t("noReviewsYet")}
           </div>
         )}
       </section>

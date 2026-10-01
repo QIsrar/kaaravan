@@ -3,6 +3,7 @@
 import React, { useEffect } from "react";
 import Link from "next/link";
 import { AlertCircle, RotateCcw, Home } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 
 export default function StoreError({
@@ -12,6 +13,9 @@ export default function StoreError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const tStore = useTranslations("store");
+  const tCommon = useTranslations("common");
+
   useEffect(() => {
     console.error("Storefront Error Boundary caught:", error);
   }, [error]);
@@ -24,22 +28,22 @@ export default function StoreError({
 
       <div className="space-y-2">
         <h2 className="font-heading font-extrabold text-xl sm:text-2xl text-foreground">
-          The Kaaravan Encountered a Roadblock
+          {tStore("errorRoadblockTitle")}
         </h2>
         <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-          We encountered an unexpected issue while loading this marketplace view. Please try reloading or returning home.
+          {tStore("errorRoadblockDesc")}
         </p>
       </div>
 
       <div className="flex items-center gap-3">
         <Button onClick={() => reset()} className="rounded-xl bg-primary text-primary-foreground gap-2">
           <RotateCcw className="w-4 h-4" />
-          <span>Try Again</span>
+          <span>{tCommon("tryAgain")}</span>
         </Button>
         <Link href="/">
           <Button variant="outline" className="rounded-xl gap-2">
             <Home className="w-4 h-4" />
-            <span>Return Home</span>
+            <span>{tCommon("returnHome")}</span>
           </Button>
         </Link>
       </div>

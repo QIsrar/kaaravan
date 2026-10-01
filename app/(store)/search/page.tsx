@@ -2,6 +2,7 @@ import React from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Search, Sparkles, ArrowRight } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { ProductCard, type ProductCardProps } from "@/components/store/product-card";
 import { PatternDivider } from "@/components/store/pattern-divider";
@@ -24,6 +25,7 @@ export async function generateMetadata({ searchParams }: SearchPageProps): Promi
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const { q = "" } = await searchParams;
+  const tStore = await getTranslations("store");
   const supabase = await createClient();
 
   const { query: trimmed, products: searchResults } = await searchProducts(supabase, q, 40, 0);
@@ -72,34 +74,32 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             <Search className="w-4 h-4" />
           </div>
           <span className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
-            Marketplace Search
+            {tStore("marketplaceSearch")}
           </span>
         </div>
 
         <h1 className="font-heading text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight">
           {trimmed ? (
-            <>
-              Results for <span className="text-primary">&ldquo;{trimmed}&rdquo;</span>
-            </>
+            <bdi dir="auto">{tStore("searchResultsFor", { query: trimmed })}</bdi>
           ) : (
-            "Explore All Crafts"
+            tStore("exploreAllCrafts")
           )}
         </h1>
 
         <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
-          {products.length} {products.length === 1 ? "craft" : "crafts"} found along the Kaaravan trail
+          {tStore("craftsFound", { count: products.length })}
         </p>
 
         {/* "Did you mean" suggestion */}
         {didYouMean && (
           <div className="mt-4 p-3 rounded-2xl bg-secondary/15 border border-secondary/30 inline-flex items-center gap-2 text-xs">
             <Sparkles className="w-4 h-4 text-secondary" />
-            <span className="text-foreground">Did you mean:</span>
+            <span className="text-foreground">{tStore("didYouMean")}</span>
             <Link
               href={`/search?q=${encodeURIComponent(didYouMean)}`}
               className="text-primary font-bold underline hover:text-accent"
             >
-              {didYouMean}
+              <bdi dir="auto">{didYouMean}</bdi>
             </Link>
           </div>
         )}
@@ -119,11 +119,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             🧭
           </div>
           <h2 className="font-heading text-xl font-bold text-foreground">
-            No artisan crafts found for &ldquo;{trimmed}&rdquo;
+            <bdi dir="auto">{tStore("noArtisanCraftsFound", { query: trimmed })}</bdi>
           </h2>
           <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-            Check the spelling, try broader keywords (e.g. &ldquo;shawl&rdquo;, &ldquo;pottery&rdquo;, &ldquo;leather&rdquo;),
-            or discover popular traditional categories:
+            {tStore("searchSuggestionsHint")}
           </p>
 
           {categories && categories.length > 0 && (
@@ -134,7 +133,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   href={`/category/${cat.slug}`}
                   className="text-xs px-3 py-1.5 rounded-full bg-card hover:bg-primary hover:text-primary-foreground border border-border text-foreground transition-colors shadow-2xs font-medium"
                 >
-                  {cat.name}
+                  <bdi dir="auto">{cat.name}</bdi>
                 </Link>
               ))}
             </div>
@@ -145,7 +144,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               href="/"
               className="inline-flex items-center gap-2 text-xs font-semibold text-primary hover:underline"
             >
-              <span>Return to Kaaravan Home</span>
+              <span>{tStore("returnHome")}</span>
               <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" />
             </Link>
           </div>

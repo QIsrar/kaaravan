@@ -11,3 +11,4 @@ Chronological log of all database migrations for the Kaaravan platform.
 | 2026-09-29 | `20260929120000_search_products_function.sql` | Introduces the `search_products` RPC for secure, parameterized full-text and typo-tolerant trigram product searches. |
 | 2026-09-30 | `20260930090000_upsert_cart_item_function.sql` | Implements the high-performance `upsert_cart_item` single-trip RPC and unique profile cart constraint to eliminate sequential multi-hop cart latency. |
 | 2026-09-30 | `20260930100000_customer_accounts.sql` | Phase 5 Part 1: Adds wishlists, account deletion requests with RLS, and triggers for rating recalculation on reviews. |
+| 2026-10-01 | `20261001172011_phase6_seller_portal.sql` | Phase 6: Adds seller portal RPCs, auth integrations, RLS adjustments, and low_stock_threshold to product_variants. |

@@ -86,6 +86,7 @@ export function ReturnItemDialog({
 
   // If a return request already exists, show its status and server-stored refund amount
   if (existingReturn) {
+    const isApproved = existingReturn.status === "approved";
     return (
       <div className="flex flex-col sm:flex-row sm:items-center gap-2 p-2.5 rounded-xl border border-secondary/30 bg-secondary/10 text-xs">
         <div className="flex items-center gap-1.5 font-semibold text-primary">
@@ -93,7 +94,10 @@ export function ReturnItemDialog({
           <span>{t("returnStatus", { status: existingReturn.status })}</span>
         </div>
         <div className="text-muted-foreground text-[11px] font-mono">
-          &bull; {t("refundAuthorized", { amount: formatPaisa(Number(existingReturn.refund_minor)) })}
+          &bull;{" "}
+          {isApproved
+            ? t("refundAmount", { amount: formatPaisa(Number(existingReturn.refund_minor)) })
+            : t("requestedRefund", { amount: formatPaisa(Number(existingReturn.refund_minor)) })}
         </div>
       </div>
     );
@@ -294,12 +298,12 @@ export function ReturnItemDialog({
                   onChange={handleFileChange}
                   disabled={isSubmitting}
                   className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                  title="Upload evidence photos or documents"
+                  title={t("uploadEvidenceTitle")}
                 />
                 <div className="flex flex-col items-center gap-1.5 pointer-events-none">
                   <Upload className="w-5 h-5 text-primary" />
                   <span className="font-medium text-foreground text-xs">
-                    Choose photos or PDF documents
+                    {t("chooseFiles")}
                   </span>
                   <span className="text-[11px] text-muted-foreground">
                     {t("evidenceHelp")}

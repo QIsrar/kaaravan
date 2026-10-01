@@ -267,8 +267,8 @@ export function AddressesManager({ initialAddresses }: AddressesManagerProps) {
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between gap-2">
                   <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <Home className="w-4 h-4 text-primary" />
-                    <span>{addr.full_name}</span>
+                    <Home className="w-4 h-4 text-primary shrink-0" />
+                    <span><bdi dir="auto">{addr.full_name}</bdi></span>
                   </CardTitle>
                   {addr.is_default && (
                     <Badge variant="default" className="text-[10px] uppercase font-bold py-0.5">
@@ -280,14 +280,14 @@ export function AddressesManager({ initialAddresses }: AddressesManagerProps) {
               </CardHeader>
 
               <CardContent className="space-y-4 text-xs">
-                <div className="text-muted-foreground space-y-1 leading-relaxed">
-                  <p className="font-medium text-foreground">{addr.phone}</p>
-                  <p className="pt-1">{addr.street}</p>
+                <div className="text-muted-foreground space-y-1 leading-relaxed" dir="auto">
+                  <p className="font-medium text-foreground"><bdi dir="ltr">{addr.phone}</bdi></p>
+                  <p className="pt-1"><bdi dir="auto">{addr.street}</bdi></p>
                   <p>
-                    {addr.area}, {addr.city}
+                    <bdi dir="auto">{addr.area}</bdi>, <bdi dir="auto">{addr.city}</bdi>
                   </p>
                   <p>
-                    {addr.province}{" "}
+                    <bdi dir="auto">{addr.province}</bdi>{" "}
                     {addr.postal_code && `(${addr.postal_code})`}
                   </p>
                 </div>
@@ -346,7 +346,7 @@ export function AddressesManager({ initialAddresses }: AddressesManagerProps) {
               {editingAddress ? t("editAddress") : t("addAddress")}
             </AlertDialogTitle>
             <AlertDialogDescription className="text-xs text-muted-foreground">
-              Verified delivery across all provinces and territories of Pakistan.
+              {t("dialogDesc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
 
@@ -368,7 +368,7 @@ export function AddressesManager({ initialAddresses }: AddressesManagerProps) {
                   required
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="e.g. Asad Ullah Khan"
+                  placeholder={t("namePlaceholder")}
                   className="w-full text-xs rounded-xl border border-border bg-background p-2.5 text-foreground focus:ring-1 focus:ring-primary outline-none"
                   disabled={isSubmitting}
                 />
@@ -381,10 +381,11 @@ export function AddressesManager({ initialAddresses }: AddressesManagerProps) {
                 <input
                   type="tel"
                   required
+                  dir="ltr"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="03001234567"
-                  className="w-full text-xs rounded-xl border border-border bg-background p-2.5 text-foreground focus:ring-1 focus:ring-primary outline-none"
+                  className="w-full text-xs rounded-xl border border-border bg-background p-2.5 text-foreground focus:ring-1 focus:ring-primary outline-none text-start"
                   disabled={isSubmitting}
                 />
               </div>
@@ -437,7 +438,7 @@ export function AddressesManager({ initialAddresses }: AddressesManagerProps) {
                 required
                 value={area}
                 onChange={(e) => setArea(e.target.value)}
-                placeholder="e.g. Gulberg III / DHA Phase 5 / Saddar"
+                placeholder={t("areaPlaceholder")}
                 className="w-full text-xs rounded-xl border border-border bg-background p-2.5 text-foreground focus:ring-1 focus:ring-primary outline-none"
                 disabled={isSubmitting}
               />
@@ -452,7 +453,7 @@ export function AddressesManager({ initialAddresses }: AddressesManagerProps) {
                 required
                 value={street}
                 onChange={(e) => setStreet(e.target.value)}
-                placeholder="House / Flat No., Street, Landmark"
+                placeholder={t("streetPlaceholder")}
                 className="w-full text-xs rounded-xl border border-border bg-background p-2.5 text-foreground focus:ring-1 focus:ring-primary outline-none resize-none"
                 disabled={isSubmitting}
               />
@@ -467,7 +468,7 @@ export function AddressesManager({ initialAddresses }: AddressesManagerProps) {
                   type="text"
                   value={postalCode}
                   onChange={(e) => setPostalCode(e.target.value)}
-                  placeholder="e.g. 54660"
+                  placeholder={t("postalCodePlaceholder")}
                   className="w-full text-xs rounded-xl border border-border bg-background p-2.5 text-foreground focus:ring-1 focus:ring-primary outline-none"
                   disabled={isSubmitting}
                 />

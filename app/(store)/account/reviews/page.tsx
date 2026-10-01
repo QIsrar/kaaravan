@@ -11,37 +11,37 @@ export default async function CustomerReviewsPage() {
   const profile = await requireAuth(["customer", "seller", "superadmin"]);
   const supabase = await createClient();
 
-  // 1. Fetch user reviews
-  const { data: rawReviews } = await supabase
-    .from("reviews")
-    .select(`
-      id, product_id, order_item_id, rating, title, body, status, created_at,
-      products (title, slug, product_images (path))
-    `)
-    .eq("profile_id", profile.id)
-    .order("created_at", { ascending: false });
+  // 1. Fetch user reviews and delivered order items concurrently
+  const [{ data: rawReviews }, { data: rawOrders }] = await Promise.all([
+    supabase
+      .from("reviews")
+      .select(`
+        id, product_id, order_item_id, rating, title, body, status, created_at,
+        products (title, slug, product_images (path))
+      `)
+      .eq("profile_id", profile.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("orders")
+      .select(`
+        id, order_number, placed_at,
+        sub_orders (
+          id, status, updated_at,
+          order_items (
+            id, sub_order_id, variant_id, product_title, created_at,
+            product_variants (
+              products (id, title, slug, product_images (path))
+            )
+          )
+        )
+      `)
+      .eq("profile_id", profile.id)
+      .is("deleted_at", null),
+  ]);
 
   const reviewedOrderItemIds = new Set(
     (rawReviews || []).map((r) => r.order_item_id).filter(Boolean)
   );
-
-  // 2. Fetch delivered order items for this customer
-  const { data: rawOrders } = await supabase
-    .from("orders")
-    .select(`
-      id, order_number, placed_at,
-      sub_orders (
-        id, status, updated_at,
-        order_items (
-          id, sub_order_id, variant_id, product_title, created_at,
-          product_variants (
-            products (id, title, slug, product_images (path))
-          )
-        )
-      )
-    `)
-    .eq("profile_id", profile.id)
-    .is("deleted_at", null);
 
   const unreviewedItems: DeliveredOrderItem[] = [];
 

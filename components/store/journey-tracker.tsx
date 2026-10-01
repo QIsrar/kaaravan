@@ -1,13 +1,15 @@
 "use client";
 
 import React from "react";
-import { Check, Package, Sparkles, Truck, MapPin } from "lucide-react";
+import { Check, Package, Sparkles, Truck, MapPin, XCircle, CheckCircle2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import { JOURNEY_STOP_MESSAGE_KEYS, type JourneyStop } from "@/lib/couriers/types";
 
 interface JourneyTrackerProps {
-  currentStop: JourneyStop;
+  currentStop?: JourneyStop;
+  status?: string;
   orderNumber: string;
   className?: string;
   estimatedArrival?: string;
@@ -27,37 +29,83 @@ const STOPS: { key: JourneyStop; icon: React.ElementType }[] = [
  * Incorporates Direction 1's warm golden glowing waypoint nodes on solid surfaces.
  */
 export function JourneyTracker({
-  currentStop,
+  currentStop = "placed",
+  status,
   className,
   orderNumber,
   estimatedArrival,
   onStopChange,
 }: JourneyTrackerProps) {
   const t = useTranslations("journey");
-  const stopIndex = STOPS.findIndex((s) => s.key === currentStop);
+
+  const isCancelled = status === "cancelled";
+  const isReturned = status === "returned";
+  const isTerminated = isCancelled || isReturned;
+  const isDelivered = status === "delivered" || currentStop === "arrived";
+
+  const rawStopIndex = STOPS.findIndex((s) => s.key === currentStop);
+  const activeStopIndex = rawStopIndex >= 0 ? rawStopIndex : 0;
 
   return (
     <div
       className={cn(
-        "rounded-2xl border border-border bg-card p-6 shadow-sm",
+        "rounded-2xl border border-border bg-card p-6 shadow-sm transition-opacity",
+        isTerminated && "opacity-75 bg-muted/20 border-border/80",
         className
       )}
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4 mb-6">
         <div>
           <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
-            The Kaaravan Trail
+            {t("theKaaravanTrail")}
           </span>
-          <h4 className="text-base font-semibold text-primary flex items-center gap-2">
-            <span>{t("statusMessage")}</span>
-            <span className="inline-block w-2 h-2 rounded-full bg-secondary animate-pulse" />
-          </h4>
+          <div className="flex flex-wrap items-center gap-2 mt-0.5">
+            <h4
+              className={cn(
+                "text-base font-semibold flex items-center gap-2",
+                isTerminated
+                  ? "text-muted-foreground"
+                  : isDelivered
+                  ? "text-foreground font-bold"
+                  : "text-primary"
+              )}
+            >
+              <span>
+                {isCancelled
+                  ? t("journeyCancelledMessage")
+                  : isReturned
+                  ? t("journeyReturnedMessage")
+                  : isDelivered
+                  ? t("deliveredStatusMessage")
+                  : t("statusMessage")}
+              </span>
+            </h4>
+            {isTerminated ? (
+              <Badge
+                variant="destructive"
+                className="text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 py-0.5 px-2"
+              >
+                <XCircle className="w-3.5 h-3.5" />
+                <span>{isCancelled ? t("cancelled") : t("returned")}</span>
+              </Badge>
+            ) : isDelivered ? (
+              <Badge
+                variant="default"
+                className="text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 py-0.5 px-2 bg-primary text-primary-foreground"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>{t("delivered")}</span>
+              </Badge>
+            ) : (
+              <span className="inline-block w-2 h-2 rounded-full bg-secondary animate-pulse" />
+            )}
+          </div>
         </div>
         <div className="text-xs sm:text-end">
           <span className="block font-mono font-medium text-foreground">
             Order #{orderNumber}
           </span>
-          {estimatedArrival && (
+          {estimatedArrival && !isTerminated && (
             <span className="text-muted-foreground">Est. Arrival: {estimatedArrival}</span>
           )}
         </div>
@@ -68,9 +116,16 @@ export function JourneyTracker({
         {/* Connector Trail Line */}
         <div className="absolute top-6 start-6 end-6 h-1 bg-muted rounded-full -translate-y-1/2 z-0 hidden sm:block">
           <div
-            className="h-full bg-primary transition-all duration-700 rounded-full"
+            className={cn(
+              "h-full transition-all duration-700 rounded-full",
+              isTerminated ? "bg-muted-foreground/30" : "bg-primary"
+            )}
             style={{
-              width: `${(Math.max(0, stopIndex) / (STOPS.length - 1)) * 100}%`,
+              width: isTerminated
+                ? "0%"
+                : isDelivered
+                ? "100%"
+                : `${(Math.max(0, activeStopIndex) / (STOPS.length - 1)) * 100}%`,
             }}
           />
         </div>
@@ -78,8 +133,10 @@ export function JourneyTracker({
         {/* Waypoints along the Route */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-6 relative z-10">
           {STOPS.map((stop, index) => {
-            const isCompleted = index < stopIndex;
-            const isCurrent = index === stopIndex;
+            // When delivered, all 4 stops are completed
+            const isCompleted = isDelivered || (!isTerminated && index < activeStopIndex);
+            // When terminated (cancelled/returned) or delivered, no stop is "in transit"
+            const isCurrent = !isTerminated && !isDelivered && index === activeStopIndex;
             const Icon = stop.icon;
 
             return (
@@ -89,23 +146,30 @@ export function JourneyTracker({
                 onClick={() => onStopChange?.(stop.key)}
                 className={cn(
                   "group flex sm:flex-col items-center gap-3 text-start sm:text-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl p-1",
-                  onStopChange ? "cursor-pointer" : "cursor-default"
+                  onStopChange && !isTerminated ? "cursor-pointer" : "cursor-default"
                 )}
               >
                 {/* Node Milestone with Warm Golden Glowing Waypoint */}
                 <div
                   className={cn(
                     "w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300 shrink-0 relative",
-                    isCompleted &&
+                    isTerminated &&
+                      "bg-muted/40 text-muted-foreground border-border",
+                    !isTerminated &&
+                      isCompleted &&
                       "bg-primary text-primary-foreground border-primary shadow-xs",
-                    isCurrent &&
+                    !isTerminated &&
+                      isCurrent &&
                       "bg-secondary text-secondary-foreground border-secondary ring-4 ring-secondary/35 shadow-[0_0_18px_rgba(217,155,38,0.45)] scale-110",
-                    !isCompleted &&
+                    !isTerminated &&
+                      !isCompleted &&
                       !isCurrent &&
                       "bg-card text-muted-foreground border-border hover:border-secondary/60"
                   )}
                 >
-                  {isCompleted ? (
+                  {isTerminated ? (
+                    <Icon className="w-5 h-5 text-muted-foreground/60" />
+                  ) : isCompleted ? (
                     <Check className="w-5 h-5 stroke-[2.5]" />
                   ) : isCurrent ? (
                     <>
@@ -122,22 +186,34 @@ export function JourneyTracker({
                   <p
                     className={cn(
                       "text-sm font-semibold transition-colors",
-                      isCurrent
+                      isTerminated
+                        ? "text-muted-foreground"
+                        : isCurrent
                         ? "text-primary font-bold"
                         : isCompleted
-                        ? "text-foreground"
+                        ? "text-foreground font-semibold"
                         : "text-muted-foreground"
                     )}
                   >
                     {t(JOURNEY_STOP_MESSAGE_KEYS[stop.key])}
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {isCurrent ? (
-                      <span className="text-secondary font-medium">In Transit</span>
+                    {isTerminated ? (
+                      <span className="text-muted-foreground/80">
+                        {isCancelled ? t("cancelled") : t("returned")}
+                      </span>
+                    ) : isDelivered ? (
+                      index === STOPS.length - 1 ? (
+                        <span className="text-primary font-semibold">{t("delivered")}</span>
+                      ) : (
+                        t("completed")
+                      )
+                    ) : isCurrent ? (
+                      <span className="text-secondary font-medium">{t("inTransit")}</span>
                     ) : isCompleted ? (
-                      "Completed"
+                      t("completed")
                     ) : (
-                      "Upcoming"
+                      t("upcoming")
                     )}
                   </p>
                 </div>

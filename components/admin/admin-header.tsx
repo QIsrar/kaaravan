@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BRAND_CONFIG } from "@/config/brand";
 import { ShieldCheck, UserCog, LogOut } from "lucide-react";
 import { signOutAction } from "@/lib/actions/auth";
+import { LanguageSwitcher } from "@/components/store/language-switcher";
 
 export function AdminHeader() {
   return (
@@ -17,6 +18,7 @@ export function AdminHeader() {
       </div>
 
       <div className="flex items-center gap-3">
+        <LanguageSwitcher />
         <div className="flex items-center gap-2 text-sm text-foreground">
           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
             <UserCog className="w-4 h-4" />

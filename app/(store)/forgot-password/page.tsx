@@ -8,9 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { PatternDivider } from "@/components/store/pattern-divider";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 
 export default function ForgotPasswordPage() {
+  const tAuth = useTranslations("auth");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -73,13 +75,13 @@ export default function ForgotPasswordPage() {
           {isSubmitted ? (
             <div className="p-4 rounded-2xl bg-secondary/15 border border-secondary/30 text-center space-y-3">
               <CheckCircle2 className="w-8 h-8 text-secondary mx-auto" />
-              <h3 className="font-heading font-bold text-sm text-foreground">Check Your Inbox</h3>
+              <h3 className="font-heading font-bold text-sm text-foreground">{tAuth("checkInbox")}</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 If an account exists with <strong>{email}</strong>, password reset instructions have been dispatched.
               </p>
               <Link href="/login" className="inline-block mt-2">
                 <Button variant="outline" size="sm" className="text-xs rounded-xl">
-                  Return to Sign In
+                  {tAuth("backToSignIn")}
                 </Button>
               </Link>
             </div>
@@ -98,7 +100,7 @@ export default function ForgotPasswordPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your.email@example.pk"
+                  placeholder={tAuth("forgotEmailPlaceholder")}
                   className="rounded-xl border-border"
                   disabled={isLoading}
                 />
@@ -121,7 +123,7 @@ export default function ForgotPasswordPage() {
         <CardFooter className="flex justify-center border-t border-border/60 pt-4 text-xs text-muted-foreground">
           <Link href="/login" className="flex items-center gap-1.5 text-primary hover:underline font-medium">
             <ArrowLeft className="w-3.5 h-3.5 rtl:rotate-180" />
-            <span>Back to Sign In</span>
+            <span>{tAuth("backToSignIn")}</span>
           </Link>
         </CardFooter>
       </Card>

@@ -3,9 +3,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { ShoppingBag, Compass, Search, Sparkles, X, Menu, ArrowRight, User, LogOut, Store, LayoutDashboard, Package, Heart, MapPin, Star, Settings } from "lucide-react";
+import { ShoppingBag, Compass, Search, Sparkles, X, Menu, ArrowRight, User, LogOut, Store, LayoutDashboard, Package, Heart, MapPin, Star, Settings, LogIn, UserPlus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { BRAND_CONFIG } from "@/config/brand";
+import { LanguageSwitcher } from "@/components/store/language-switcher";
 import { useCartTotalItems } from "@/lib/hooks/use-cart";
 import { useSearchSuggestions } from "@/lib/hooks/use-search-suggestions";
 import { capSearchQuery, MIN_SEARCH_QUERY_LENGTH } from "@/lib/validators/search-constants";
@@ -184,7 +185,7 @@ export function StoreHeader({ sellerPortalHref, user }: StoreHeaderProps) {
                           <Image src={item.image} alt={item.title} fill sizes="40px" className="object-cover" />
                         </div>
                         <span className="text-xs font-medium text-foreground line-clamp-1 flex-1">
-                          {item.title}
+                          <bdi dir="auto">{item.title}</bdi>
                         </span>
                         <span className="text-xs font-mono font-semibold text-foreground shrink-0">
                           {formatPaisa(item.priceMinor)}
@@ -206,7 +207,7 @@ export function StoreHeader({ sellerPortalHref, user }: StoreHeaderProps) {
               ) : (
                 <>
                   <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold px-2 block mb-2">
-                    Popular Artisan Searches
+                    {tStore("popularSearches")}
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {POPULAR_SEARCH_TERMS.map((term) => (
@@ -216,8 +217,8 @@ export function StoreHeader({ sellerPortalHref, user }: StoreHeaderProps) {
                         onClick={() => handleSelectTerm(term)}
                         className="text-xs px-3 py-1.5 rounded-full bg-muted/60 hover:bg-primary/10 hover:text-primary text-foreground transition-colors flex items-center gap-1.5"
                       >
-                        <span>{term}</span>
-                        <ArrowRight className="w-3 h-3 text-muted-foreground" />
+                        <span><bdi dir="auto">{term}</bdi></span>
+                        <ArrowRight className="w-3 h-3 text-muted-foreground rtl:rotate-180" />
                       </button>
                     ))}
                   </div>
@@ -316,18 +317,40 @@ export function StoreHeader({ sellerPortalHref, user }: StoreHeaderProps) {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Link
-                href="/account"
-                className={`px-3 py-1.5 rounded-full transition-all text-xs font-semibold ${
-                  isAccountActive
-                    ? "bg-primary text-primary-foreground shadow-2xs"
-                    : "text-muted-foreground hover:text-primary hover:bg-muted/60"
-                }`}
-              >
-                {tNav("account")}
-              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  className={`px-3 py-1.5 rounded-full transition-all text-xs font-semibold flex items-center gap-1.5 ${
+                    isAccountActive
+                      ? "bg-primary text-primary-foreground shadow-2xs"
+                      : "text-muted-foreground hover:text-primary hover:bg-muted/60"
+                  }`}
+                >
+                  <User className="w-3.5 h-3.5" />
+                  <span>{tNav("signIn")}</span>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48 p-1.5">
+                  <DropdownMenuLinkItem render={<Link href="/login" />}>
+                    <LogIn className="w-4 h-4" />
+                    <span>{tNav("signIn")}</span>
+                  </DropdownMenuLinkItem>
+                  <DropdownMenuLinkItem render={<Link href="/register" />}>
+                    <UserPlus className="w-4 h-4" />
+                    <span>{tNav("createAccount")}</span>
+                  </DropdownMenuLinkItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLinkItem render={<Link href="/track-order" />}>
+                    <Compass className="w-4 h-4" />
+                    <span>{tNav("trackOrder")}</span>
+                  </DropdownMenuLinkItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </nav>
+
+          {/* Desktop Language Switcher */}
+          <div className="hidden lg:block">
+            <LanguageSwitcher />
+          </div>
 
           {/* Cart trigger button */}
           <Link
@@ -466,29 +489,61 @@ export function StoreHeader({ sellerPortalHref, user }: StoreHeaderProps) {
               </Link>
             </div>
           ) : (
+            <div className="pt-1 pb-1 space-y-1">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground px-3 block">
+                {tNav("account")}
+              </span>
+              <Link
+                href="/login"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`flex items-center gap-2 text-xs font-semibold py-2 px-3 rounded-xl transition-colors ${
+                  pathname.startsWith("/login")
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground hover:bg-muted"
+                }`}
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span>{tNav("signIn")}</span>
+              </Link>
+              <Link
+                href="/register"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`flex items-center gap-2 text-xs font-semibold py-2 px-3 rounded-xl transition-colors ${
+                  pathname.startsWith("/register")
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground hover:bg-muted"
+                }`}
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                <span>{tNav("createAccount")}</span>
+              </Link>
+              <Link
+                href="/track-order"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`flex items-center gap-2 text-xs font-semibold py-2 px-3 rounded-xl transition-colors ${
+                  pathname.startsWith("/track-order")
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground hover:bg-muted"
+                }`}
+              >
+                <Compass className="w-3.5 h-3.5" />
+                <span>{tNav("trackOrder")}</span>
+              </Link>
+            </div>
+          )}
+          {user && (
             <Link
-              href="/account"
+              href="/track-order"
               onClick={() => setIsMobileMenuOpen(false)}
               className={`block text-xs font-semibold py-2 px-3 rounded-xl transition-colors ${
-                isAccountActive
+                pathname.startsWith("/track-order")
                   ? "bg-primary text-primary-foreground"
                   : "text-foreground hover:bg-muted"
               }`}
             >
-              {tNav("account")}
+              {tAccount("trackOrder")}
             </Link>
           )}
-          <Link
-            href="/track-order"
-            onClick={() => setIsMobileMenuOpen(false)}
-            className={`block text-xs font-semibold py-2 px-3 rounded-xl transition-colors ${
-              pathname.startsWith("/track-order")
-                ? "bg-primary text-primary-foreground"
-                : "text-foreground hover:bg-muted"
-            }`}
-          >
-            {tAccount("trackOrder")}
-          </Link>
           {user?.isApprovedSeller && (
             <Link
               href="/seller"
@@ -530,6 +585,10 @@ export function StoreHeader({ sellerPortalHref, user }: StoreHeaderProps) {
               {tAuth("signOut")}
             </button>
           )}
+          <div className="pt-3 border-t border-border flex items-center justify-between px-3">
+            <span className="text-xs text-muted-foreground font-medium">{tNav("language")}</span>
+            <LanguageSwitcher />
+          </div>
         </div>
       )}
     </header>

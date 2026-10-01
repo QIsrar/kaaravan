@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(33);
+SELECT plan(38);
 
 CREATE OR REPLACE FUNCTION tests_set_auth(user_id uuid, role text DEFAULT 'authenticated') RETURNS void AS $$
 BEGIN
@@ -386,6 +386,53 @@ SELECT throws_ok(
   '42501',
   NULL,
   'Customer cannot insert an account deletion request with status processed'
+);
+
+-- 32. anon cannot call get_seller_dashboard_stats
+RESET ROLE;
+SELECT tests_set_auth('00000000-0000-0000-0000-000000000000', 'anon');
+SELECT throws_ok(
+  $$ SELECT public.get_seller_dashboard_stats('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa') $$,
+  '42501',
+  NULL,
+  'Anon cannot call get_seller_dashboard_stats'
+);
+
+-- 33. seller B cannot read seller A's stats
+RESET ROLE;
+SELECT tests_set_auth('22222222-2222-2222-2222-222222222222', 'authenticated');
+SELECT throws_ok(
+  $$ SELECT public.get_seller_dashboard_stats('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa') $$,
+  'P0001',
+  'Access denied',
+  'Seller B cannot read Seller A stats'
+);
+
+-- 34. the owner can call stats on demo data without error
+RESET ROLE;
+SELECT tests_set_auth('11111111-1111-1111-1111-111111111111', 'authenticated');
+SELECT lives_ok(
+  $$ SELECT public.get_seller_dashboard_stats('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa') $$,
+  'Owner can successfully call get_seller_dashboard_stats without error'
+);
+
+-- 35. submit_seller_application cannot be called by authenticated users
+RESET ROLE;
+SELECT tests_set_auth('33333333-3333-3333-3333-333333333333', 'authenticated');
+SELECT throws_ok(
+  $$ SELECT public.submit_seller_application('33333333-3333-3333-3333-333333333333', 'Test', 'test', '', 'retail', '12345-1234567-1', '', 'Bank', 'Acc', 'PK123', 'Name', 'Phone', 'Prov', 'City', 'Area', 'Street', '123', '127.0.0.1') $$,
+  '42501',
+  NULL,
+  'Authenticated users cannot call submit_seller_application'
+);
+
+-- 36. rejected seller can reapply using the service role
+RESET ROLE;
+SET local role service_role;
+INSERT INTO public.sellers (id, owner_profile_id, business_name, slug, status) VALUES ('77777777-7777-7777-7777-777777777777', '44444444-4444-4444-4444-444444444444', 'Rejected', 'rejected', 'rejected');
+SELECT lives_ok(
+  $$ SELECT public.submit_seller_application('44444444-4444-4444-4444-444444444444', 'Test Reapply', 'test-reapply', '', 'retail', '12345-1234567-1', '', 'Bank', 'Acc', 'PK123', 'Name', 'Phone', 'Prov', 'City', 'Area', 'Street', '123', '127.0.0.1') $$,
+  'Rejected seller can reapply'
 );
 
 SELECT * FROM finish();

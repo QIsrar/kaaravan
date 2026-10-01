@@ -1,17 +1,22 @@
+"use client";
+
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { LayoutDashboard, Package, ShoppingCart, Settings, DollarSign } from "lucide-react";
 
 export function SellerSidebar() {
+  const t = useTranslations("seller");
+
   const navItems = [
-    { label: "Dashboard", href: "/seller", icon: LayoutDashboard },
-    { label: "Orders (Journey)", href: "/seller/orders", icon: ShoppingCart },
-    { label: "Catalog & Stock", href: "/seller/products", icon: Package },
-    { label: "Finances & Payouts", href: "/seller/finances", icon: DollarSign },
-    { label: "Settings", href: "/seller/settings", icon: Settings },
+    { label: t("nav.dashboard"), href: "/seller", icon: LayoutDashboard },
+    { label: t("nav.orders"), href: "/seller/orders", icon: ShoppingCart },
+    { label: t("nav.products"), href: "/seller/products", icon: Package },
+    { label: t("nav.finances"), href: "/seller/finances", icon: DollarSign },
+    { label: t("nav.settings"), href: "/seller/settings", icon: Settings },
   ];
 
   return (
-    <aside className="w-64 border-r border-border bg-card flex flex-col shrink-0 min-h-[calc(100vh-4rem)]">
+    <aside className="w-64 border-e border-border bg-card flex flex-col shrink-0 min-h-[calc(100vh-4rem)]">
       <div className="p-4 space-y-1">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -28,7 +33,7 @@ export function SellerSidebar() {
         })}
       </div>
       <div className="mt-auto p-4 border-t border-border/80 text-[11px] text-muted-foreground">
-        You can only see your own store&apos;s data
+        {t("dataIsolationNotice")}
       </div>
     </aside>
   );

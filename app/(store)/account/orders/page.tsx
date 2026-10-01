@@ -75,7 +75,7 @@ export default async function CustomerOrdersPage() {
           </div>
           <Link href="/" className="inline-block pt-2">
             <Button className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold">
-              Explore the Bazaar
+              {tOrders("exploreBazaar")}
             </Button>
           </Link>
         </div>
@@ -100,7 +100,7 @@ export default async function CustomerOrdersPage() {
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                       <div>
                         <span className="text-muted-foreground block text-[11px]">
-                          Order Number
+                          {tOrders("orderNumberLabel")}
                         </span>
                         <span className="font-mono font-bold text-foreground text-sm">
                           #{order.order_number}
@@ -110,7 +110,7 @@ export default async function CustomerOrdersPage() {
                       <div>
                         <span className="text-muted-foreground block text-[11px] flex items-center gap-1">
                           <Calendar className="w-3 h-3 text-muted-foreground" />
-                          <span>Date Placed</span>
+                          <span>{tOrders("datePlaced")}</span>
                         </span>
                         <span className="font-medium text-foreground">
                           {placedDate}
@@ -120,7 +120,7 @@ export default async function CustomerOrdersPage() {
                       <div>
                         <span className="text-muted-foreground block text-[11px] flex items-center gap-1">
                           <CreditCard className="w-3 h-3 text-muted-foreground" />
-                          <span>Payment</span>
+                          <span>{tOrders("payment")}</span>
                         </span>
                         <span className="font-medium uppercase text-[11px] text-foreground">
                           {order.payment_method} &bull; {order.payment_status}
@@ -166,7 +166,7 @@ export default async function CustomerOrdersPage() {
                             <div className="flex items-center gap-2.5">
                               <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
                                 <Store className="w-4 h-4 text-primary" />
-                                <span>{sellerName}</span>
+                                <span><bdi dir="auto">{sellerName}</bdi></span>
                               </div>
                               <Badge
                                 variant={statusVariant}
@@ -197,7 +197,7 @@ export default async function CustomerOrdersPage() {
                                       />
                                     </div>
                                     <span className="font-medium text-foreground line-clamp-1 max-w-[160px] sm:max-w-[200px]">
-                                      {item.product_title}
+                                      <bdi dir="auto">{item.product_title}</bdi>
                                     </span>
                                     <span className="text-muted-foreground text-[11px]">
                                       &times;{item.quantity}
@@ -210,7 +210,7 @@ export default async function CustomerOrdersPage() {
 
                           <div className="text-end shrink-0 hidden sm:block">
                             <span className="text-xs text-muted-foreground block">
-                              Package Subtotal
+                              {tOrders("packageSubtotal")}
                             </span>
                             <span className="font-mono font-semibold text-sm text-foreground">
                               {formatPaisa(Number(sub.total_minor))}

@@ -99,7 +99,7 @@ export function ReviewsManager({
       return;
     }
     if (reviewBody.trim().length < 5) {
-      setErrorMsg("Please write at least a short review of your experience.");
+      setErrorMsg(t("reviewBodyRequired"));
       return;
     }
 
@@ -140,7 +140,7 @@ export function ReviewsManager({
       closeReviewModal();
       setActiveTab("published");
     } catch (err: unknown) {
-      setErrorMsg(err instanceof Error ? err.message : "Failed to submit review.");
+      setErrorMsg(err instanceof Error ? err.message : t("submitError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -236,7 +236,7 @@ export function ReviewsManager({
                         href={`/product/${item.productSlug}`}
                         className="font-heading font-semibold text-xs text-foreground hover:text-primary transition-colors line-clamp-1"
                       >
-                        {item.productTitle}
+                        <bdi dir="auto">{item.productTitle}</bdi>
                       </Link>
                       <p className="text-[11px] text-muted-foreground">
                         {t("deliveredOn", {
@@ -309,7 +309,7 @@ export function ReviewsManager({
                               href={`/product/${rev.productSlug}`}
                               className="font-heading font-bold text-xs text-foreground hover:text-primary transition-colors truncate"
                             >
-                              {rev.productTitle}
+                              <bdi dir="auto">{rev.productTitle}</bdi>
                             </Link>
                             <Badge
                               variant={
@@ -342,12 +342,12 @@ export function ReviewsManager({
 
                           {rev.title && (
                             <h4 className="font-heading font-semibold text-xs text-foreground pt-0.5">
-                              {rev.title}
+                              <bdi dir="auto">{rev.title}</bdi>
                             </h4>
                           )}
 
                           {rev.body && (
-                            <p className="text-xs text-muted-foreground leading-relaxed pt-0.5">
+                            <p className="text-xs text-muted-foreground leading-relaxed pt-0.5" dir="auto">
                               {rev.body}
                             </p>
                           )}
@@ -383,7 +383,7 @@ export function ReviewsManager({
               {selectedItem && t("reviewDialogTitle", { product: selectedItem.productTitle })}
             </AlertDialogTitle>
             <AlertDialogDescription className="text-xs text-muted-foreground">
-              Your feedback is verified from actual purchases and helps fellow customers discover authentic crafts.
+              {t("verifiedReviewNotice")}
             </AlertDialogDescription>
           </AlertDialogHeader>
 
@@ -469,7 +469,7 @@ export function ReviewsManager({
                 onClick={closeReviewModal}
                 className="rounded-xl text-xs h-9 px-4"
               >
-                Cancel
+                {t("cancel")}
               </AlertDialogCancel>
               <Button
                 type="submit"

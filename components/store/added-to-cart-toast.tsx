@@ -35,9 +35,11 @@ function AddedToCartToastContent({
 
       <div className="flex-1 min-w-0 space-y-1">
         <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{t("added")}</p>
-        <p className="text-sm font-semibold text-foreground line-clamp-1">{title}</p>
+        <p className="text-sm font-semibold text-foreground line-clamp-1">
+          <bdi dir="auto">{title}</bdi>
+        </p>
         <p className="text-[11px] text-muted-foreground line-clamp-1">
-          {variantLabel} · {t("quantity")}: {quantity}
+          <bdi dir="auto">{variantLabel}</bdi> · {t("quantity")}: {quantity}
         </p>
         <p className="text-xs font-mono font-semibold text-foreground">
           {formatPaisa(priceMinor * quantity)}

@@ -98,10 +98,10 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
   if (!cart || cart.totalItems === 0) {
     return (
       <div className="p-12 text-center rounded-3xl border border-dashed border-border bg-card max-w-md mx-auto space-y-4">
-        <p className="text-sm text-muted-foreground">Your caravan cart is currently empty.</p>
+        <p className="text-sm text-muted-foreground">{tCheckout("emptyNotice")}</p>
         <Link href="/">
           <Button className="rounded-xl bg-primary text-primary-foreground">
-            Explore Handcrafted Catalog
+            {tCheckout("exploreCatalog")}
           </Button>
         </Link>
       </div>
@@ -166,7 +166,7 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
                 <MapPin className="w-4 h-4" />
               </div>
               <h2 className="font-heading font-bold text-base text-foreground">
-                1. Delivery Destination in Pakistan
+                {tCheckout("deliveryDestinationHeader")}
               </h2>
             </div>
 
@@ -174,11 +174,11 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
               {/* Full Name */}
               <div className="space-y-1.5 sm:col-span-2">
                 <label className="text-xs font-semibold text-foreground uppercase tracking-wider">
-                  Recipient Full Name *
+                  {tCheckout("recipientFullName")}
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Asad Ullah Khan"
+                  placeholder={tCheckout("namePlaceholder")}
                   {...register("shippingAddress.fullName")}
                   className="w-full text-xs rounded-xl border border-border bg-background p-3 text-foreground focus:ring-1 focus:ring-primary outline-none"
                 />
@@ -192,13 +192,14 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
               {/* Mobile Phone */}
               <div className="space-y-1.5 sm:col-span-2">
                 <label className="text-xs font-semibold text-foreground uppercase tracking-wider">
-                  Mobile Number (for Courier SMS / Call) *
+                  {tCheckout("mobileNumber")}
                 </label>
                 <input
                   type="tel"
                   placeholder="03001234567"
+                  dir="ltr"
                   {...register("shippingAddress.phone")}
-                  className="w-full text-xs rounded-xl border border-border bg-background p-3 text-foreground focus:ring-1 focus:ring-primary outline-none"
+                  className="w-full text-xs rounded-xl border border-border bg-background p-3 text-foreground focus:ring-1 focus:ring-primary outline-none text-start"
                 />
                 {errors.shippingAddress?.phone && (
                   <p className="text-[11px] text-destructive">
@@ -210,7 +211,7 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
               {/* Province */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-foreground uppercase tracking-wider">
-                  Province / Territory *
+                  {tCheckout("provinceTerritory")}
                 </label>
                 <select
                   {...register("shippingAddress.province", { onChange: handleProvinceChange })}
@@ -232,7 +233,7 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
               {/* City */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-foreground uppercase tracking-wider">
-                  City *
+                  {tCheckout("city")}
                 </label>
                 <select
                   {...register("shippingAddress.city")}
@@ -254,11 +255,11 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
               {/* Area / Town / Sector */}
               <div className="space-y-1.5 sm:col-span-2">
                 <label className="text-xs font-semibold text-foreground uppercase tracking-wider">
-                  Town / Sector / Area *
+                  {tCheckout("townSectorArea")}
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. DHA Phase 5, Block C or Gulberg III"
+                  placeholder={tCheckout("areaPlaceholder")}
                   {...register("shippingAddress.area")}
                   className="w-full text-xs rounded-xl border border-border bg-background p-3 text-foreground focus:ring-1 focus:ring-primary outline-none"
                 />
@@ -272,11 +273,11 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
               {/* Street Address & House / Apartment */}
               <div className="space-y-1.5 sm:col-span-2">
                 <label className="text-xs font-semibold text-foreground uppercase tracking-wider">
-                  Street Address &amp; Nearby Landmark *
+                  {tCheckout("streetAndLandmark")}
                 </label>
                 <input
                   type="text"
-                  placeholder="House 14-B, Street 9, Near Main Roundabout"
+                  placeholder={tCheckout("streetPlaceholder")}
                   {...register("shippingAddress.street")}
                   className="w-full text-xs rounded-xl border border-border bg-background p-3 text-foreground focus:ring-1 focus:ring-primary outline-none"
                 />
@@ -296,7 +297,7 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
                 <Truck className="w-4 h-4" />
               </div>
               <h2 className="font-heading font-bold text-base text-foreground">
-                2. Shipping &amp; Logistics Allocation
+                {tCheckout("merchantShippingHeader")}
               </h2>
             </div>
 
@@ -308,10 +309,10 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
                 >
                   <div>
                     <span className="font-bold text-foreground block">
-                      {group.sellerName}
+                      <bdi dir="auto">{group.sellerName}</bdi>
                     </span>
                     <span className="text-muted-foreground">
-                      {group.items.length} {group.items.length === 1 ? "item" : "items"} via Certified Courier Partner
+                      {tCheckout("itemsViaCourier", { count: group.items.length })}
                     </span>
                   </div>
                   <span className="font-mono font-bold text-foreground">
@@ -329,7 +330,7 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
                 <CreditCard className="w-4 h-4" />
               </div>
               <h2 className="font-heading font-bold text-base text-foreground">
-                3. Payment Method
+                {tCheckout("paymentMethodHeader")}
               </h2>
             </div>
 
@@ -352,11 +353,11 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
                   <div className="flex items-center gap-2">
                     <Banknote className="w-4 h-4 text-primary" />
                     <span className="font-bold text-xs text-foreground">
-                      Cash on Delivery (COD)
+                      {tCheckout("cod")}
                     </span>
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-1">
-                    Pay cash directly to the courier upon doorstep delivery.
+                    {tCheckout("codDesc")}
                   </p>
                 </div>
               </label>
@@ -379,11 +380,11 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
                   <div className="flex items-center gap-2">
                     <Smartphone className="w-4 h-4 text-primary" />
                     <span className="font-bold text-xs text-foreground">
-                      JazzCash Mobile Account
+                      {tCheckout("jazzcash")}
                     </span>
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-1">
-                    Pay via your registered JazzCash mobile wallet.
+                    {tCheckout("jazzcashDesc")}
                   </p>
                 </div>
               </label>
@@ -406,11 +407,11 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
                   <div className="flex items-center gap-2">
                     <Smartphone className="w-4 h-4 text-emerald-600" />
                     <span className="font-bold text-xs text-foreground">
-                      Easypaisa
+                      {tCheckout("easypaisa")}
                     </span>
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-1">
-                    Direct instant debit from your Easypaisa app.
+                    {tCheckout("easypaisaDesc")}
                   </p>
                 </div>
               </label>
@@ -433,11 +434,11 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
                   <div className="flex items-center gap-2">
                     <CreditCard className="w-4 h-4 text-primary" />
                     <span className="font-bold text-xs text-foreground">
-                      Debit / Credit Card
+                      {tCheckout("card")}
                     </span>
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-1">
-                    Visa &amp; Mastercard via 3D Secure verification.
+                    {tCheckout("cardDesc")}
                   </p>
                 </div>
               </label>
@@ -460,11 +461,11 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
                   <div className="flex items-center gap-2">
                     <Landmark className="w-4 h-4 text-primary" />
                     <span className="font-bold text-xs text-foreground">
-                      Direct Bank Transfer (1Link / IBFT)
+                      {tCheckout("bankTransferOption")}
                     </span>
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-1">
-                    Transfer directly to the seller&apos;s verified bank account and share the receipt.
+                    {tCheckout("bankTransferOptionDesc")}
                   </p>
                 </div>
               </label>
@@ -476,7 +477,7 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
         <div className="lg:col-span-4 sticky top-24 space-y-4">
           <div className="rounded-3xl border border-border bg-card p-6 shadow-sm space-y-6">
             <h3 className="font-heading font-extrabold text-lg text-foreground border-b border-border pb-3">
-              Checkout Summary
+              {tCheckout("checkoutSummary")}
             </h3>
 
             <div className="space-y-3 max-h-64 overflow-y-auto pe-1">
@@ -487,10 +488,10 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-foreground line-clamp-1">
-                      {item.productTitle}
+                      <bdi dir="auto">{item.productTitle}</bdi>
                     </p>
                     <p className="text-[11px] text-muted-foreground">
-                      Qty: {item.quantity}
+                      {tCheckout("qty", { count: item.quantity })}
                     </p>
                   </div>
                   <span className="text-xs font-mono font-semibold text-foreground">
@@ -502,14 +503,14 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
 
             <div className="space-y-3 text-xs border-t border-border pt-4">
               <div className="flex justify-between text-muted-foreground">
-                <span>Items Subtotal</span>
+                <span>{tCheckout("itemsSubtotal")}</span>
                 <span className="font-mono text-foreground font-semibold">
                   {formatPaisa(cart.subtotalMinor)}
                 </span>
               </div>
 
               <div className="flex justify-between text-muted-foreground">
-                <span>Shipping ({cart.sellerGroups.length} workshops)</span>
+                <span>{tCheckout("shippingWorkshops", { count: cart.sellerGroups.length })}</span>
                 <span className="font-mono text-foreground font-semibold">
                   {formatPaisa(cart.shippingMinor)}
                 </span>
@@ -517,7 +518,7 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
 
               <div className="pt-3 border-t border-border flex justify-between items-baseline">
                 <span className="font-heading font-bold text-sm text-foreground">
-                  Grand Total
+                  {tCheckout("grandTotal")}
                 </span>
                 <span className="font-heading font-black text-2xl text-primary">
                   {formatPaisa(cart.grandTotalMinor)}
@@ -532,10 +533,10 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
               className="w-full h-12 rounded-xl bg-accent text-accent-foreground hover:bg-accent/90 font-bold text-base shadow-md transition-all"
             >
               {submitting ? (
-                <span>Validating Order...</span>
+                <span>{tCheckout("validatingOrder")}</span>
               ) : (
                 <>
-                  <span>Join the Kaaravan &amp; Place Order</span>
+                  <span>{tCheckout("joinKaaravanAndOrder")}</span>
                   <ArrowRight className="w-4 h-4 ms-2 rtl:rotate-180" />
                 </>
               )}
@@ -544,10 +545,10 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
             <div className="text-[11px] text-muted-foreground space-y-2 border-t border-border/60 pt-3">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
-                <span>Prices are verified securely before every order</span>
+                <span>{tCheckout("securePriceVerification")}</span>
               </div>
               <p className="leading-relaxed">
-                Totals shown here always match the seller&apos;s current listed prices.
+                {tCheckout("priceMatchNotice")}
               </p>
             </div>
           </div>

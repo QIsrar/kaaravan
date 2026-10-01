@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, RotateCcw } from "lucide-react";
 
@@ -11,6 +12,9 @@ export default function AccountError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const tStore = useTranslations("store");
+  const tCommon = useTranslations("common");
+
   useEffect(() => {
     console.error("Account page error:", error);
   }, [error]);
@@ -22,10 +26,10 @@ export default function AccountError({
       </div>
       <div>
         <h3 className="font-heading font-bold text-lg text-foreground">
-          Unable to load account information
+          {tStore("accountErrorTitle")}
         </h3>
         <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
-          {error.message || "An unexpected error occurred while loading this page. Please try again."}
+          {error.message || tCommon("error")}
         </p>
       </div>
       <div>
@@ -35,7 +39,7 @@ export default function AccountError({
           className="rounded-xl border-border hover:bg-card text-xs font-semibold gap-2"
         >
           <RotateCcw className="w-3.5 h-3.5" />
-          <span>Try Again</span>
+          <span>{tCommon("tryAgain")}</span>
         </Button>
       </div>
     </div>

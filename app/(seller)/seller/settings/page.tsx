@@ -1,12 +1,14 @@
 import { Settings } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { SellerComingSoon } from "@/components/seller/seller-coming-soon";
 
-export default function SellerSettingsPage() {
+export default async function SellerSettingsPage() {
+  const t = await getTranslations("seller");
   return (
     <SellerComingSoon
       icon={Settings}
-      title="Settings"
-      description="This section is coming soon. You'll be able to manage your store profile and preferences here."
+      title={t("comingSoon.settingsTitle")}
+      description={t("comingSoon.settingsDesc")}
     />
   );
 }

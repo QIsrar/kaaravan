@@ -61,6 +61,34 @@ function getStatusBadgeVariant(status: SubOrderStatus): "default" | "secondary" 
   }
 }
 
+function getOverallOrderStatus(subOrders: Array<{ status: string }>) {
+  if (subOrders.length === 0) {
+    return { key: "pending", labelKey: "status.pending", variant: "accent" as const };
+  }
+  const statuses = subOrders.map((s) => s.status);
+
+  if (statuses.every((s) => s === "cancelled")) {
+    return { key: "cancelled", labelKey: "status.cancelled", variant: "destructive" as const };
+  }
+  if (statuses.every((s) => s === "delivered")) {
+    return { key: "delivered", labelKey: "status.delivered", variant: "default" as const };
+  }
+  if (statuses.every((s) => s === "returned")) {
+    return { key: "returned", labelKey: "status.returned", variant: "destructive" as const };
+  }
+
+  const firstStatus = statuses[0];
+  if (statuses.every((s) => s === firstStatus)) {
+    return {
+      key: firstStatus,
+      labelKey: `status.${firstStatus}`,
+      variant: getStatusBadgeVariant(firstStatus as SubOrderStatus),
+    };
+  }
+
+  return { key: "in_progress", labelKey: "inProgress", variant: "secondary" as const };
+}
+
 export default async function CustomerOrderDetailPage({
   params,
 }: OrderDetailPageProps) {
@@ -88,6 +116,7 @@ export default async function CustomerOrderDetailPage({
 
   const shippingAddr = (order.shipping_address as Record<string, string>) || {};
   const subOrders = order.sub_orders || [];
+  const overallStatus = getOverallOrderStatus(subOrders);
 
   return (
     <div className="space-y-8">
@@ -99,14 +128,19 @@ export default async function CustomerOrderDetailPage({
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors mb-2"
           >
             <ArrowLeft className="w-3.5 h-3.5 rtl:rotate-180" />
-            <span>Back to My Orders</span>
+            <span>{tOrders("backToOrders")}</span>
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
             <h1 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">
               {tOrders("orderNumber", { number: order.order_number })}
             </h1>
-            <Badge variant="outline" className="text-xs font-mono uppercase">
-              {order.payment_status}
+            <Badge variant={overallStatus.variant} className="text-xs font-bold uppercase tracking-wider">
+              {tOrders(overallStatus.labelKey as Parameters<typeof tOrders>[0]) || overallStatus.key}
+            </Badge>
+            <Badge variant="outline" className="text-xs font-medium border-border">
+              {tOrders("paymentStatusLabel", {
+                status: tOrders(`payment.${order.payment_status}` as Parameters<typeof tOrders>[0]) || order.payment_status,
+              })}
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
@@ -128,7 +162,7 @@ export default async function CustomerOrderDetailPage({
       <div className="space-y-6">
         <h2 className="font-heading text-lg font-bold text-foreground flex items-center gap-2">
           <Package className="w-5 h-5 text-primary" />
-          <span>Artisan Packages ({subOrders.length})</span>
+          <span>{tOrders("packagesCount", { count: subOrders.length })}</span>
         </h2>
 
         {subOrders.map((sub) => {
@@ -171,7 +205,7 @@ export default async function CustomerOrderDetailPage({
                     </div>
                     <div>
                       <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
-                        <span>{sellerName}</span>
+                        <span><bdi dir="auto">{sellerName}</bdi></span>
                         <Badge
                           variant={getStatusBadgeVariant(subStatus)}
                           className="text-[10px] uppercase font-bold tracking-wider py-0"
@@ -180,7 +214,7 @@ export default async function CustomerOrderDetailPage({
                         </Badge>
                       </CardTitle>
                       <span className="text-[11px] text-muted-foreground">
-                        {tOrders("itemsCount", { count: items.length })} &bull; Package Total:{" "}
+                        {tOrders("itemsCount", { count: items.length })} &bull; {tOrders("packageTotal")}{" "}
                         <strong className="text-foreground font-mono">
                           {formatPaisa(Number(sub.total_minor))}
                         </strong>
@@ -203,6 +237,7 @@ export default async function CustomerOrderDetailPage({
                 <div className="space-y-2">
                   <JourneyTracker
                     currentStop={stage}
+                    status={subStatus}
                     orderNumber={order.order_number}
                   />
                 </div>
@@ -243,20 +278,22 @@ export default async function CustomerOrderDetailPage({
                                   href={`/product/${productSlug}`}
                                   className="font-heading font-semibold text-foreground hover:text-primary transition-colors block truncate"
                                 >
-                                  {item.product_title}
+                                  <bdi dir="auto">{item.product_title}</bdi>
                                 </Link>
                               ) : (
                                 <span className="font-heading font-semibold text-foreground block truncate">
-                                  {item.product_title}
+                                  <bdi dir="auto">{item.product_title}</bdi>
                                 </span>
                               )}
                               {item.variant_attributes && (
                                 <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
-                                  {Object.entries(
-                                    item.variant_attributes as Record<string, string>
-                                  )
-                                    .map(([k, v]) => `${k}: ${v}`)
-                                    .join(", ")}
+                                  <bdi dir="auto">
+                                    {Object.entries(
+                                      item.variant_attributes as Record<string, string>
+                                    )
+                                      .map(([k, v]) => `${k}: ${v}`)
+                                      .join(", ")}
+                                  </bdi>
                                 </p>
                               )}
                               <span className="text-[11px] text-muted-foreground">
@@ -339,17 +376,17 @@ export default async function CustomerOrderDetailPage({
               <span>{tOrders("shippingAddress")}</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-1 text-xs text-muted-foreground">
+          <CardContent className="space-y-1 text-xs text-muted-foreground" dir="auto">
             <p className="font-bold text-foreground text-sm">
-              {shippingAddr.full_name || shippingAddr.fullName || "Customer"}
+              <bdi dir="auto">{shippingAddr.full_name || shippingAddr.fullName || "Customer"}</bdi>
             </p>
-            <p>{shippingAddr.phone}</p>
-            <p className="pt-1">{shippingAddr.street}</p>
+            <p dir="ltr" className="text-start"><bdi dir="ltr">{shippingAddr.phone}</bdi></p>
+            <p className="pt-1"><bdi dir="auto">{shippingAddr.street}</bdi></p>
             <p>
-              {shippingAddr.area}, {shippingAddr.city}
+              <bdi dir="auto">{shippingAddr.area}</bdi>, <bdi dir="auto">{shippingAddr.city}</bdi>
             </p>
             <p>
-              {shippingAddr.province} {shippingAddr.postalCode && `(${shippingAddr.postalCode})`}
+              <bdi dir="auto">{shippingAddr.province}</bdi> {shippingAddr.postalCode && `(${shippingAddr.postalCode})`}
             </p>
           </CardContent>
         </Card>

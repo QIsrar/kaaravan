@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { SlidersHorizontal, RotateCcw, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -28,6 +29,7 @@ export function StoreCatalogFilters({
   currentMaxPrice = "",
   currentSearch = "",
 }: StoreCatalogFiltersProps) {
+  const t = useTranslations("store");
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -101,7 +103,7 @@ export function StoreCatalogFilters({
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="w-4 h-4 text-primary" />
           <h3 className="font-heading font-bold text-sm text-foreground">
-            Filter Collection
+            {t("filters")}
           </h3>
         </div>
         {hasActiveFilters && (
@@ -111,7 +113,7 @@ export function StoreCatalogFilters({
             className="text-xs text-accent hover:underline flex items-center gap-1 font-medium"
           >
             <RotateCcw className="w-3 h-3" />
-            <span>Reset</span>
+            <span>{t("reset")}</span>
           </button>
         )}
       </div>
@@ -119,12 +121,12 @@ export function StoreCatalogFilters({
       {/* Search within this store */}
       <div>
         <label className="text-xs font-semibold text-foreground uppercase tracking-wider block mb-2">
-          Search Atelier
+          {t("search")}
         </label>
         <form onSubmit={handleSearchSubmit} className="relative">
           <input
             type="text"
-            placeholder="Search craft..."
+            placeholder={t("searchCraftPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full text-xs rounded-xl border border-border bg-muted/30 p-2 ps-8 text-foreground focus:ring-1 focus:ring-primary outline-none"
@@ -136,17 +138,17 @@ export function StoreCatalogFilters({
       {/* Sort By */}
       <div>
         <label className="text-xs font-semibold text-foreground uppercase tracking-wider block mb-2">
-          Sort By
+          {t("sortBy")}
         </label>
         <select
           value={currentSort}
           onChange={(e) => updateParam("sort", e.target.value)}
           className="w-full text-xs rounded-xl border border-border bg-card p-2 text-foreground focus:ring-1 focus:ring-primary outline-none"
         >
-          <option value="newest">Newest Masterworks</option>
-          <option value="price_asc">Price: Low to High</option>
-          <option value="price_desc">Price: High to Low</option>
-          <option value="rating_desc">Highest Rated</option>
+          <option value="newest">{t("newestMasterworks")}</option>
+          <option value="price_asc">{t("priceLowHigh")}</option>
+          <option value="price_desc">{t("priceHighLow")}</option>
+          <option value="rating_desc">{t("highestRated")}</option>
         </select>
       </div>
 
@@ -154,7 +156,7 @@ export function StoreCatalogFilters({
       {categories.length > 0 && (
         <div>
           <label className="text-xs font-semibold text-foreground uppercase tracking-wider block mb-2">
-            Craft Disciplines
+            {t("categories")}
           </label>
           <div className="space-y-1">
             <button
@@ -164,7 +166,7 @@ export function StoreCatalogFilters({
                 !currentCategory ? "bg-primary/10 text-primary font-bold" : "text-muted-foreground hover:bg-muted"
               }`}
             >
-              <span>All Disciplines</span>
+              <span>{t("allDisciplines")}</span>
             </button>
             {categories.map((c) => (
               <button
@@ -175,7 +177,7 @@ export function StoreCatalogFilters({
                   currentCategory === c.slug ? "bg-primary/10 text-primary font-bold" : "text-muted-foreground hover:bg-muted"
                 }`}
               >
-                <span>{c.name}</span>
+                <span><bdi dir="auto">{c.name}</bdi></span>
               </button>
             ))}
           </div>
@@ -185,7 +187,7 @@ export function StoreCatalogFilters({
       {/* Price Range Filter (PKR) */}
       <div>
         <label className="text-xs font-semibold text-foreground uppercase tracking-wider block mb-2">
-          Price Range (PKR)
+          {t("priceRange")}
         </label>
         <form onSubmit={handlePriceApply} className="space-y-2">
           <div className="flex items-center gap-2">
@@ -193,7 +195,7 @@ export function StoreCatalogFilters({
               type="number"
               min="0"
               step="100"
-              placeholder="Min"
+              placeholder={t("minPricePlaceholder")}
               value={minPrice}
               onChange={(e) => {
                 const val = e.target.value;
@@ -208,7 +210,7 @@ export function StoreCatalogFilters({
               type="number"
               min="0"
               step="100"
-              placeholder="Max"
+              placeholder={t("maxPricePlaceholder")}
               value={maxPrice}
               onChange={(e) => {
                 const val = e.target.value;
@@ -220,7 +222,7 @@ export function StoreCatalogFilters({
             />
           </div>
           <Button type="submit" size="xs" variant="outline" className="w-full text-xs font-medium">
-            Apply Price
+            {t("applyFilters")}
           </Button>
         </form>
       </div>

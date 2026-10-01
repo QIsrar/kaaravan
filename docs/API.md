@@ -551,6 +551,59 @@ This document outlines the REST API endpoints available under `/api/v1/` for mob
   }
   ```
 - **Errors:**
+---
+
+## Seller Portal (Phase 6)
+
+### 1. Seller Onboarding
+- **Method:** `POST`
+- **Path:** `/api/v1/sellers/onboarding`
+- **Auth:** Required (`Authorization: Bearer <token>`)
+- **Request Body:**
+  ```json
+  {
+    "businessName": "Lahore Artisans",
+    "businessType": "individual",
+    "cnicNumber": "35202-1234567-1",
+    "bankName": "Meezan Bank",
+    "accountTitle": "Asad Ullah",
+    "iban": "PK12MEZN0000000123456789",
+    "fullName": "Asad Ullah",
+    "phone": "03001234567",
+    "province": "Punjab",
+    "city": "Lahore",
+    "area": "Gulberg",
+    "street": "123 Main St",
+    "agreementAccepted": true
+  }
+  ```
+- **Response:** `201 Created`
+  ```json
+  {
+    "data": {
+      "sellerId": "uuid"
+    }
+  }
+  ```
+- **Errors:**
+  - `400 Bad Request`: Validation failure or existing application.
   - `401 Unauthorized`: Missing or invalid bearer token.
 
-
+### 2. Upload Seller Document
+- **Method:** `POST`
+- **Path:** `/api/v1/sellers/documents`
+- **Auth:** Required (`Authorization: Bearer <token>`)
+- **Request Body:** `multipart/form-data`
+  - `sellerId`: UUID of the seller application
+  - `docType`: String identifying the document type
+  - `file`: File object (jpg/png/webp/pdf, max 5MB)
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "filePath": "seller-documents/<seller_id>/<doc_type>/<random-uuid>.jpg"
+  }
+  ```
+- **Errors:**
+  - `400 Bad Request`: Validation failure, missing fields, invalid size or type.
+  - `401 Unauthorized`: Missing or invalid bearer token.

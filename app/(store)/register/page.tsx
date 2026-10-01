@@ -15,6 +15,7 @@ import { mergeGuestCartAction } from "@/lib/actions/cart";
 import { getSafeRedirect } from "@/lib/utils";
 
 function RegisterForm() {
+  const tAuth = useTranslations("auth");
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectParam = getSafeRedirect(searchParams.get("redirect"));
@@ -112,14 +113,14 @@ function RegisterForm() {
         {successMessage ? (
           <div className="p-4 rounded-2xl bg-secondary/15 border border-secondary/30 text-center space-y-3">
             <CheckCircle2 className="w-8 h-8 text-secondary mx-auto" />
-            <h3 className="font-heading font-bold text-sm text-foreground">Welcome to Kaaravan!</h3>
+            <h3 className="font-heading font-bold text-sm text-foreground">{tAuth("welcomeTitle")}</h3>
             <p className="text-xs text-muted-foreground leading-relaxed">{successMessage}</p>
             <Button
               type="button"
               onClick={() => router.push("/login")}
               className="mt-2 w-full bg-primary text-primary-foreground text-xs"
             >
-              Go to Sign In
+              {tAuth("login")}
             </Button>
           </div>
         ) : (
@@ -133,7 +134,7 @@ function RegisterForm() {
                 required
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="e.g. Fatima Ali"
+                placeholder={tAuth("fullNamePlaceholder")}
                 className="rounded-xl border-border text-sm"
                 disabled={isLoading}
               />
@@ -148,7 +149,7 @@ function RegisterForm() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="fatima@example.pk"
+                placeholder={tAuth("emailPlaceholder")}
                 className="rounded-xl border-border text-sm"
                 disabled={isLoading}
               />
@@ -241,10 +242,11 @@ function RegisterForm() {
 
 export default function RegisterPage() {
   const tLegal = useTranslations("legal");
+  const tAuth = useTranslations("auth");
 
   return (
     <div className="container mx-auto px-4 py-16 flex flex-col items-center justify-center min-h-[70vh]">
-      <Suspense fallback={<div className="text-sm text-muted-foreground">Loading registration...</div>}>
+      <Suspense fallback={<div className="text-sm text-muted-foreground">{tAuth("loadingRegister")}</div>}>
         <RegisterForm />
       </Suspense>
       <div className="max-w-md text-center text-xs text-muted-foreground px-4">
