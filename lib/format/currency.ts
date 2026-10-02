@@ -27,3 +27,27 @@ export function calculateDiscountPercent(
   if (c <= p) return null;
   return Math.round(((c - p) / c) * 100);
 }
+
+export function parseRupeesToPaisa(amount: string): number {
+  if (!amount || typeof amount !== "string") throw new Error("Invalid price format");
+  const trimmed = amount.trim();
+  if (!/^\d+(\.\d{1,2})?$/.test(trimmed)) {
+    throw new Error("Invalid price format. Max 2 decimal places allowed.");
+  }
+  const parts = trimmed.split(".");
+  const rupees = parseInt(parts[0], 10);
+  let paisa = 0;
+  if (parts.length > 1) {
+    let fractionalStr = parts[1];
+    if (fractionalStr.length === 1) fractionalStr += "0";
+    paisa = parseInt(fractionalStr, 10);
+  }
+  return rupees * 100 + paisa;
+}
+
+export function formatPaisaToRupees(paisa: number): string {
+  const rupees = Math.floor(paisa / 100);
+  const fractional = paisa % 100;
+  if (fractional === 0) return rupees.toString();
+  return `${rupees}.${fractional.toString().padStart(2, "0")}`;
+}

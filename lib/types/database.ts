@@ -1204,18 +1204,21 @@ export type Database = {
       }
       price_history: {
         Row: {
+          compare_at_minor: number | null
           id: string
           price_minor: number
           recorded_at: string
           variant_id: string
         }
         Insert: {
+          compare_at_minor?: number | null
           id?: string
           price_minor: number
           recorded_at?: string
           variant_id: string
         }
         Update: {
+          compare_at_minor?: number | null
           id?: string
           price_minor?: number
           recorded_at?: string

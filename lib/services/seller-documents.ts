@@ -5,6 +5,15 @@ Unauthorised copying, disclosure, modification, distribution or use is prohibite
 */
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { z } from "zod";
+
+const docTypeSchema = z.enum([
+  "cnic_front",
+  "cnic_back",
+  "ntn_certificate",
+  "business_registration",
+  "other"
+]);
 
 export async function uploadSellerDocument(
   sellerId: string,
@@ -13,6 +22,11 @@ export async function uploadSellerDocument(
   actorId: string
 ) {
   const supabase = createAdminClient();
+
+  const validatedDocType = docTypeSchema.safeParse(docType);
+  if (!validatedDocType.success) {
+    throw new Error("Invalid document type");
+  }
 
   // Validate owner
   const { data: seller, error: fetchError } = await supabase
@@ -72,7 +86,8 @@ export async function uploadSellerDocument(
     });
 
   if (dbError) {
-    // Optionally delete from storage here, but we can leave it
+    // DB error after upload, delete the uploaded file
+    await supabase.storage.from(bucket).remove([objectPath]);
     throw new Error(`Failed to record document: ${dbError.message}`);
   }
 

@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(38);
+SELECT plan(42);
 
 CREATE OR REPLACE FUNCTION tests_set_auth(user_id uuid, role text DEFAULT 'authenticated') RETURNS void AS $$
 BEGIN
@@ -398,22 +398,22 @@ SELECT throws_ok(
   'Anon cannot call get_seller_dashboard_stats'
 );
 
--- 33. seller B cannot read seller A's stats
-RESET ROLE;
-SELECT tests_set_auth('22222222-2222-2222-2222-222222222222', 'authenticated');
-SELECT throws_ok(
-  $$ SELECT public.get_seller_dashboard_stats('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa') $$,
-  'P0001',
-  'Access denied',
-  'Seller B cannot read Seller A stats'
-);
-
--- 34. the owner can call stats on demo data without error
+-- 33. authenticated cannot call get_seller_dashboard_stats
 RESET ROLE;
 SELECT tests_set_auth('11111111-1111-1111-1111-111111111111', 'authenticated');
+SELECT throws_ok(
+  $$ SELECT public.get_seller_dashboard_stats('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa') $$,
+  '42501',
+  NULL,
+  'Authenticated users cannot call get_seller_dashboard_stats'
+);
+
+-- 34. service_role can call stats on demo data without error
+RESET ROLE;
+SET local role service_role;
 SELECT lives_ok(
   $$ SELECT public.get_seller_dashboard_stats('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa') $$,
-  'Owner can successfully call get_seller_dashboard_stats without error'
+  'service_role can successfully call get_seller_dashboard_stats without error'
 );
 
 -- 35. submit_seller_application cannot be called by authenticated users
@@ -433,6 +433,60 @@ INSERT INTO public.sellers (id, owner_profile_id, business_name, slug, status) V
 SELECT lives_ok(
   $$ SELECT public.submit_seller_application('44444444-4444-4444-4444-444444444444', 'Test Reapply', 'test-reapply', '', 'retail', '12345-1234567-1', '', 'Bank', 'Acc', 'PK123', 'Name', 'Phone', 'Prov', 'City', 'Area', 'Street', '123', '127.0.0.1') $$,
   'Rejected seller can reapply'
+);
+
+-- ─── Price history trigger tests (merged from trigger_test.sql) ───────────────
+-- Use postgres role to bypass RLS for fixture inserts.
+RESET ROLE;
+SET local role postgres;
+
+INSERT INTO auth.users (id, email)
+  VALUES ('00000000-0000-0000-ffff-000000000001', 'trigtest@test.com')
+  ON CONFLICT (id) DO NOTHING;
+INSERT INTO public.profiles (id, full_name, role)
+  VALUES ('00000000-0000-0000-ffff-000000000001', 'TrigTest', 'seller')
+  ON CONFLICT (id) DO NOTHING;
+INSERT INTO public.sellers (id, owner_profile_id, business_name, slug, status)
+  VALUES ('00000000-aaaa-aaaa-aaaa-000000000001', '00000000-0000-0000-ffff-000000000001', 'TrigTest Seller', 'trigtest-seller', 'approved')
+  ON CONFLICT (id) DO NOTHING;
+INSERT INTO public.products (id, seller_id, category_id, title, slug)
+  VALUES ('00000000-bbbb-bbbb-bbbb-000000000001', '00000000-aaaa-aaaa-aaaa-000000000001', 'cccccccc-cccc-cccc-cccc-cccccccccccc', 'Trigger Test Product', 'trig-test-product')
+  ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.product_variants (id, product_id, sku, price_minor, compare_at_minor, stock_quantity)
+  VALUES ('00000000-cccc-cccc-cccc-000000000001', '00000000-bbbb-bbbb-bbbb-000000000001', 'TRIG-SKU1', 1000, 1500, 10);
+
+-- 39. Trigger created price history row on INSERT
+SELECT results_eq(
+  'SELECT price_minor, compare_at_minor FROM public.price_history WHERE variant_id = ''00000000-cccc-cccc-cccc-000000000001''',
+  $$VALUES (1000::bigint, 1500::bigint)$$,
+  'Trigger created price history row on INSERT (price_minor + compare_at_minor)'
+);
+
+-- 40. Trigger creates new price history row on price_minor UPDATE
+UPDATE public.product_variants SET price_minor = 1200 WHERE id = '00000000-cccc-cccc-cccc-000000000001';
+SELECT results_eq(
+  'SELECT price_minor FROM public.price_history WHERE variant_id = ''00000000-cccc-cccc-cccc-000000000001'' ORDER BY recorded_at DESC LIMIT 1',
+  $$VALUES (1200::bigint)$$,
+  'Trigger created price history row on price_minor UPDATE'
+);
+
+-- 41. Trigger creates new price history row on compare_at_minor UPDATE
+UPDATE public.product_variants SET compare_at_minor = 1800 WHERE id = '00000000-cccc-cccc-cccc-000000000001';
+SELECT results_eq(
+  'SELECT compare_at_minor FROM public.price_history WHERE variant_id = ''00000000-cccc-cccc-cccc-000000000001'' ORDER BY recorded_at DESC LIMIT 1',
+  $$VALUES (1800::bigint)$$,
+  'Trigger created price history row on compare_at_minor UPDATE'
+);
+
+-- 42. Exactly ONE price_history row is created per single price change (no duplicates)
+UPDATE public.product_variants SET price_minor = 900 WHERE id = '00000000-cccc-cccc-cccc-000000000001';
+SELECT is(
+  (SELECT count(*) FROM public.price_history
+   WHERE variant_id = '00000000-cccc-cccc-cccc-000000000001'
+     AND price_minor = 900),
+  1::bigint,
+  'Exactly one price_history row is created per single price change'
 );
 
 SELECT * FROM finish();

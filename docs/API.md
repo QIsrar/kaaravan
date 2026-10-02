@@ -607,3 +607,55 @@ This document outlines the REST API endpoints available under `/api/v1/` for mob
 - **Errors:**
   - `400 Bad Request`: Validation failure, missing fields, invalid size or type.
   - `401 Unauthorized`: Missing or invalid bearer token.
+
+### 3. Create/Update Product
+- **Method:** `POST` (create) or `PATCH` (update)
+- **Path:** `/api/v1/sellers/products` or `/api/v1/sellers/products/:id`
+- **Auth:** Required (`Authorization: Bearer <token>`)
+- **Request Body:**
+  ```json
+  {
+    "title": "Premium Lawn Suit",
+    "description": "High quality fabric",
+    "category_id": "uuid",
+    "status": "draft",
+    "variants": [
+      {
+        "sku": "LAWN-01-RED",
+        "price_rupees": "4500",
+        "compare_at_rupees": "5000",
+        "stock_quantity": 100,
+        "low_stock_threshold": 10,
+        "attributes": { "Color": "Red", "Size": "M" },
+        "is_active": true
+      }
+    ]
+  }
+  ```
+- **Response:** `200 OK` (returns `{ success: true, data: { productId: "uuid" } }`)
+
+### 4. Upload Product Image
+- **Method:** `POST`
+- **Path:** `/api/v1/sellers/products/:id/images`
+- **Auth:** Required (`Authorization: Bearer <token>`)
+- **Request Body:** `multipart/form-data`
+  - `file`: File object (must be WebP, max 5MB)
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "data": { "image_path": "product-images/..." }
+  }
+  ```
+
+### 5. Update Variant Stock
+- **Method:** `PATCH`
+- **Path:** `/api/v1/sellers/variants/:id/stock`
+- **Auth:** Required (`Authorization: Bearer <token>`)
+- **Request Body:**
+  ```json
+  {
+    "stock_quantity": 50
+  }
+  ```
+- **Response:** `200 OK`

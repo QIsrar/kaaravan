@@ -1,6 +1,7 @@
 import { requireAuth } from "@/lib/auth/roles";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getTranslations } from "next-intl/server";
+import { formatPaisa } from "@/lib/format/currency";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Package, ShoppingBag, AlertCircle, Banknote, Calendar } from "lucide-react";
 
@@ -18,22 +19,34 @@ export default async function SellerDashboardPage() {
   const profile = await requireAuth(["seller"]);
   const t = await getTranslations("seller");
   const sellerId = profile.seller_id as string;
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
-  const { data: statsData } = await supabase
+  const { data: statsData, error: statsErr } = await supabase
     .rpc("get_seller_dashboard_stats", { p_seller_id: sellerId });
 
-  const stats = (statsData as unknown as SellerDashboardStats) || {
-    sales_today: 0,
-    sales_7d: 0,
-    sales_30d: 0,
-    pending_orders: 0,
-    low_stock: 0,
-    available_balance: 0,
-    held_balance: 0
-  };
+  if (statsErr || !statsData) {
+    return (
+      <div className="space-y-6 max-w-6xl">
+        <div>
+          <h1 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">
+            {t("dashboardTitle")}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t("dashboardSubtitle")}
+          </p>
+        </div>
+        <Card className="rounded-2xl border-destructive/50 bg-destructive/5">
+          <CardContent className="p-6 flex flex-col items-center justify-center text-center">
+            <AlertCircle className="w-12 h-12 text-destructive mb-4" />
+            <div className="text-lg font-bold text-destructive">Failed to load dashboard statistics</div>
+            <p className="text-sm text-destructive/80 mt-1">There was an error retrieving your data. Please try refreshing the page.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
-  const formatMoney = (minor: number) => `Rs. ${(minor / 100).toLocaleString()}`;
+  const stats = statsData as unknown as SellerDashboardStats;
 
   return (
     <div className="space-y-6 max-w-6xl">
@@ -82,7 +95,7 @@ export default async function SellerDashboardPage() {
             <Banknote className="w-4 h-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">{formatMoney(stats.available_balance)}</div>
+            <div className="text-2xl font-bold text-foreground">{formatPaisa(stats.available_balance)}</div>
             <p className="text-xs text-muted-foreground mt-1">Ready for payout</p>
           </CardContent>
         </Card>
@@ -95,7 +108,7 @@ export default async function SellerDashboardPage() {
             <AlertCircle className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">{formatMoney(stats.held_balance)}</div>
+            <div className="text-2xl font-bold text-foreground">{formatPaisa(stats.held_balance)}</div>
             <p className="text-xs text-muted-foreground mt-1">Pending clearance</p>
           </CardContent>
         </Card>
@@ -112,15 +125,15 @@ export default async function SellerDashboardPage() {
           <CardContent className="space-y-4">
             <div className="flex justify-between items-center border-b pb-2">
               <span className="text-sm text-muted-foreground">Today</span>
-              <span className="font-bold">{formatMoney(stats.sales_today)}</span>
+              <span className="font-bold">{formatPaisa(stats.sales_today)}</span>
             </div>
             <div className="flex justify-between items-center border-b pb-2">
               <span className="text-sm text-muted-foreground">Last 7 Days</span>
-              <span className="font-bold">{formatMoney(stats.sales_7d)}</span>
+              <span className="font-bold">{formatPaisa(stats.sales_7d)}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Last 30 Days</span>
-              <span className="font-bold">{formatMoney(stats.sales_30d)}</span>
+              <span className="font-bold">{formatPaisa(stats.sales_30d)}</span>
             </div>
           </CardContent>
         </Card>

@@ -37,12 +37,12 @@ ON CONFLICT (id) DO UPDATE SET
 -- 3. BRANDS
 INSERT INTO public.brands (id, name, slug, logo)
 VALUES
-  ('d1000000-0000-0000-0000-000000000001', 'Multan Kashikari', 'multan-kashikari', '/demo/cat-blue-pottery.svg'),
-  ('d1000000-0000-0000-0000-000000000002', 'Chiniot Heritage', 'chiniot-heritage', '/demo/cat-brass-woodcraft.svg'),
-  ('d1000000-0000-0000-0000-000000000003', 'Khyber Craft', 'khyber-craft', '/demo/cat-handcrafted-footwear.svg'),
-  ('d1000000-0000-0000-0000-000000000004', 'Hunza Mountain Reserve', 'hunza-reserve', '/demo/cat-pure-spices.svg'),
-  ('d1000000-0000-0000-0000-000000000005', 'Sindh Heritage', 'sindh-heritage', '/demo/cat-womens-artisanal.svg'),
-  ('d1000000-0000-0000-0000-000000000006', 'Lahore Weavers Guild', 'lahore-weavers', '/demo/cat-apparel.svg')
+  ('d1000000-0000-0000-0000-000000000001', 'Multan Kashikari', 'multan-kashikari', '/demo/cat-blue-pottery-ceramics.webp'),
+  ('d1000000-0000-0000-0000-000000000002', 'Chiniot Heritage', 'chiniot-heritage', '/demo/cat-brass-woodcraft.webp'),
+  ('d1000000-0000-0000-0000-000000000003', 'Khyber Craft', 'khyber-craft', '/demo/cat-handcrafted-footwear.webp'),
+  ('d1000000-0000-0000-0000-000000000004', 'Hunza Mountain Reserve', 'hunza-reserve', '/demo/cat-pure-spices-honey.webp'),
+  ('d1000000-0000-0000-0000-000000000005', 'Sindh Heritage', 'sindh-heritage', '/demo/cat-womens-artisanal.webp'),
+  ('d1000000-0000-0000-0000-000000000006', 'Lahore Weavers Guild', 'lahore-weavers', '/demo/cat-apparel-textiles.webp')
 ON CONFLICT (id) DO UPDATE SET
   name = EXCLUDED.name,
   slug = EXCLUDED.slug,
@@ -52,28 +52,28 @@ ON CONFLICT (id) DO UPDATE SET
 -- Level 1 (Parents)
 INSERT INTO public.categories (id, parent_id, name, slug, image, sort_order, commission_rate_bps, is_active)
 VALUES
-  ('b1000000-0000-0000-0000-000000000001', NULL, 'Apparel & Textiles', 'apparel-textiles', '/demo/cat-apparel.svg', 1, 600, TRUE),
-  ('b1000000-0000-0000-0000-000000000002', NULL, 'Leather & Footwear', 'leather-footwear', '/demo/cat-leather.svg', 2, 700, TRUE),
-  ('b1000000-0000-0000-0000-000000000003', NULL, 'Home & Pottery', 'home-pottery', '/demo/cat-home.svg', 3, 750, TRUE),
-  ('b1000000-0000-0000-0000-000000000004', NULL, 'Spices & Organic Foods', 'spices-organic', '/demo/cat-spices.svg', 4, 500, TRUE)
+  ('b1000000-0000-0000-0000-000000000001', NULL, 'Apparel & Textiles', 'apparel-textiles', '/demo/cat-apparel-textiles.webp', 1, 600, TRUE),
+  ('b1000000-0000-0000-0000-000000000002', NULL, 'Leather & Footwear', 'leather-footwear', '/demo/cat-leather-footwear.webp', 2, 700, TRUE),
+  ('b1000000-0000-0000-0000-000000000003', NULL, 'Home & Pottery', 'home-pottery', '/demo/cat-home-pottery.webp', 3, 750, TRUE),
+  ('b1000000-0000-0000-0000-000000000004', NULL, 'Spices & Organic Foods', 'spices-organic', '/demo/cat-spices-organic.webp', 4, 500, TRUE)
 ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, slug = EXCLUDED.slug, image = EXCLUDED.image, is_active = TRUE;
 
 -- Level 2 (Subcategories)
 INSERT INTO public.categories (id, parent_id, name, slug, image, sort_order, commission_rate_bps, is_active)
 VALUES
-  ('b2000000-0000-0000-0000-000000000005', 'b1000000-0000-0000-0000-000000000001', 'Men''s Traditional Wear', 'mens-traditional', '/demo/cat-mens-traditional.svg', 1, 600, TRUE),
-  ('b2000000-0000-0000-0000-000000000006', 'b1000000-0000-0000-0000-000000000001', 'Women''s Artisanal Shawls & Dupattas', 'womens-artisanal', '/demo/cat-womens-artisanal.svg', 2, 600, TRUE),
-  ('b2000000-0000-0000-0000-000000000007', 'b1000000-0000-0000-0000-000000000002', 'Handcrafted Heritage Footwear', 'handcrafted-footwear', '/demo/cat-handcrafted-footwear.svg', 3, 700, TRUE),
-  ('b2000000-0000-0000-0000-000000000008', 'b1000000-0000-0000-0000-000000000003', 'Multan Blue Pottery & Ceramics', 'blue-pottery-ceramics', '/demo/cat-blue-pottery.svg', 4, 750, TRUE),
-  ('b2000000-0000-0000-0000-000000000009', 'b1000000-0000-0000-0000-000000000003', 'Brass, Copper & Woodcraft', 'brass-woodcraft', '/demo/cat-brass-woodcraft.svg', 5, 750, TRUE),
-  ('b2000000-0000-0000-0000-000000000010', 'b1000000-0000-0000-0000-000000000004', 'Pure Mountain Spices & Honey', 'pure-spices-honey', '/demo/cat-pure-spices.svg', 6, 500, TRUE)
+  ('b2000000-0000-0000-0000-000000000005', 'b1000000-0000-0000-0000-000000000001', 'Men''s Traditional Wear', 'mens-traditional', '/demo/cat-mens-traditional.webp', 1, 600, TRUE),
+  ('b2000000-0000-0000-0000-000000000006', 'b1000000-0000-0000-0000-000000000001', 'Women''s Artisanal Shawls & Dupattas', 'womens-artisanal', '/demo/cat-womens-artisanal.webp', 2, 600, TRUE),
+  ('b2000000-0000-0000-0000-000000000007', 'b1000000-0000-0000-0000-000000000002', 'Handcrafted Heritage Footwear', 'handcrafted-footwear', '/demo/cat-handcrafted-footwear.webp', 3, 700, TRUE),
+  ('b2000000-0000-0000-0000-000000000008', 'b1000000-0000-0000-0000-000000000003', 'Multan Blue Pottery & Ceramics', 'blue-pottery-ceramics', '/demo/cat-blue-pottery-ceramics.webp', 4, 750, TRUE),
+  ('b2000000-0000-0000-0000-000000000009', 'b1000000-0000-0000-0000-000000000003', 'Brass, Copper & Woodcraft', 'brass-woodcraft', '/demo/cat-brass-woodcraft.webp', 5, 750, TRUE),
+  ('b2000000-0000-0000-0000-000000000010', 'b1000000-0000-0000-0000-000000000004', 'Pure Mountain Spices & Honey', 'pure-spices-honey', '/demo/cat-pure-spices-honey.webp', 6, 500, TRUE)
 ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, slug = EXCLUDED.slug, image = EXCLUDED.image, is_active = TRUE;
 
 -- 5. HOME BANNERS
 INSERT INTO public.banners (id, title, image_url, link_url, sort_order, is_active)
 VALUES
-  ('e1000000-0000-0000-0000-000000000001', 'Handcrafted Across Pakistan', '/demo/banner-caravan-1.svg', '/category/home-pottery', 1, TRUE),
-  ('e1000000-0000-0000-0000-000000000002', 'Pure Mountain Harvests', '/demo/banner-caravan-2.svg', '/category/spices-organic', 2, TRUE),
+  ('e1000000-0000-0000-0000-000000000001', 'Handcrafted Across Pakistan', '/demo/banner-1.webp', '/category/home-pottery', 1, TRUE),
+  ('e1000000-0000-0000-0000-000000000002', 'Pure Mountain Harvests', '/demo/banner-2.webp', '/category/spices-organic', 2, TRUE),
   ('e1000000-0000-0000-0000-000000000003', 'The Heritage Leatherwork', '/demo/banner-caravan-3.svg', '/category/leather-footwear', 3, TRUE)
 ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, image_url = EXCLUDED.image_url, link_url = EXCLUDED.link_url, is_active = TRUE;
 
@@ -676,7 +676,7 @@ VALUES ('f1000000-0000-0040-0000-000000000001', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (product_id, sku) DO UPDATE SET price_minor = EXCLUDED.price_minor, compare_at_minor = EXCLUDED.compare_at_minor, stock_quantity = EXCLUDED.stock_quantity, is_active = TRUE;
 
 INSERT INTO public.product_images (id, product_id, path, sort_order)
-VALUES ('91000000-0000-0040-0000-000000000001', 'c1000000-0000-0000-0000-000000000040', '/demo/prod-40.svg', 1)
+VALUES ('91000000-0000-0040-0000-000000000001', 'c1000000-0000-0000-0000-000000000040', '/demo/prod-40.webp', 1)
 ON CONFLICT (id) DO UPDATE SET path = EXCLUDED.path, sort_order = EXCLUDED.sort_order;
 
 -- 7. DEMO CUSTOMER & ORDERS
