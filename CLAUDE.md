@@ -48,3 +48,4 @@ NON-NEGOTIABLE RULES
 23. Never create, delete or modify auth users or their passwords, and never change account settings, unless the user explicitly asks in that message.
 24. Test scripts live only in ./scratch (git-ignored) inside this repo; delete them after use.
 25. Never create debug or test routes or pages in app/. Temporary test code lives only in ./scratch and is deleted after use.
+26. Never run SQL that changes the linked database (GRANT, ALTER, CREATE, UPDATE of schema or permissions) outside a migration file. Data-only cleanup of test rows is allowed and must be reported.

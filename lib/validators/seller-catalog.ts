@@ -1,18 +1,25 @@
 import { z } from "zod";
 import { parseRupeesToPaisa } from "@/lib/format/currency";
 
+const uuidSchema = z
+  .string()
+  .regex(
+    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/,
+    "Invalid UUID"
+  );
+
 export const productStatusSchema = z.enum(["draft", "pending_review", "archived"]);
 
 export const productSchema = z.object({
   title: z.string().min(5).max(200),
   description: z.string().max(2000).optional(),
-  category_id: z.string().uuid(),
-  brand_id: z.string().uuid().optional().nullable(),
+  category_id: uuidSchema,
+  brand_id: uuidSchema.optional().nullable(),
   status: productStatusSchema
 });
 
 export const productVariantSchema = z.object({
-  id: z.string().uuid().optional(), // For updates
+  id: uuidSchema.optional(), // For updates
   sku: z.string().min(2).max(50),
   price_rupees: z.string().refine(val => {
     try { parseRupeesToPaisa(val); return true; } catch { return false; }
@@ -45,3 +52,8 @@ export type ProductUpsertInput = z.infer<typeof productUpsertSchema>;
 export const stockUpdateSchema = z.object({
   stock_quantity: z.number().int().min(0)
 });
+
+export const reorderImagesSchema = z.object({
+  orderedImageIds: z.array(uuidSchema).min(1, "At least one image ID is required")
+});
+

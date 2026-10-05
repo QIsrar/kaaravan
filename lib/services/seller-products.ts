@@ -422,3 +422,80 @@ export async function deleteProductImage(
 
   return { success: true };
 }
+
+export async function updateProductImageOrder(
+  sellerId: string,
+  productId: string,
+  orderedImageIds: string[],
+  profileId: string,
+  ipAddress: string
+) {
+  const supabase = createAdminClient();
+
+  // Validate approved seller and profile ownership
+  const { data: seller, error: sellerErr } = await supabase
+    .from("sellers")
+    .select("status")
+    .eq("id", sellerId)
+    .eq("owner_profile_id", profileId)
+    .single();
+
+  if (sellerErr || !seller) throw new Error("Unauthorized");
+  if (seller.status !== "approved") {
+    throw new Error("Only approved sellers can manage products");
+  }
+
+  // Validate product ownership
+  const { data: product, error: prodErr } = await supabase
+    .from("products")
+    .select("id, seller_id")
+    .eq("id", productId)
+    .eq("seller_id", sellerId)
+    .single();
+
+  if (prodErr || !product) {
+    throw new Error("Product not found or unauthorized");
+  }
+
+  // Get current images
+  const { data: existingImages, error: imgErr } = await supabase
+    .from("product_images")
+    .select("id, sort_order")
+    .eq("product_id", productId);
+
+  if (imgErr || !existingImages) {
+    throw new Error("Failed to fetch product images");
+  }
+
+  const existingMap = new Set(existingImages.map((img) => img.id));
+  for (const imgId of orderedImageIds) {
+    if (!existingMap.has(imgId)) {
+      throw new Error(`Image ${imgId} does not belong to product ${productId}`);
+    }
+  }
+
+  for (let i = 0; i < orderedImageIds.length; i++) {
+    const imgId = orderedImageIds[i];
+    const { error: updErr } = await supabase
+      .from("product_images")
+      .update({ sort_order: i + 1 })
+      .eq("id", imgId)
+      .eq("product_id", productId);
+
+    if (updErr) throw updErr;
+  }
+
+  const { error: auditErr } = await supabase.from("audit_logs").insert({
+    actor_id: profileId,
+    action: "SELLER_REORDERED_IMAGES",
+    entity: "product_images",
+    entity_id: productId,
+    before: existingImages,
+    after: { ordered_image_ids: orderedImageIds },
+    ip: ipAddress,
+  });
+  if (auditErr) throw new Error("Failed to write audit log");
+
+  return { success: true };
+}
+

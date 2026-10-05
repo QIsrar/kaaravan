@@ -33,9 +33,9 @@ export const metadata: Metadata = {
   },
   description: BRAND_CONFIG.tagline,
   icons: {
-    icon: "/brand/symbol.webp",
-    shortcut: "/brand/symbol.webp",
-    apple: "/brand/logo.webp",
+    icon: "/brand/symbol.png",
+    shortcut: "/brand/symbol.png",
+    apple: "/brand/logo.png",
   },
 };
 

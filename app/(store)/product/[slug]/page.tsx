@@ -257,7 +257,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     slug: seller.slug,
     logo: seller.logo,
     description: seller.description,
-    ratingAvg: Number(seller.rating_avg) || 4.8,
+    ratingAvg: Number(seller.rating_avg) || 0,
     returnWindowDays: seller.return_window_days ?? 7,
   };
 
@@ -343,8 +343,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
       compareAtMinor: primaryRel.compare_at_minor
         ? Number(primaryRel.compare_at_minor)
         : null,
-      ratingAvg: Number(rel.rating_avg) || 4.8,
-      ratingCount: Number(rel.rating_count) || 10,
+      ratingAvg: Number(rel.rating_avg) || 0,
+      ratingCount: Number(rel.rating_count) || 0,
       primaryVariantId: primaryRel.id,
       primaryVariantLabel: formatVariantLabel(
         primaryRel.attributes as Record<string, string | number> | null,
@@ -402,8 +402,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
         categoryName={category?.name || "Crafts"}
         categorySlug={category?.slug || "apparel-textiles"}
         brandName={brand?.name}
-        ratingAvg={Number(product.rating_avg) || 4.8}
-        ratingCount={Number(product.rating_count) || 12}
+        ratingAvg={Number(product.rating_avg) || 0}
+        ratingCount={Number(product.rating_count) || 0}
         variants={variants}
         images={images}
         seller={detailSeller}

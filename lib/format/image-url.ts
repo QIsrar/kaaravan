@@ -4,7 +4,7 @@
  */
 
 export function getPublicImageUrl(path: string | null | undefined): string {
-  if (!path) return "/placeholder-image.jpg";
+  if (!path) return "/placeholder-product.svg";
   if (path.startsWith("/") || path.startsWith("http")) return path;
   
   // Format is typically bucket/seller_id/product_id/uuid.webp

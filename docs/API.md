@@ -659,3 +659,28 @@ This document outlines the REST API endpoints available under `/api/v1/` for mob
   }
   ```
 - **Response:** `200 OK`
+
+### 6. Reorder Product Images
+- **Method:** `PATCH`
+- **Path:** `/api/v1/sellers/products/:id/images/order`
+- **Auth:** Required (`Authorization: Bearer <token>`)
+- **Request Body:**
+  ```json
+  {
+    "orderedImageIds": [
+      "e1000000-0000-0000-0000-000000000002",
+      "e1000000-0000-0000-0000-000000000001"
+    ]
+  }
+  ```
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true
+  }
+  ```
+- **Errors:**
+  - `400 Bad Request`: Validation failure or image not belonging to product.
+  - `401 Unauthorized`: Missing or invalid bearer token.
+  - `403 Forbidden`: Seller not approved.
+

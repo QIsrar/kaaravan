@@ -12,6 +12,7 @@ import { useAddToCartMutation } from "@/lib/hooks/use-cart";
 import { showAddedToCartToast } from "@/components/store/added-to-cart-toast";
 import { WishlistButton } from "@/components/store/wishlist-button";
 import { useCurrentSeller } from "@/lib/hooks/use-current-seller";
+import { getPublicImageUrl } from "@/lib/format/image-url";
 
 export interface ProductCardProps {
   id: string;
@@ -39,8 +40,8 @@ export function ProductCard({
   sellerName,
   priceMinor,
   compareAtMinor,
-  ratingAvg = 4.8,
-  ratingCount = 12,
+  ratingAvg = 0,
+  ratingCount = 0,
   primaryVariantId,
   primaryVariantLabel,
 }: ProductCardProps) {
@@ -118,7 +119,7 @@ export function ProductCard({
         className="relative block aspect-square w-full overflow-hidden bg-muted/40"
       >
         <Image
-          src={image || "/placeholder-product.svg"}
+          src={getPublicImageUrl(image)}
           alt={title}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
@@ -173,16 +174,24 @@ export function ProductCard({
 
         <div className="mt-3 pt-3 border-t border-border/50">
           {/* Rating */}
-          <div className="flex items-center gap-1.5 mb-2">
-            <div className="flex items-center text-amber-500">
-              <Star className="w-3.5 h-3.5 fill-current" />
-            </div>
-            <span className="text-xs font-semibold text-foreground">
-              {ratingAvg.toFixed(1)}
-            </span>
-            <span className="text-[11px] text-muted-foreground">
-              ({ratingCount})
-            </span>
+          <div className="flex items-center gap-1.5 mb-2 min-h-[1.25rem]">
+            {ratingCount > 0 ? (
+              <>
+                <div className="flex items-center text-amber-500">
+                  <Star className="w-3.5 h-3.5 fill-current" />
+                </div>
+                <span className="text-xs font-semibold text-foreground">
+                  {ratingAvg.toFixed(1)}
+                </span>
+                <span className="text-[11px] text-muted-foreground">
+                  ({ratingCount})
+                </span>
+              </>
+            ) : (
+              <span className="text-[11px] text-muted-foreground">
+                {t("noReviewsYet")}
+              </span>
+            )}
           </div>
 
           {/* Price & Action Button */}

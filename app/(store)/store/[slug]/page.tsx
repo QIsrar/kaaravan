@@ -198,8 +198,8 @@ export default async function SellerStorePage({ params, searchParams }: StorePag
       compareAtMinor: primaryVariant.compare_at_minor
         ? Number(primaryVariant.compare_at_minor)
         : null,
-      ratingAvg: Number(p.rating_avg) || 4.8,
-      ratingCount: Number(p.rating_count) || 12,
+      ratingAvg: Number(p.rating_avg) || 0,
+      ratingCount: Number(p.rating_count) || 0,
       primaryVariantId: primaryVariant.id,
       primaryVariantLabel: formatVariantLabel(
         primaryVariant.attributes as Record<string, string | number> | null,

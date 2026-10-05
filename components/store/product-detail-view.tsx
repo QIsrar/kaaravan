@@ -26,6 +26,7 @@ import { showAddedToCartToast } from "@/components/store/added-to-cart-toast";
 import { PAKISTAN_CITIES } from "@/lib/validators/checkout";
 import { WishlistButton } from "@/components/store/wishlist-button";
 import { useCurrentSeller } from "@/lib/hooks/use-current-seller";
+import { getPublicImageUrl } from "@/lib/format/image-url";
 
 export interface DetailVariant {
   id: string;
@@ -158,7 +159,7 @@ export function ProductDetailView({
           productTitle: title,
           productSlug: slug,
           sku: currentVariant.sku,
-          image: activeImage.path,
+          image: getPublicImageUrl(activeImage.path),
           priceMinor: currentVariant.priceMinor,
           compareAtMinor: currentVariant.compareAtMinor,
           quantity,
@@ -170,7 +171,7 @@ export function ProductDetailView({
           setIsAdded(true);
           setTimeout(() => setIsAdded(false), 2000);
           showAddedToCartToast({
-            image: activeImage.path,
+            image: getPublicImageUrl(activeImage.path),
             title,
             variantLabel: formatVariantLabel(currentVariant.attributes, currentVariant.sku),
             quantity,
@@ -209,7 +210,7 @@ export function ProductDetailView({
             onMouseMove={handleMouseMove}
           >
             <Image
-              src={activeImage.path}
+              src={getPublicImageUrl(activeImage.path)}
               alt={title}
               fill
               priority
@@ -255,7 +256,7 @@ export function ProductDetailView({
                   }`}
                 >
                   <Image
-                    src={img.path}
+                    src={getPublicImageUrl(img.path)}
                     alt={`${title} view ${idx + 1}`}
                     fill
                     sizes="80px"
@@ -281,22 +282,30 @@ export function ProductDetailView({
 
             {/* Ratings Summary */}
             <div className="flex items-center gap-3 mt-2.5">
-              <div className="flex items-center text-amber-500">
-                {Array.from({ length: 5 }, (_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-4 h-4 ${
-                      i < Math.floor(ratingAvg) ? "fill-current" : "fill-muted text-muted"
-                    }`}
-                  />
-                ))}
-              </div>
-              <span className="text-sm font-bold text-foreground">
-                {ratingAvg.toFixed(1)}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                ({ratingCount} verified customer reviews)
-              </span>
+              {ratingCount > 0 ? (
+                <>
+                  <div className="flex items-center text-amber-500">
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-4 h-4 ${
+                          i < Math.floor(ratingAvg) ? "fill-current" : "fill-muted text-muted"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-sm font-bold text-foreground">
+                    {ratingAvg.toFixed(1)}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    ({ratingCount} {t("verifiedReviews")})
+                  </span>
+                </>
+              ) : (
+                <span className="text-xs text-muted-foreground">
+                  {t("noReviewsYet")}
+                </span>
+              )}
             </div>
           </div>
 
@@ -478,7 +487,7 @@ export function ProductDetailView({
               <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center relative overflow-hidden border border-border/60 shrink-0">
                 {seller.logo ? (
                   <Image
-                    src={seller.logo}
+                    src={getPublicImageUrl(seller.logo)}
                     alt={seller.businessName}
                     fill
                     sizes="48px"
@@ -556,24 +565,30 @@ export function ProductDetailView({
             <h3 className="font-heading text-xl font-bold text-foreground">
               {t("customerReviews")}
             </h3>
-            <div className="flex items-center gap-2 mt-1">
-              <div className="flex items-center text-amber-500">
-                {Array.from({ length: 5 }, (_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-4 h-4 ${
-                      i < Math.floor(ratingAvg) ? "fill-current" : "fill-muted text-muted"
-                    }`}
-                  />
-                ))}
+            {ratingCount > 0 ? (
+              <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center text-amber-500">
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <Star
+                      key={i}
+                      className={`w-4 h-4 ${
+                        i < Math.floor(ratingAvg) ? "fill-current" : "fill-muted text-muted"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="text-sm font-bold text-foreground">
+                  {ratingAvg.toFixed(1)} out of 5
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  ({ratingCount} {t("verifiedReviews")})
+                </span>
               </div>
-              <span className="text-sm font-bold text-foreground">
-                {ratingAvg.toFixed(1)} out of 5
-              </span>
-              <span className="text-xs text-muted-foreground">
-                ({ratingCount} verified ratings)
-              </span>
-            </div>
+            ) : (
+              <p className="text-xs text-muted-foreground mt-1">
+                {t("noReviewsYet")}
+              </p>
+            )}
           </div>
         </div>
 

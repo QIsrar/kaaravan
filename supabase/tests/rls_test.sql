@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(42);
+SELECT plan(46);
 
 CREATE OR REPLACE FUNCTION tests_set_auth(user_id uuid, role text DEFAULT 'authenticated') RETURNS void AS $$
 BEGIN
@@ -487,6 +487,42 @@ SELECT is(
      AND price_minor = 900),
   1::bigint,
   'Exactly one price_history row is created per single price change'
+);
+
+-- 43. service_role can update a product's title (trigger path: prevent_product_escalation)
+RESET ROLE;
+SET local role service_role;
+SELECT lives_ok(
+  $$ UPDATE public.products SET title = 'Updated Title by Service Role' WHERE id = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee' $$,
+  'service_role can update product title (prevent_product_escalation trigger path)'
+);
+
+-- 44. service_role can update a variant's price (trigger path: prevent_variant_escalation & record_price_history)
+RESET ROLE;
+SET local role service_role;
+SELECT lives_ok(
+  $$ UPDATE public.product_variants SET price_minor = 1400 WHERE id = '50000000-0000-0000-0000-000000000000' $$,
+  'service_role can update variant price (prevent_variant_escalation and record_price_history trigger path)'
+);
+
+-- 45. anon cannot execute private functions directly
+RESET ROLE;
+SELECT tests_set_auth('00000000-0000-0000-0000-000000000000', 'anon');
+SELECT throws_ok(
+  $$ SELECT private.record_price_history() $$,
+  '42501',
+  NULL,
+  'anon cannot execute private functions directly'
+);
+
+-- 46. authenticated cannot execute private trigger functions directly
+RESET ROLE;
+SELECT tests_set_auth('11111111-1111-1111-1111-111111111111', 'authenticated');
+SELECT throws_ok(
+  $$ SELECT private.record_price_history() $$,
+  '42501',
+  NULL,
+  'authenticated cannot execute private.record_price_history() directly'
 );
 
 SELECT * FROM finish();

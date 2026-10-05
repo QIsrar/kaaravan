@@ -100,10 +100,10 @@ export default async function HomePage() {
           image: c.image || "/placeholder-product.svg",
         }))
       : [
-          { id: "c1", name: "Apparel & Textiles", slug: "apparel-textiles", image: "/demo/prod-pashmina-shawl.jpg" },
-          { id: "c2", name: "Leather & Footwear", slug: "leather-footwear", image: "/demo/prod-peshawari-chappal.jpg" },
-          { id: "c3", name: "Home & Pottery", slug: "home-pottery", image: "/demo/prod-blue-pottery.jpg" },
-          { id: "c4", name: "Spices & Organics", slug: "spices-organic", image: "/demo/prod-pink-salt.jpg" },
+          { id: "c1", name: "Apparel & Textiles", slug: "apparel-textiles", image: "/demo/cat-apparel-textiles.webp" },
+          { id: "c2", name: "Leather & Footwear", slug: "leather-footwear", image: "/demo/cat-leather-footwear.webp" },
+          { id: "c3", name: "Home & Pottery", slug: "home-pottery", image: "/demo/cat-home-pottery.webp" },
+          { id: "c4", name: "Spices & Organics", slug: "spices-organic", image: "/demo/cat-spices-organic.webp" },
         ];
 
   // 3. Fetch active products
@@ -188,8 +188,8 @@ interface HomeProductRow {
       compareAtMinor: primaryVariant.compare_at_minor
         ? Number(primaryVariant.compare_at_minor)
         : null,
-      ratingAvg: Number(p.rating_avg) || 4.8,
-      ratingCount: Number(p.rating_count) || 12,
+      ratingAvg: Number(p.rating_avg) || 0,
+      ratingCount: Number(p.rating_count) || 0,
       primaryVariantId: primaryVariant.id,
       primaryVariantLabel: formatVariantLabel(
         primaryVariant.attributes as Record<string, string | number> | null,
@@ -227,7 +227,7 @@ interface HomeProductRow {
                 {t("categories")}
               </h2>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                Centuries of Pakistani craftsmanship across 8 regions
+                {t("craftsmanshipSubtitle")}
               </p>
             </div>
           </div>
@@ -306,15 +306,14 @@ interface HomeProductRow {
             🏺
           </div>
           <h3 className="font-heading text-xl font-bold text-foreground mb-2">
-            The Kaaravan is Preparing for Journey
+            {t("emptyCatalogTitle")}
           </h3>
           <p className="text-sm text-muted-foreground leading-relaxed mb-6">
-            Our master artisans from Multan, Namak Mandi, and Hunza are staging their workshops.
-            Approved demo products will populate once database query approval is confirmed.
+            {t("emptyCatalogDesc")}
           </p>
           <Link href="/sell">
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl">
-              Learn About Selling on Kaaravan
+              {t("emptyCatalogCta")}
             </Button>
           </Link>
         </div>
