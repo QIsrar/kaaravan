@@ -13,8 +13,8 @@ export const BRAND_CONFIG = {
   nameUrdu: "کارواں",
   tagline: "A trusted marketplace journey across Pakistan",
   taglineUrdu: "پاکستان بھر میں قابل اعتماد تجارتی سفر",
-  logoPath: "/brand/logo.svg",
-  symbolPath: "/brand/symbol.svg",
+  logoPath: "/brand/logo.webp",
+  symbolPath: "/brand/symbol.webp",
   socials: {
     twitter: "https://twitter.com/kaaravanpk",
     instagram: "https://instagram.com/kaaravanpk",

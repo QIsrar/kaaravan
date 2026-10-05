@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Loader2, AlertCircle } from "lucide-react";
 import { BRAND_CONFIG } from "@/config/brand";
+import { Image } from "@/components/ui/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
@@ -81,8 +82,15 @@ function LoginForm() {
   return (
     <Card className="w-full max-w-md shadow-lg border-border/80 mb-6 bg-card">
       <CardHeader className="text-center pb-2">
-        <div className="w-12 h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-xl mx-auto mb-3 shadow-sm">
-          K
+        <div className="w-16 h-16 rounded-2xl mx-auto mb-3 shadow-xs flex items-center justify-center overflow-hidden">
+          <Image
+            src={BRAND_CONFIG.logoPath}
+            alt={BRAND_CONFIG.name}
+            width={64}
+            height={64}
+            className="w-full h-full object-contain"
+            priority
+          />
         </div>
         <CardTitle className="font-heading text-2xl font-bold text-foreground">
           Sign In to {BRAND_CONFIG.name}

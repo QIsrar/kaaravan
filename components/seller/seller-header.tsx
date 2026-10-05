@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { BRAND_CONFIG } from "@/config/brand";
+import { Image } from "@/components/ui/image";
 import { Store, LogOut } from "lucide-react";
 import { signOutAction } from "@/lib/actions/auth";
 import { LanguageSwitcher } from "@/components/store/language-switcher";
@@ -18,8 +19,17 @@ export function SellerHeader({ sellerName }: SellerHeaderProps) {
   return (
     <header className="h-16 border-b border-border bg-card px-6 flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <Link href="/" className="font-heading font-bold text-lg text-primary">
-          {BRAND_CONFIG.name}
+        <Link href="/" className="flex items-center gap-2">
+          <Image
+            src={BRAND_CONFIG.symbolPath}
+            alt={BRAND_CONFIG.name}
+            width={32}
+            height={32}
+            className="w-8 h-8 rounded-lg object-contain shadow-2xs"
+          />
+          <span className="font-heading font-bold text-lg text-primary">
+            {BRAND_CONFIG.name}
+          </span>
         </Link>
         <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
           {t("portalBadge")}

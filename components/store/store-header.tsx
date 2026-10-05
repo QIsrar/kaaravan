@@ -110,8 +110,15 @@ export function StoreHeader({ sellerPortalHref, user }: StoreHeaderProps) {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
         {/* Brand identity */}
         <Link href="/" className="flex items-center gap-2 group shrink-0">
-          <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg shadow-sm transition-transform group-hover:scale-105">
-            <Compass className="w-6 h-6 stroke-[2]" />
+          <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center shadow-xs transition-transform group-hover:scale-105">
+            <Image
+              src={BRAND_CONFIG.symbolPath}
+              alt={BRAND_CONFIG.name}
+              width={40}
+              height={40}
+              className="w-full h-full object-contain"
+              priority
+            />
           </div>
           <div className="flex flex-col">
             <span className="font-heading text-xl font-bold tracking-tight text-primary">

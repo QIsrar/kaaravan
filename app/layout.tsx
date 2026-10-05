@@ -32,6 +32,11 @@ export const metadata: Metadata = {
     template: `%s | ${BRAND_CONFIG.name}`,
   },
   description: BRAND_CONFIG.tagline,
+  icons: {
+    icon: "/brand/symbol.webp",
+    shortcut: "/brand/symbol.webp",
+    apple: "/brand/logo.webp",
+  },
 };
 
 export default async function RootLayout({

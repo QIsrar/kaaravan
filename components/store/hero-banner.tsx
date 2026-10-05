@@ -3,11 +3,14 @@
 import React, { useState, useEffect } from "react";
 import { Image } from "@/components/ui/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export interface BannerItem {
   id: string;
   title: string | null;
+  subtitle?: string | null;
+  tag?: string | null;
   imageUrl: string;
   linkUrl: string | null;
 }
@@ -17,6 +20,7 @@ interface HeroBannerProps {
 }
 
 export function HeroBanner({ banners }: HeroBannerProps) {
+  const t = useTranslations("store");
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
@@ -52,6 +56,37 @@ export function HeroBanner({ banners }: HeroBannerProps) {
           sizes="100vw"
           className="object-cover object-center transition-opacity duration-700"
         />
+
+        {/* Gradient overlay from the start side (background color at ~70% opacity fading to transparent) behind the banner text, RTL-aware */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none hero-gradient-overlay"
+        />
+
+        {/* Banner text content */}
+        {current.title && (
+          <div className="absolute inset-0 flex flex-col justify-center ps-8 sm:ps-14 md:ps-20 pe-6 pointer-events-none">
+            <div className="max-w-[75%] sm:max-w-md md:max-w-lg lg:max-w-xl space-y-1.5 sm:space-y-3 pointer-events-auto text-start">
+              {current.tag && (
+                <span className="inline-flex items-center text-[10px] sm:text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-accent/90 text-accent-foreground backdrop-blur-xs shadow-xs w-fit">
+                  {current.tag}
+                </span>
+              )}
+              <h2 className="font-heading text-lg sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-foreground tracking-tight leading-tight">
+                {current.title}
+              </h2>
+              {current.subtitle && (
+                <p className="text-xs sm:text-sm md:text-base text-muted-foreground line-clamp-2 font-medium">
+                  {current.subtitle}
+                </p>
+              )}
+              <div className="pt-1 hidden sm:flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-primary group-hover:underline">
+                <span>{t("discoverNow")}</span>
+                <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
+              </div>
+            </div>
+          </div>
+        )}
       </Link>
 
       {/* Prev / Next controls */}

@@ -25,32 +25,61 @@ export default async function HomePage() {
     .eq("is_active", true)
     .order("sort_order", { ascending: true });
 
+  const bannerMeta: Record<string, { titleKey?: string; tagKey?: string; subtitleKey?: string }> = {
+    "Handcrafted Across Pakistan": {
+      titleKey: "banner1Title",
+      tagKey: "bannerHighlightsTag",
+      subtitleKey: "banner1Subtitle",
+    },
+    "Pure Mountain Harvests": {
+      titleKey: "banner2Title",
+      tagKey: "bannerGilgitTag",
+      subtitleKey: "banner2Subtitle",
+    },
+    "The Heritage Leatherwork": {
+      titleKey: "banner3Title",
+      tagKey: "bannerPeshawarTag",
+      subtitleKey: "banner3Subtitle",
+    },
+  };
+
   const banners: BannerItem[] =
     rawBanners && rawBanners.length > 0
-      ? rawBanners.map((b) => ({
-          id: b.id,
-          title: b.title,
-          imageUrl: b.image_url || "/placeholder-product.svg",
-          linkUrl: b.link_url,
-        }))
+      ? rawBanners.map((b) => {
+          const meta = b.title ? bannerMeta[b.title] : undefined;
+          return {
+            id: b.id,
+            title: meta?.titleKey ? t(meta.titleKey) : b.title,
+            subtitle: meta?.subtitleKey ? t(meta.subtitleKey) : null,
+            tag: meta?.tagKey ? t(meta.tagKey) : null,
+            imageUrl: b.image_url || "/placeholder-product.svg",
+            linkUrl: b.link_url,
+          };
+        })
       : [
           {
             id: "fallback-1",
-            title: "Handcrafted Across Pakistan",
-            imageUrl: "/demo/banner-textiles.jpg",
-            linkUrl: "/category/apparel-textiles",
+            title: t("banner1Title"),
+            subtitle: t("banner1Subtitle"),
+            tag: t("bannerHighlightsTag"),
+            imageUrl: "/demo/banner-1.webp",
+            linkUrl: "/category/home-pottery",
           },
           {
             id: "fallback-2",
-            title: "Pure Mountain Harvests",
-            imageUrl: "/demo/banner-mountain-harvest.jpg",
+            title: t("banner2Title"),
+            subtitle: t("banner2Subtitle"),
+            tag: t("bannerGilgitTag"),
+            imageUrl: "/demo/banner-2.webp",
             linkUrl: "/category/spices-organic",
           },
           {
             id: "fallback-3",
-            title: "Masterworks Multan Pottery",
-            imageUrl: "/demo/banner-ceramics.jpg",
-            linkUrl: "/category/home-pottery",
+            title: t("banner3Title"),
+            subtitle: t("banner3Subtitle"),
+            tag: t("bannerPeshawarTag"),
+            imageUrl: "/demo/banner-3.webp",
+            linkUrl: "/category/leather-footwear",
           },
         ];
 

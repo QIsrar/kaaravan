@@ -736,9 +736,9 @@ function generateSql() {
   sql.push("INSERT INTO public.banners (id, title, image_url, link_url, sort_order, is_active)");
   sql.push("VALUES");
   const bannersData = [
-    { id: "e1000000-0000-0000-0000-000000000001", num: 1, title: "Handcrafted Across Pakistan", fallbackSvg: "banner-caravan-1.svg", linkUrl: "/category/home-pottery", sortOrder: 1 },
-    { id: "e1000000-0000-0000-0000-000000000002", num: 2, title: "Pure Mountain Harvests", fallbackSvg: "banner-caravan-2.svg", linkUrl: "/category/spices-organic", sortOrder: 2 },
-    { id: "e1000000-0000-0000-0000-000000000003", num: 3, title: "The Heritage Leatherwork", fallbackSvg: "banner-caravan-3.svg", linkUrl: "/category/leather-footwear", sortOrder: 3 },
+    { id: "e1000000-0000-0000-0000-000000000001", num: 1, title: "Handcrafted Across Pakistan", fallbackSvg: "banner-1.webp", linkUrl: "/category/home-pottery", sortOrder: 1 },
+    { id: "e1000000-0000-0000-0000-000000000002", num: 2, title: "Pure Mountain Harvests", fallbackSvg: "banner-2.webp", linkUrl: "/category/spices-organic", sortOrder: 2 },
+    { id: "e1000000-0000-0000-0000-000000000003", num: 3, title: "The Heritage Leatherwork", fallbackSvg: "banner-3.webp", linkUrl: "/category/leather-footwear", sortOrder: 3 },
   ];
   const bannerLines = bannersData.map((b, idx) => {
     const isLast = idx === bannersData.length - 1;

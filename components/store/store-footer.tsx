@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BRAND_CONFIG } from "@/config/brand";
+import { Image } from "@/components/ui/image";
 import { PatternDivider } from "./pattern-divider";
 import { useTranslations } from "next-intl";
 
@@ -11,7 +12,14 @@ export function StoreFooter() {
         <PatternDivider variant="tilework" className="py-2 mb-6" />
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
+            <Image
+              src={BRAND_CONFIG.symbolPath}
+              alt={BRAND_CONFIG.name}
+              width={24}
+              height={24}
+              className="w-6 h-6 rounded-md object-contain shadow-2xs"
+            />
             <span className="font-heading font-semibold text-primary">
               {BRAND_CONFIG.name}
             </span>

@@ -74,7 +74,7 @@ INSERT INTO public.banners (id, title, image_url, link_url, sort_order, is_activ
 VALUES
   ('e1000000-0000-0000-0000-000000000001', 'Handcrafted Across Pakistan', '/demo/banner-1.webp', '/category/home-pottery', 1, TRUE),
   ('e1000000-0000-0000-0000-000000000002', 'Pure Mountain Harvests', '/demo/banner-2.webp', '/category/spices-organic', 2, TRUE),
-  ('e1000000-0000-0000-0000-000000000003', 'The Heritage Leatherwork', '/demo/banner-caravan-3.svg', '/category/leather-footwear', 3, TRUE)
+  ('e1000000-0000-0000-0000-000000000003', 'The Heritage Leatherwork', '/demo/banner-3.webp', '/category/leather-footwear', 3, TRUE)
 ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, image_url = EXCLUDED.image_url, link_url = EXCLUDED.link_url, is_active = TRUE;
 
 -- 6. 40 ACTIVE PRODUCTS + 1-3 VARIANTS EACH

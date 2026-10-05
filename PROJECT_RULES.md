@@ -47,3 +47,4 @@ NON-NEGOTIABLE RULES
 22. Never put keys, tokens or passwords in commands, scripts or chat output. Test scripts read them from .env.local via process.env and must never print them.
 23. Never create, delete or modify auth users or their passwords, and never change account settings, unless the user explicitly asks in that message.
 24. Test scripts live only in ./scratch (git-ignored) inside this repo; delete them after use.
+25. Never create debug or test routes or pages in app/. Temporary test code lives only in ./scratch and is deleted after use.
