@@ -13,12 +13,14 @@ import {
   ShieldCheck,
   AlertCircle,
   Store,
+  CheckCircle2,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
   updateProfileAction,
   requestAccountDeletionAction,
 } from "@/lib/actions/customer_accounts";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -70,8 +72,10 @@ export function SettingsManager({
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
 
-  // Password Form State
+  // Password Form State (Two Steps)
   const [currentPassword, setCurrentPassword] = useState("");
+  const [isCurrentVerified, setIsCurrentVerified] = useState(false);
+  const [isVerifyingCurrent, setIsVerifyingCurrent] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSavingPassword, setIsSavingPassword] = useState(false);
@@ -119,12 +123,53 @@ export function SettingsManager({
     }
   };
 
-  // 2. Change Password (Supabase Auth)
+  // 2. Step 1: Verify Current Password
+  const handleVerifyCurrentPassword = async () => {
+    setPasswordError(null);
+
+    if (!currentPassword) {
+      setPasswordError(t("currentPasswordRequired"));
+      return;
+    }
+
+    if (!initialProfile.email) {
+      setPasswordError(t("passwordUpdateError"));
+      return;
+    }
+
+    setIsVerifyingCurrent(true);
+
+    try {
+      const supabase = createClient();
+      const { error: verifyErr } = await supabase.auth.signInWithPassword({
+        email: initialProfile.email,
+        password: currentPassword,
+      });
+
+      if (verifyErr) {
+        setPasswordError(t("currentPasswordIncorrect"));
+        setIsCurrentVerified(false);
+        return;
+      }
+
+      setIsCurrentVerified(true);
+      setPasswordError(null);
+    } catch (err: unknown) {
+      setPasswordError(
+        err instanceof Error ? err.message : t("passwordUpdateError")
+      );
+      setIsCurrentVerified(false);
+    } finally {
+      setIsVerifyingCurrent(false);
+    }
+  };
+
+  // 2. Step 2: Update Password (Supabase Auth)
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setPasswordError(null);
 
-    if (!currentPassword) {
+    if (!isCurrentVerified) {
       setPasswordError(t("currentPasswordRequired"));
       return;
     }
@@ -149,18 +194,6 @@ export function SettingsManager({
     try {
       const supabase = createClient();
 
-      // Verify current password first
-      const { error: verifyErr } = await supabase.auth.signInWithPassword({
-        email: initialProfile.email,
-        password: currentPassword,
-      });
-
-      if (verifyErr) {
-        setPasswordError(t("currentPasswordIncorrect"));
-        setIsSavingPassword(false);
-        return;
-      }
-
       // Update password
       const { error: updateErr } = await supabase.auth.updateUser({
         password: newPassword,
@@ -175,6 +208,7 @@ export function SettingsManager({
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
+      setIsCurrentVerified(false);
     } catch (err: unknown) {
       setPasswordError(
         err instanceof Error ? err.message : t("passwordUpdateError")
@@ -372,23 +406,77 @@ export function SettingsManager({
             )}
 
             <div className="space-y-1.5">
-              <label htmlFor="current-password" className="font-semibold text-foreground block">
-                {t("currentPassword")} *
-              </label>
-              <input
-                id="current-password"
-                type="password"
-                required
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full text-xs rounded-xl border border-border bg-background p-2.5 text-foreground focus:ring-1 focus:ring-primary outline-none"
-                disabled={isSavingPassword}
-              />
+              <div className="flex items-center justify-between">
+                <label htmlFor="current-password" className="font-semibold text-foreground block">
+                  {t("currentPassword")} *
+                </label>
+                {isCurrentVerified && (
+                  <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 font-semibold">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    {t("currentPasswordVerified")}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  id="current-password"
+                  type="password"
+                  required
+                  value={currentPassword}
+                  onChange={(e) => {
+                    setCurrentPassword(e.target.value);
+                    setIsCurrentVerified(false);
+                  }}
+                  placeholder=""
+                  className={cn(
+                    "w-full text-xs rounded-xl border p-2.5 text-foreground outline-none",
+                    isCurrentVerified
+                      ? "border-emerald-500/40 bg-emerald-500/5 focus:ring-1 focus:ring-emerald-500"
+                      : "border-border bg-background focus:ring-1 focus:ring-primary"
+                  )}
+                  disabled={isVerifyingCurrent || isCurrentVerified || isSavingPassword}
+                />
+                {!isCurrentVerified ? (
+                  <Button
+                    type="button"
+                    disabled={isVerifyingCurrent || !currentPassword.trim() || isSavingPassword}
+                    onClick={handleVerifyCurrentPassword}
+                    className="rounded-xl text-xs font-semibold h-[38px] px-3.5 shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5"
+                  >
+                    {isVerifyingCurrent ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>{t("verifyingCurrentPassword")}</span>
+                      </>
+                    ) : (
+                      <span>{t("verifyCurrentPassword")}</span>
+                    )}
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setIsCurrentVerified(false);
+                      setCurrentPassword("");
+                    }}
+                    className="rounded-xl text-xs h-[38px] px-3 shrink-0 text-muted-foreground hover:text-foreground"
+                  >
+                    {t("cancel")}
+                  </Button>
+                )}
+              </div>
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="new-password" className="font-semibold text-foreground block">
+              <label
+                htmlFor="new-password"
+                className={cn(
+                  "font-semibold block",
+                  !isCurrentVerified ? "text-muted-foreground" : "text-foreground"
+                )}
+              >
                 {t("newPassword")} *
               </label>
               <input
@@ -398,14 +486,25 @@ export function SettingsManager({
                 minLength={8}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full text-xs rounded-xl border border-border bg-background p-2.5 text-foreground focus:ring-1 focus:ring-primary outline-none"
-                disabled={isSavingPassword}
+                placeholder=""
+                disabled={!isCurrentVerified || isSavingPassword}
+                className={cn(
+                  "w-full text-xs rounded-xl border p-2.5 outline-none",
+                  !isCurrentVerified
+                    ? "border-border bg-muted/40 text-muted-foreground cursor-not-allowed"
+                    : "border-border bg-background text-foreground focus:ring-1 focus:ring-primary"
+                )}
               />
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="confirm-password" className="font-semibold text-foreground block">
+              <label
+                htmlFor="confirm-password"
+                className={cn(
+                  "font-semibold block",
+                  !isCurrentVerified ? "text-muted-foreground" : "text-foreground"
+                )}
+              >
                 {t("confirmPassword")} *
               </label>
               <input
@@ -415,16 +514,21 @@ export function SettingsManager({
                 minLength={8}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full text-xs rounded-xl border border-border bg-background p-2.5 text-foreground focus:ring-1 focus:ring-primary outline-none"
-                disabled={isSavingPassword}
+                placeholder=""
+                disabled={!isCurrentVerified || isSavingPassword}
+                className={cn(
+                  "w-full text-xs rounded-xl border p-2.5 outline-none",
+                  !isCurrentVerified
+                    ? "border-border bg-muted/40 text-muted-foreground cursor-not-allowed"
+                    : "border-border bg-background text-foreground focus:ring-1 focus:ring-primary"
+                )}
               />
             </div>
 
             <div className="pt-2">
               <Button
                 type="submit"
-                disabled={isSavingPassword}
+                disabled={!isCurrentVerified || isSavingPassword}
                 className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold h-9 px-4 gap-1.5"
               >
                 {isSavingPassword ? (

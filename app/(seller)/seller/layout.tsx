@@ -21,7 +21,7 @@ export default async function SellerLayout({
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SellerHeader sellerName={profile.email || "Merchant Partner"} />
-      <div className="flex flex-1">
+      <div className="flex flex-col md:flex-row flex-1">
         <SellerSidebar />
         <main className="flex-1 flex flex-col overflow-y-auto">
           <div className="flex-1 p-6 md:p-8">{children}</div>

@@ -37,18 +37,17 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
   const parentIdSet = new Set((allCategories || []).map((c) => c.parent_id).filter(Boolean));
   const categoryMap = new Map((allCategories || []).map((c) => [c.id, c]));
 
-  const getCategoryHierarchy = (cat: { id: string; name: string; parent_id: string | null }): string => {
-    if (!cat.parent_id || !categoryMap.has(cat.parent_id)) return cat.name;
-    return `${getCategoryHierarchy(categoryMap.get(cat.parent_id)!)} > ${cat.name}`;
-  };
-
   const leafCategories = (allCategories || [])
     .filter((c) => !parentIdSet.has(c.id))
-    .map((c) => ({
-      id: c.id,
-      name: getCategoryHierarchy(c),
-    }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+    .map((c) => {
+      const parent = c.parent_id ? categoryMap.get(c.parent_id) : null;
+      return {
+        id: c.id,
+        name: c.name,
+        parentName: parent ? parent.name : "General",
+      };
+    })
+    .sort((a, b) => a.parentName.localeCompare(b.parentName) || a.name.localeCompare(b.name));
 
   const { data: brands } = await supabase
     .from("brands")

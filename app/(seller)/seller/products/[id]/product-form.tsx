@@ -19,6 +19,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  Check,
+  ChevronsUpDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,13 +28,20 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,6 +65,7 @@ import {
 export interface CategoryOption {
   id: string;
   name: string;
+  parentName?: string;
 }
 
 export interface BrandOption {
@@ -133,6 +143,8 @@ export function ProductForm({
   const [categoryId, setCategoryId] = useState(product?.category_id || "");
   const [brandId, setBrandId] = useState(product?.brand_id || "none");
   const [currentStatus, setCurrentStatus] = useState(product?.status || "draft");
+  const [openCategory, setOpenCategory] = useState(false);
+  const [openBrand, setOpenBrand] = useState(false);
 
   // Initial Variant Parsing
   const initialVariants: ProductVariantItem[] =
@@ -176,11 +188,25 @@ export function ProductForm({
       : [];
   const [images, setImages] = useState<ProductImageItem[]>(initialImages);
   const [imageToDelete, setImageToDelete] = useState<ProductImageItem | null>(null);
-  const [isDeletingImage, setIsDeletingImage] = useState(false);
+  const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
+  const [isReorderingImages, setIsReorderingImages] = useState(false);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [uploadProgressText, setUploadProgressText] = useState("");
   const [draggedImageIndex, setDraggedImageIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const isAnyImageActionPending =
+    isUploadingImages || isReorderingImages || deletingImageId !== null;
+
+  const categoriesByParent = React.useMemo(() => {
+    const map: Record<string, CategoryOption[]> = {};
+    for (const cat of categories) {
+      const parent = cat.parentName || "General";
+      if (!map[parent]) map[parent] = [];
+      map[parent].push(cat);
+    }
+    return map;
+  }, [categories]);
 
   // Archive Confirm Dialog
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
@@ -490,79 +516,98 @@ export function ProductForm({
 
   // Image Delete
   const handleConfirmDeleteImage = async () => {
-    if (!imageToDelete || !product?.id) return;
+    if (!imageToDelete || !product?.id || isAnyImageActionPending) return;
+    const target = imageToDelete;
+    setImageToDelete(null); // Close immediately
+    setDeletingImageId(target.id);
 
-    setIsDeletingImage(true);
     try {
-      const res = await deleteProductImageAction(imageToDelete.id, product.id);
+      const res = await deleteProductImageAction(target.id, product.id);
       if (!res.success) {
         throw new Error(res.error || "Failed to delete image");
       }
 
-      setImages((prev) => prev.filter((img) => img.id !== imageToDelete.id));
+      setImages((prev) => prev.filter((img) => img.id !== target.id));
       toast.success(t("imageDeleted"));
     } catch (err: unknown) {
       const e = err as Error;
       toast.error(e.message || "Failed to delete image");
     } finally {
-      setIsDeletingImage(false);
-      setImageToDelete(null);
+      setDeletingImageId(null);
     }
   };
 
   // Image Reordering
   const handleMoveImage = async (index: number, direction: "prev" | "next") => {
-    if (!product?.id) return;
+    if (!product?.id || isAnyImageActionPending) return;
     const targetIndex = direction === "prev" ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= images.length) return;
 
+    const prevImages = [...images];
     const newImages = [...images];
     const temp = newImages[index];
     newImages[index] = newImages[targetIndex];
     newImages[targetIndex] = temp;
 
     setImages(newImages);
+    setIsReorderingImages(true);
 
     try {
       const orderedIds = newImages.map((img) => img.id);
       const res = await reorderProductImagesAction(product.id, orderedIds);
       if (!res.success) throw new Error(res.error || "Reorder failed");
       toast.success(t("imageOrderUpdated"));
-    } catch {
-      toast.error("Failed to save image order");
-      setImages(images); // Revert
+    } catch (err: unknown) {
+      setImages(prevImages); // Revert
+      const msg = err instanceof Error ? err.message : "Failed to save image order";
+      toast.error(msg);
+    } finally {
+      setIsReorderingImages(false);
     }
   };
 
   const handleDragStart = (index: number) => {
+    if (isAnyImageActionPending) return;
     setDraggedImageIndex(index);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
+    if (isAnyImageActionPending) return;
     e.preventDefault();
   };
 
   const handleDrop = async (targetIndex: number) => {
+    if (isAnyImageActionPending) {
+      setDraggedImageIndex(null);
+      return;
+    }
     if (draggedImageIndex === null || draggedImageIndex === targetIndex || !product?.id) {
       setDraggedImageIndex(null);
       return;
     }
 
+    const fromIndex = draggedImageIndex;
+    setDraggedImageIndex(null);
+
+    const prevImages = [...images];
     const newImages = [...images];
-    const [draggedItem] = newImages.splice(draggedImageIndex, 1);
+    const [draggedItem] = newImages.splice(fromIndex, 1);
     newImages.splice(targetIndex, 0, draggedItem);
 
     setImages(newImages);
-    setDraggedImageIndex(null);
+    setIsReorderingImages(true);
 
     try {
       const orderedIds = newImages.map((img) => img.id);
       const res = await reorderProductImagesAction(product.id, orderedIds);
       if (!res.success) throw new Error(res.error || "Reorder failed");
       toast.success(t("imageOrderUpdated"));
-    } catch {
-      toast.error("Failed to save image order");
-      setImages(images); // Revert
+    } catch (err: unknown) {
+      setImages(prevImages); // Revert
+      const msg = err instanceof Error ? err.message : "Failed to save image order";
+      toast.error(msg);
+    } finally {
+      setIsReorderingImages(false);
     }
   };
 
@@ -692,44 +737,74 @@ export function ProductForm({
 
               {/* Category & Brand (Side by Side) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                {/* Category (Active Leaf Categories Only) */}
+                {/* Category (Active Leaf Categories Grouped by Parent) */}
                 <div className="space-y-1.5">
                   <Label htmlFor="category" className="text-xs font-semibold">
                     {t("category")} <span className="text-destructive">*</span>
                   </Label>
-                  <Select
-                    value={categoryId}
-                    onValueChange={(val: string | null) => {
-                      if (val) {
-                        setCategoryId(val);
-                        if (fieldErrors.category_id) {
-                          setFieldErrors((prev) => {
-                            const next = { ...prev };
-                            delete next.category_id;
-                            return next;
-                          });
-                        }
-                      }
-                    }}
-                  >
-                    <SelectTrigger
-                      id="category"
-                      className={`bg-background rounded-xl ${
-                        fieldErrors.category_id
-                          ? "border-destructive focus-visible:ring-destructive"
-                          : ""
-                      }`}
-                    >
-                      <SelectValue placeholder={t("selectCategory")} />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-64">
-                      {categories.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>
-                          {c.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {(() => {
+                    const selectedCategory = categories.find((c) => c.id === categoryId);
+                    return (
+                      <Popover open={openCategory} onOpenChange={setOpenCategory}>
+                        <PopoverTrigger
+                          render={
+                            <Button
+                              id="category"
+                              type="button"
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={openCategory}
+                              className={cn(
+                                "w-full justify-between rounded-xl bg-background text-xs font-normal h-9 px-3",
+                                !categoryId && "text-muted-foreground",
+                                fieldErrors.category_id && "border-destructive focus-visible:ring-destructive"
+                              )}
+                            >
+                              <span className="truncate">
+                                {selectedCategory ? selectedCategory.name : t("selectCategory")}
+                              </span>
+                              <ChevronsUpDown className="w-4 h-4 shrink-0 opacity-50 ms-2" />
+                            </Button>
+                          }
+                        />
+                        <PopoverContent className="w-[var(--anchor-width)] p-0" align="start">
+                          <Command>
+                            <CommandInput placeholder={t("searchCategory")} />
+                            <CommandList>
+                              <CommandEmpty>{t("noCategoryFound")}</CommandEmpty>
+                              {Object.entries(categoriesByParent).map(([parentName, items]) => (
+                                <CommandGroup key={parentName} heading={parentName}>
+                                  {items.map((c) => (
+                                    <CommandItem
+                                      key={c.id}
+                                      value={c.name}
+                                      keywords={[parentName]}
+                                      onSelect={() => {
+                                        setCategoryId(c.id);
+                                        if (fieldErrors.category_id) {
+                                          setFieldErrors((prev) => {
+                                            const next = { ...prev };
+                                            delete next.category_id;
+                                            return next;
+                                          });
+                                        }
+                                        setOpenCategory(false);
+                                      }}
+                                    >
+                                      <span className="flex-1 text-start">{c.name}</span>
+                                      {categoryId === c.id && (
+                                        <Check className="w-4 h-4 text-primary shrink-0 ms-2" />
+                                      )}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              ))}
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    );
+                  })()}
                   {fieldErrors.category_id && (
                     <p className="text-xs text-destructive flex items-center gap-1 mt-1">
                       <AlertCircle className="w-3.5 h-3.5" />
@@ -743,24 +818,75 @@ export function ProductForm({
                   <Label htmlFor="brand" className="text-xs font-semibold">
                     {t("brand")}
                   </Label>
-                  <Select
-                    value={brandId}
-                    onValueChange={(val: string | null) => {
-                      if (val) setBrandId(val);
-                    }}
-                  >
-                    <SelectTrigger id="brand" className="bg-background rounded-xl">
-                      <SelectValue placeholder={t("selectBrand")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">{t("noBrand")}</SelectItem>
-                      {brands.map((b) => (
-                        <SelectItem key={b.id} value={b.id}>
-                          {b.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {(() => {
+                    const selectedBrand = brands.find((b) => b.id === brandId);
+                    const brandLabel =
+                      brandId === "none" || !brandId
+                        ? t("noBrand")
+                        : selectedBrand
+                        ? selectedBrand.name
+                        : t("selectBrand");
+                    return (
+                      <Popover open={openBrand} onOpenChange={setOpenBrand}>
+                        <PopoverTrigger
+                          render={
+                            <Button
+                              id="brand"
+                              type="button"
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={openBrand}
+                              className={cn(
+                                "w-full justify-between rounded-xl bg-background text-xs font-normal h-9 px-3",
+                                (!brandId || brandId === "none") && "text-muted-foreground"
+                              )}
+                            >
+                              <span className="truncate">{brandLabel}</span>
+                              <ChevronsUpDown className="w-4 h-4 shrink-0 opacity-50 ms-2" />
+                            </Button>
+                          }
+                        />
+                        <PopoverContent className="w-[var(--anchor-width)] p-0" align="start">
+                          <Command>
+                            <CommandInput placeholder={t("searchBrand")} />
+                            <CommandList>
+                              <CommandEmpty>{t("noBrandFound")}</CommandEmpty>
+                              <CommandGroup>
+                                <CommandItem
+                                  value={t("noBrand")}
+                                  keywords={["none", "no brand"]}
+                                  onSelect={() => {
+                                    setBrandId("none");
+                                    setOpenBrand(false);
+                                  }}
+                                >
+                                  <span className="flex-1 text-start">{t("noBrand")}</span>
+                                  {(!brandId || brandId === "none") && (
+                                    <Check className="w-4 h-4 text-primary shrink-0 ms-2" />
+                                  )}
+                                </CommandItem>
+                                {brands.map((b) => (
+                                  <CommandItem
+                                    key={b.id}
+                                    value={b.name}
+                                    onSelect={() => {
+                                      setBrandId(b.id);
+                                      setOpenBrand(false);
+                                    }}
+                                  >
+                                    <span className="flex-1 text-start">{b.name}</span>
+                                    {brandId === b.id && (
+                                      <Check className="w-4 h-4 text-primary shrink-0 ms-2" />
+                                    )}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    );
+                  })()}
                 </div>
               </div>
             </CardContent>
@@ -1096,7 +1222,7 @@ export function ProductForm({
                       type="file"
                       accept="image/*"
                       multiple
-                      disabled={isUploadingImages || images.length >= 8}
+                      disabled={isAnyImageActionPending || images.length >= 8}
                       onChange={handleImageFileChange}
                       className="hidden"
                       id="product-images-input"
@@ -1104,10 +1230,10 @@ export function ProductForm({
 
                     <label
                       htmlFor="product-images-input"
-                      className={`flex flex-col items-center justify-center p-6 rounded-2xl border-2 border-dashed border-border/80 transition-colors text-center cursor-pointer ${
-                        images.length >= 8
+                      className={`flex flex-col items-center justify-center p-6 rounded-2xl border-2 border-dashed border-border/80 transition-colors text-center ${
+                        isAnyImageActionPending || images.length >= 8
                           ? "opacity-50 cursor-not-allowed bg-muted/20"
-                          : "hover:border-primary/50 hover:bg-primary/5 bg-card"
+                          : "hover:border-primary/50 hover:bg-primary/5 bg-card cursor-pointer"
                       }`}
                     >
                       {isUploadingImages ? (
@@ -1138,85 +1264,108 @@ export function ProductForm({
                   {/* Images List with Drag-to-Reorder */}
                   {images.length > 0 ? (
                     <div className="space-y-2">
-                      <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
-                        <ArrowUpDown className="w-3.5 h-3.5" />
-                        {t("dragToReorder")}
-                      </p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                          <ArrowUpDown className="w-3.5 h-3.5" />
+                          {t("dragToReorder")}
+                        </p>
+                        {isReorderingImages && (
+                          <span className="inline-flex items-center gap-1.5 text-[11px] text-primary font-medium">
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            <span>Saving order...</span>
+                          </span>
+                        )}
+                      </div>
 
                       <div className="space-y-2">
-                        {images.map((img, idx) => (
-                          <div
-                            key={img.id}
-                            draggable
-                            onDragStart={() => handleDragStart(idx)}
-                            onDragOver={handleDragOver}
-                            onDrop={() => handleDrop(idx)}
-                            className={`flex items-center gap-3 p-2.5 rounded-xl border bg-card transition-all cursor-grab active:cursor-grabbing ${
-                              draggedImageIndex === idx
-                                ? "border-primary scale-[1.02] shadow-md"
-                                : "border-border/80 hover:border-primary/40 shadow-xs"
-                            }`}
-                          >
-                            <GripVertical className="w-4 h-4 text-muted-foreground shrink-0" />
-
-                            <div className="w-12 h-12 relative rounded-lg overflow-hidden bg-muted shrink-0 border border-border/50">
-                              <Image
-                                src={getPublicImageUrl(img.path)}
-                                alt={`Product photo ${idx + 1}`}
-                                fill
-                                className="object-cover"
-                              />
-                            </div>
-
-                            <div className="flex-1 min-w-0">
-                              {idx === 0 ? (
-                                <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] font-bold px-2 py-0">
-                                  {t("mainImage")}
-                                </Badge>
-                              ) : (
-                                <span className="text-xs text-muted-foreground font-mono">
-                                  Photo #{idx + 1}
-                                </span>
+                        {images.map((img, idx) => {
+                          const isBeingDeleted = deletingImageId === img.id;
+                          return (
+                            <div
+                              key={img.id}
+                              draggable={!isAnyImageActionPending && !isBeingDeleted}
+                              onDragStart={() => handleDragStart(idx)}
+                              onDragOver={handleDragOver}
+                              onDrop={() => handleDrop(idx)}
+                              className={`relative flex items-center gap-3 p-2.5 rounded-xl border bg-card transition-all ${
+                                isAnyImageActionPending
+                                  ? "opacity-75 cursor-not-allowed"
+                                  : "cursor-grab active:cursor-grabbing hover:border-primary/40 shadow-xs"
+                              } ${
+                                draggedImageIndex === idx
+                                  ? "border-primary scale-[1.02] shadow-md"
+                                  : "border-border/80"
+                              }`}
+                            >
+                              {isBeingDeleted && (
+                                <div className="absolute inset-0 bg-background/85 backdrop-blur-xs flex items-center justify-center gap-2 text-xs text-destructive font-semibold z-10 rounded-xl">
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                  <span>{t("deleting")}</span>
+                                </div>
                               )}
-                            </div>
 
-                            {/* Move Up/Down Controls for touch / accessible */}
-                            <div className="flex items-center gap-1">
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                disabled={idx === 0}
-                                onClick={() => handleMoveImage(idx, "prev")}
-                                className="h-7 w-7 p-0 text-muted-foreground"
-                                title="Move up"
-                              >
-                                <ChevronLeft className="w-3.5 h-3.5 rtl:rotate-180" />
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                disabled={idx === images.length - 1}
-                                onClick={() => handleMoveImage(idx, "next")}
-                                className="h-7 w-7 p-0 text-muted-foreground"
-                                title="Move down"
-                              >
-                                <ChevronRight className="w-3.5 h-3.5 rtl:rotate-180" />
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setImageToDelete(img)}
-                                className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                                title={t("delete")}
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </Button>
+                              <GripVertical className="w-4 h-4 text-muted-foreground shrink-0" />
+
+                              <div className="w-12 h-12 relative rounded-lg overflow-hidden bg-muted shrink-0 border border-border/50">
+                                <Image
+                                  src={getPublicImageUrl(img.path)}
+                                  alt={`Product photo ${idx + 1}`}
+                                  fill
+                                  className="object-cover"
+                                />
+                              </div>
+
+                              <div className="flex-1 min-w-0">
+                                {idx === 0 ? (
+                                  <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] font-bold px-2 py-0">
+                                    {t("mainImage")}
+                                  </Badge>
+                                ) : (
+                                  <span className="text-xs text-muted-foreground font-mono">
+                                    Photo #{idx + 1}
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Move Up/Down Controls for touch / accessible */}
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  disabled={isAnyImageActionPending || idx === 0}
+                                  onClick={() => handleMoveImage(idx, "prev")}
+                                  className="h-7 w-7 p-0 text-muted-foreground"
+                                  title="Move up"
+                                >
+                                  <ChevronLeft className="w-3.5 h-3.5 rtl:rotate-180" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  disabled={isAnyImageActionPending || idx === images.length - 1}
+                                  onClick={() => handleMoveImage(idx, "next")}
+                                  className="h-7 w-7 p-0 text-muted-foreground"
+                                  title="Move down"
+                                >
+                                  <ChevronRight className="w-3.5 h-3.5 rtl:rotate-180" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  disabled={isAnyImageActionPending}
+                                  onClick={() => setImageToDelete(img)}
+                                  className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                                  title={t("delete")}
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </Button>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   ) : (
@@ -1258,7 +1407,9 @@ export function ProductForm({
       {/* Delete Image Confirmation Dialog */}
       <AlertDialog
         open={Boolean(imageToDelete)}
-        onOpenChange={(open) => !open && setImageToDelete(null)}
+        onOpenChange={(open) => {
+          if (!open) setImageToDelete(null);
+        }}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -1266,14 +1417,8 @@ export function ProductForm({
             <AlertDialogDescription>{t("deleteImageDesc")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeletingImage}>{t("cancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              disabled={isDeletingImage}
-              onClick={handleConfirmDeleteImage}
-            >
-              {isDeletingImage ? (
-                <Loader2 className="w-4 h-4 animate-spin me-2" />
-              ) : null}
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDeleteImage}>
               {t("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>

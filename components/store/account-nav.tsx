@@ -115,14 +115,15 @@ export function AccountNav({ profile, sellerInfo }: AccountNavProps) {
             <Link
               key={item.href}
               href={item.href}
+              aria-current={item.isActive ? "page" : undefined}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs whitespace-nowrap transition-all shrink-0",
+                "relative flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs whitespace-nowrap transition-all shrink-0 overflow-hidden",
                 item.isActive
-                  ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                  ? "bg-primary/10 text-primary font-bold shadow-2xs before:absolute before:start-0 before:top-1.5 before:bottom-1.5 before:w-1 before:bg-primary before:rounded-full"
                   : "bg-card border border-border text-muted-foreground hover:text-foreground hover:bg-muted/60"
               )}
             >
-              <Icon className="w-3.5 h-3.5" />
+              <Icon className={cn("w-3.5 h-3.5", item.isActive ? "text-primary" : "text-muted-foreground")} />
               <span>{item.label}</span>
             </Link>
           );
@@ -184,17 +185,18 @@ export function AccountNav({ profile, sellerInfo }: AccountNavProps) {
               <Link
                 key={item.href}
                 href={item.href}
+                aria-current={item.isActive ? "page" : undefined}
                 className={cn(
-                  "flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all group",
+                  "relative flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all group overflow-hidden",
                   item.isActive
-                    ? "bg-primary text-primary-foreground shadow-2xs font-bold"
+                    ? "bg-primary/10 text-primary font-bold shadow-2xs before:absolute before:start-0 before:top-1.5 before:bottom-1.5 before:w-1 before:bg-primary before:rounded-full"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 )}
               >
                 <Icon
                   className={cn(
                     "w-4 h-4 transition-transform group-hover:scale-110",
-                    item.isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-primary"
+                    item.isActive ? "text-primary" : "text-muted-foreground group-hover:text-primary"
                   )}
                 />
                 <span className="flex-1">{item.label}</span>
