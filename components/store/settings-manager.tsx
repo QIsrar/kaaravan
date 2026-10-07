@@ -14,6 +14,8 @@ import {
   AlertCircle,
   Store,
   CheckCircle2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -65,6 +67,7 @@ export function SettingsManager({
 }: SettingsManagerProps) {
   const t = useTranslations("settings");
   const tAccount = useTranslations("account");
+  const tCommon = useTranslations("common");
 
   // Profile Form State
   const [fullName, setFullName] = useState(initialProfile.fullName || "");
@@ -74,10 +77,13 @@ export function SettingsManager({
 
   // Password Form State (Two Steps)
   const [currentPassword, setCurrentPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [isCurrentVerified, setIsCurrentVerified] = useState(false);
   const [isVerifyingCurrent, setIsVerifyingCurrent] = useState(false);
   const [newPassword, setNewPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
 
@@ -418,24 +424,38 @@ export function SettingsManager({
                 )}
               </div>
               <div className="flex items-center gap-2">
-                <input
-                  id="current-password"
-                  type="password"
-                  required
-                  value={currentPassword}
-                  onChange={(e) => {
-                    setCurrentPassword(e.target.value);
-                    setIsCurrentVerified(false);
-                  }}
-                  placeholder=""
-                  className={cn(
-                    "w-full text-xs rounded-xl border p-2.5 text-foreground outline-none",
-                    isCurrentVerified
-                      ? "border-emerald-500/40 bg-emerald-500/5 focus:ring-1 focus:ring-emerald-500"
-                      : "border-border bg-background focus:ring-1 focus:ring-primary"
-                  )}
-                  disabled={isVerifyingCurrent || isCurrentVerified || isSavingPassword}
-                />
+                <div className="relative flex-1">
+                  <input
+                    id="current-password"
+                    type={showCurrentPassword ? "text" : "password"}
+                    required
+                    value={currentPassword}
+                    onChange={(e) => {
+                      setCurrentPassword(e.target.value);
+                      setIsCurrentVerified(false);
+                    }}
+                    placeholder=""
+                    className={cn(
+                      "w-full text-xs rounded-xl border p-2.5 pe-10 text-foreground outline-none",
+                      isCurrentVerified
+                        ? "border-emerald-500/40 bg-emerald-500/5 focus:ring-1 focus:ring-emerald-500"
+                        : "border-border bg-background focus:ring-1 focus:ring-primary"
+                    )}
+                    disabled={isVerifyingCurrent || isCurrentVerified || isSavingPassword}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPassword((prev) => !prev)}
+                    className="absolute end-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+                    aria-label={showCurrentPassword ? tCommon("hidePassword") : tCommon("showPassword")}
+                  >
+                    {showCurrentPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
                 {!isCurrentVerified ? (
                   <Button
                     type="button"
@@ -479,22 +499,37 @@ export function SettingsManager({
               >
                 {t("newPassword")} *
               </label>
-              <input
-                id="new-password"
-                type="password"
-                required
-                minLength={8}
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder=""
-                disabled={!isCurrentVerified || isSavingPassword}
-                className={cn(
-                  "w-full text-xs rounded-xl border p-2.5 outline-none",
-                  !isCurrentVerified
-                    ? "border-border bg-muted/40 text-muted-foreground cursor-not-allowed"
-                    : "border-border bg-background text-foreground focus:ring-1 focus:ring-primary"
-                )}
-              />
+              <div className="relative">
+                <input
+                  id="new-password"
+                  type={showNewPassword ? "text" : "password"}
+                  required
+                  minLength={8}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder=""
+                  disabled={!isCurrentVerified || isSavingPassword}
+                  className={cn(
+                    "w-full text-xs rounded-xl border p-2.5 pe-10 outline-none",
+                    !isCurrentVerified
+                      ? "border-border bg-muted/40 text-muted-foreground cursor-not-allowed"
+                      : "border-border bg-background text-foreground focus:ring-1 focus:ring-primary"
+                  )}
+                />
+                <button
+                  type="button"
+                  disabled={!isCurrentVerified || isSavingPassword}
+                  onClick={() => setShowNewPassword((prev) => !prev)}
+                  className="absolute end-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors p-1"
+                  aria-label={showNewPassword ? tCommon("hidePassword") : tCommon("showPassword")}
+                >
+                  {showNewPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <div className="space-y-1.5">
@@ -507,22 +542,37 @@ export function SettingsManager({
               >
                 {t("confirmPassword")} *
               </label>
-              <input
-                id="confirm-password"
-                type="password"
-                required
-                minLength={8}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder=""
-                disabled={!isCurrentVerified || isSavingPassword}
-                className={cn(
-                  "w-full text-xs rounded-xl border p-2.5 outline-none",
-                  !isCurrentVerified
-                    ? "border-border bg-muted/40 text-muted-foreground cursor-not-allowed"
-                    : "border-border bg-background text-foreground focus:ring-1 focus:ring-primary"
-                )}
-              />
+              <div className="relative">
+                <input
+                  id="confirm-password"
+                  type={showConfirmPassword ? "text" : "password"}
+                  required
+                  minLength={8}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder=""
+                  disabled={!isCurrentVerified || isSavingPassword}
+                  className={cn(
+                    "w-full text-xs rounded-xl border p-2.5 pe-10 outline-none",
+                    !isCurrentVerified
+                      ? "border-border bg-muted/40 text-muted-foreground cursor-not-allowed"
+                      : "border-border bg-background text-foreground focus:ring-1 focus:ring-primary"
+                  )}
+                />
+                <button
+                  type="button"
+                  disabled={!isCurrentVerified || isSavingPassword}
+                  onClick={() => setShowConfirmPassword((prev) => !prev)}
+                  className="absolute end-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors p-1"
+                  aria-label={showConfirmPassword ? tCommon("hidePassword") : tCommon("showPassword")}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <div className="pt-2">

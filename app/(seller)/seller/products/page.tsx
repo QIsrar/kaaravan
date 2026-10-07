@@ -58,7 +58,9 @@ export default async function SellerProductsPage({
     dbQuery = dbQuery.ilike("title", `%${query}%`);
   }
 
-  if (statusFilter !== "all") {
+  if (statusFilter === "all") {
+    dbQuery = dbQuery.neq("status", "archived");
+  } else {
     type ProductStatus = "rejected" | "draft" | "pending_review" | "active" | "archived";
     dbQuery = dbQuery.eq("status", statusFilter as ProductStatus);
   }

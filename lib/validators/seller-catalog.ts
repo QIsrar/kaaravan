@@ -37,7 +37,7 @@ export const productVariantSchema = z.object({
   const compare_at_minor = data.compare_at_rupees ? parseRupeesToPaisa(data.compare_at_rupees) : null;
   return { ...data, price_minor, compare_at_minor };
 }).refine(data => !data.compare_at_minor || data.compare_at_minor > data.price_minor, {
-  message: "Compare at price must be greater than price",
+  message: "Original price must be greater than price",
   path: ["compare_at_rupees"]
 });
 

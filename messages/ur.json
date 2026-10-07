@@ -27,7 +27,9 @@
     "pkr": "روپے",
     "tryAgain": "دوبارہ کوشش کریں",
     "returnHome": "مرکزی صفحہ پر جائیں",
-    "retry": "دوبارہ کوشش"
+    "retry": "دوبارہ کوشش",
+    "showPassword": "پاس ورڈ دکھائیں",
+    "hidePassword": "پاس ورڈ چھپائیں"
   },
   "journey": {
     "placed": "آرڈر موصول",
@@ -671,7 +673,8 @@
       "addSingleVariant": "واحد قسم شامل کریں",
       "sku": "ایس کے یو (SKU)",
       "priceRupees": "قیمت (روپے)",
-      "compareAtRupees": "اصل قیمت (روپے)",
+      "compareAtRupees": "اصل قیمت (اختیاری)",
+      "originalPriceHelp": "رعایت ظاہر کرنے کے لیے یہ قیمت کاٹ کر دکھائی جاتی ہے۔ یہ قیمت موجودہ قیمت سے زیادہ اور حقیقی سابقہ قیمت ہونی چاہیے۔",
       "stock": "اسٹاک",
       "reservedStock": "محفوظ اسٹاک",
       "lowStockThreshold": "کم اسٹاک کا الرٹ",

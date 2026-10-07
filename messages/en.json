@@ -27,7 +27,9 @@
     "pkr": "PKR",
     "tryAgain": "Try Again",
     "returnHome": "Return Home",
-    "retry": "Retry"
+    "retry": "Retry",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "journey": {
     "placed": "Placed",
@@ -671,7 +673,8 @@
       "addSingleVariant": "Add Single Variant",
       "sku": "SKU",
       "priceRupees": "Price (PKR)",
-      "compareAtRupees": "Compare-at (PKR)",
+      "compareAtRupees": "Original price (optional)",
+      "originalPriceHelp": "Shown crossed out to show a discount. Must be higher than the price and a genuine previous price.",
       "stock": "Stock",
       "reservedStock": "Reserved",
       "lowStockThreshold": "Low Stock Alert",

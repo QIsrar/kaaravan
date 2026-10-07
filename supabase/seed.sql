@@ -1,6 +1,5 @@
 DO $$
 DECLARE
-  superadmin_id UUID := pg_catalog.gen_random_uuid();
   seller1_id UUID := pg_catalog.gen_random_uuid();
   seller2_id UUID := pg_catalog.gen_random_uuid();
   seller3_id UUID := pg_catalog.gen_random_uuid();
@@ -30,17 +29,15 @@ DECLARE
   so_id UUID;
 BEGIN
   -- Insert into Supabase auth tables for local login.
-  -- Notice we use crypt('password', gen_salt('bf')) from pgcrypto to properly hash the passwords for local login.
+  -- Notice we use crypt(pg_catalog.gen_random_uuid()::text, gen_salt('bf')) from pgcrypto to generate random passwords at seed time.
   INSERT INTO auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, email_change, email_change_token_new, recovery_token)
   VALUES 
-  (superadmin_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'superadmin@kaaravan.pk', crypt('password123', gen_salt('bf')), pg_catalog.now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, pg_catalog.now(), pg_catalog.now(), '', '', '', ''),
-  (seller1_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'seller1@kaaravan.pk', crypt('password123', gen_salt('bf')), pg_catalog.now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, pg_catalog.now(), pg_catalog.now(), '', '', '', ''),
-  (seller2_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'seller2@kaaravan.pk', crypt('password123', gen_salt('bf')), pg_catalog.now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, pg_catalog.now(), pg_catalog.now(), '', '', '', ''),
-  (seller3_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'seller3@kaaravan.pk', crypt('password123', gen_salt('bf')), pg_catalog.now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, pg_catalog.now(), pg_catalog.now(), '', '', '', ''),
-  (customer1_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'customer1@kaaravan.pk', crypt('password123', gen_salt('bf')), pg_catalog.now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, pg_catalog.now(), pg_catalog.now(), '', '', '', '');
+  (seller1_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'seller1@kaaravan.pk', crypt(pg_catalog.gen_random_uuid()::text, gen_salt('bf')), pg_catalog.now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, pg_catalog.now(), pg_catalog.now(), '', '', '', ''),
+  (seller2_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'seller2@kaaravan.pk', crypt(pg_catalog.gen_random_uuid()::text, gen_salt('bf')), pg_catalog.now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, pg_catalog.now(), pg_catalog.now(), '', '', '', ''),
+  (seller3_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'seller3@kaaravan.pk', crypt(pg_catalog.gen_random_uuid()::text, gen_salt('bf')), pg_catalog.now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, pg_catalog.now(), pg_catalog.now(), '', '', '', ''),
+  (customer1_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'customer1@kaaravan.pk', crypt(pg_catalog.gen_random_uuid()::text, gen_salt('bf')), pg_catalog.now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, pg_catalog.now(), pg_catalog.now(), '', '', '', '');
 
   INSERT INTO public.profiles (id, full_name, phone, role, status) VALUES
-  (superadmin_id, 'Super Admin', '03001234567', 'superadmin', 'active'),
   (seller1_id, 'Ali Traders', '03001234568', 'seller', 'active'),
   (seller2_id, 'Lahore Electronics', '03001234569', 'seller', 'active'),
   (seller3_id, 'Karachi Fashion', '03001234570', 'seller', 'active'),

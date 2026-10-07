@@ -48,14 +48,16 @@ export function HeroBanner({ banners }: HeroBannerProps) {
   return (
     <div className="relative w-full aspect-[21/9] sm:aspect-[24/9] md:aspect-[3/1] max-h-[480px] rounded-3xl overflow-hidden shadow-md border border-border group bg-background isolate">
       <Link href={current.linkUrl || "#"} className="block w-full h-full relative">
-        <Image
-          src={current.imageUrl}
-          alt={current.title || "Kaaravan Banner"}
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-center transition-opacity duration-700 rtl:-scale-x-100 hero-banner-img"
-        />
+        <div className="hero-media absolute inset-0">
+          <Image
+            src={current.imageUrl}
+            alt={current.title || "Kaaravan Banner"}
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-center transition-opacity duration-700"
+          />
+        </div>
 
         {/* Gradient overlay from the start side (background color at ~75% opacity fading to transparent by ~55% width) behind the banner text, RTL-aware */}
         <div

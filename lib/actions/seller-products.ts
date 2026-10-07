@@ -91,12 +91,28 @@ export async function upsertProductAction(
     const msg = err.message || "Failed to save product";
 
     const fieldErrors: Record<string, string> = {};
+    const rawVariants = (rawInput as { variants?: { sku?: string }[] })?.variants;
+
     if (msg.includes("SKU") && msg.includes("already in use")) {
-      fieldErrors["sku"] = msg;
-    } else if (msg.includes("Compare at price")) {
-      fieldErrors["compare_at"] = msg;
+      const match = msg.match(/SKU\s+([^\s]+)/);
+      const sku = match ? match[1] : null;
+      const idx = sku && rawVariants ? rawVariants.findIndex((v) => v.sku === sku) : -1;
+      if (idx >= 0) {
+        fieldErrors[`variants.${idx}.sku`] = msg;
+      } else {
+        fieldErrors["sku"] = msg;
+      }
     } else if (msg.includes("Stock cannot be less than reserved")) {
-      fieldErrors["stock"] = msg;
+      const match = msg.match(/for SKU\s+([^\s]+)/);
+      const sku = match ? match[1] : null;
+      const idx = sku && rawVariants ? rawVariants.findIndex((v) => v.sku === sku) : -1;
+      if (idx >= 0) {
+        fieldErrors[`variants.${idx}.stock_quantity`] = msg;
+      } else {
+        fieldErrors["stock"] = msg;
+      }
+    } else if (msg.includes("Original price") || msg.includes("Compare at price")) {
+      fieldErrors["compare_at"] = msg;
     }
 
     return {

@@ -4,7 +4,7 @@ import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2, Eye, EyeOff } from "lucide-react";
 import { BRAND_CONFIG } from "@/config/brand";
 import { Image } from "@/components/ui/image";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import { getSafeRedirect } from "@/lib/utils";
 
 function RegisterForm() {
   const tAuth = useTranslations("auth");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectParam = getSafeRedirect(searchParams.get("redirect"));
@@ -25,6 +26,7 @@ function RegisterForm() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -181,15 +183,29 @@ function RegisterForm() {
               <label className="text-xs font-semibold text-foreground uppercase tracking-wider block">
                 Password * (min. 8 characters)
               </label>
-              <Input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="rounded-xl border-border text-sm"
-                disabled={isLoading}
-              />
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="rounded-xl border-border text-sm pe-10"
+                  disabled={isLoading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+                  aria-label={showPassword ? tCommon("hidePassword") : tCommon("showPassword")}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <label className="flex items-start gap-2 text-[11px] text-muted-foreground leading-relaxed cursor-pointer pt-1">

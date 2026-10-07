@@ -138,7 +138,7 @@ export function Command({ className, children, ...props }: CommandProps) {
       <div
         data-slot="command"
         className={cn(
-          "flex flex-col w-full overflow-hidden rounded-2xl bg-card text-card-foreground outline-none",
+          "flex flex-col w-full overflow-hidden rounded-2xl bg-transparent text-popover-foreground outline-none",
           className
         )}
         {...props}
