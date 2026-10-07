@@ -1471,12 +1471,12 @@ export function ProductForm({
                           </div>
 
                           {/* Price / original price / stock / low-stock threshold / active in a responsive grid that stacks on mobile */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-start">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
                             {/* Price */}
                             <div className="space-y-1">
                               <Label
                                 htmlFor={`field-variants-${idx}-price_rupees`}
-                                className="text-[11px] font-semibold text-muted-foreground"
+                                className="text-[11px] font-semibold text-muted-foreground whitespace-nowrap"
                               >
                                 {t("priceRupees")} <span className="text-destructive">*</span>
                               </Label>
@@ -1507,7 +1507,7 @@ export function ProductForm({
                             <div className="space-y-1">
                               <Label
                                 htmlFor={`field-variants-${idx}-compare_at_rupees`}
-                                className="text-[11px] font-semibold text-muted-foreground"
+                                className="text-[11px] font-semibold text-muted-foreground whitespace-nowrap"
                               >
                                 {t("compareAtRupees")}
                               </Label>
@@ -1519,16 +1519,13 @@ export function ProductForm({
                                 onChange={(e) =>
                                   updateVariantField(idx, "compare_at_rupees", e.target.value)
                                 }
-                                placeholder="0"
+                                placeholder={t("optional", { defaultMessage: "optional" })}
                                 className={`h-9 font-mono text-xs rounded-xl ${
                                   compareError
                                     ? "border-destructive focus-visible:ring-destructive ring-1 ring-destructive"
                                     : ""
                                 }`}
                               />
-                              <p className="text-[10px] text-muted-foreground leading-tight">
-                                {t("originalPriceHelp")}
-                              </p>
                               {compareError && (
                                 <p className="text-[10px] text-destructive flex items-center gap-1 leading-tight">
                                   <AlertCircle className="w-3 h-3 shrink-0" />
@@ -1541,7 +1538,7 @@ export function ProductForm({
                             <div className="space-y-1">
                               <Label
                                 htmlFor={`field-variants-${idx}-stock_quantity`}
-                                className="text-[11px] font-semibold text-muted-foreground"
+                                className="text-[11px] font-semibold text-muted-foreground whitespace-nowrap"
                               >
                                 {t("stock")} <span className="text-destructive">*</span>
                               </Label>
@@ -1572,7 +1569,7 @@ export function ProductForm({
                             <div className="space-y-1">
                               <Label
                                 htmlFor={`field-variants-${idx}-low_stock_threshold`}
-                                className="text-[11px] font-semibold text-muted-foreground"
+                                className="text-[11px] font-semibold text-muted-foreground whitespace-nowrap"
                               >
                                 {t("lowStockThreshold")}
                               </Label>
@@ -1603,7 +1600,7 @@ export function ProductForm({
                             <div className="space-y-1 flex flex-col justify-start">
                               <Label
                                 htmlFor={`field-variants-${idx}-active`}
-                                className="text-[11px] font-semibold text-muted-foreground"
+                                className="text-[11px] font-semibold text-muted-foreground whitespace-nowrap"
                               >
                                 {t("status")}
                               </Label>
@@ -1624,6 +1621,10 @@ export function ProductForm({
                               </label>
                             </div>
                           </div>
+                          
+                          <p className="text-[10px] text-muted-foreground leading-tight mt-3">
+                            {t("originalPriceHelp")}
+                          </p>
                         </div>
                       </div>
                     );

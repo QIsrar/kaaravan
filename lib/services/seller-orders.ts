@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /*
 Copyright © 2026 One Tech and AI.
 Confidential and Proprietary. All Rights Reserved.
@@ -67,9 +66,18 @@ export async function getSellerOrders(
   }
 
   // Transform data
-  const orders = data.map((so: any) => {
+  type SubOrderRow = {
+    id: string;
+    status: string;
+    created_at: string;
+    total_minor: number;
+    orders: { order_number: string; shipping_address: Record<string, unknown> };
+    order_items: { id: string }[];
+  };
+
+  const orders = (data as SubOrderRow[]).map((so) => {
     // Privacy: Only show name + city here
-    const address = so.orders.shipping_address;
+    const address = so.orders.shipping_address as Record<string, string>;
     return {
       id: so.id,
       orderNumber: so.orders.order_number,
@@ -77,8 +85,8 @@ export async function getSellerOrders(
       status: so.status,
       itemCount: so.order_items.length,
       totalMinor: so.total_minor,
-      customerName: address.full_name?.split(" ")[0] || "Customer",
-      customerCity: address.city || "Unknown",
+      customerName: address?.full_name?.split(" ")[0] || "Customer",
+      customerCity: address?.city || "Unknown",
     };
   });
 
@@ -93,7 +101,7 @@ export async function getSellerOrderDetails(
 
   const { data: seller, error: sellerError } = await supabase
     .from("sellers")
-    .select("id, status")
+    .select("id, status, business_name")
     .eq("owner_profile_id", sellerProfileId)
     .single();
 
@@ -134,7 +142,29 @@ export async function getSellerOrderDetails(
     throw new Error("Order not found or unauthorized");
   }
 
-  const so = data as any;
+  type OrderDetailRow = {
+    id: string;
+    status: string;
+    subtotal_minor: number;
+    shipping_minor: number;
+    total_minor: number;
+    created_at: string;
+    orders: {
+      order_number: string;
+      shipping_address: Record<string, string>;
+      payment_method: string;
+    };
+    order_items: Array<{
+      id: string;
+      product_title: string;
+      variant_attributes: Record<string, string>;
+      unit_price_minor: number;
+      quantity: number;
+      line_total_minor: number;
+    }>;
+  };
+
+  const so = data as unknown as OrderDetailRow;
   const address = so.orders.shipping_address;
 
   // Privacy rule: full shipping address & phone shown only from 'confirmed' onwards.
@@ -149,6 +179,7 @@ export async function getSellerOrderDetails(
     shippingMinor: so.shipping_minor,
     totalMinor: so.total_minor,
     paymentMethod: so.orders.payment_method,
+    sellerBusinessName: seller.business_name,
     items: so.order_items,
     shippingAddress: {
       fullName: address.full_name,

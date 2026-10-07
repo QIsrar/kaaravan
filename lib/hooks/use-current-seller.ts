@@ -7,7 +7,7 @@ Unauthorised copying, disclosure, modification, distribution or use is prohibite
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { createClient } from "@/lib/supabase/client";
+import { getCurrentSellerAction } from "@/lib/actions/auth";
 
 export interface CurrentSellerData {
   id: string;
@@ -19,20 +19,8 @@ export function useCurrentSeller() {
   return useQuery<CurrentSellerData | null>({
     queryKey: ["current-seller"],
     queryFn: async () => {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return null;
-
-      const { data: seller } = await supabase
-        .from("sellers")
-        .select("id, business_name, status")
-        .eq("owner_profile_id", user.id)
-        .is("deleted_at", null)
-        .maybeSingle();
-
-      return seller || null;
+      const seller = await getCurrentSellerAction();
+      return seller;
     },
     staleTime: 1000 * 60 * 10, // 10 minutes
   });

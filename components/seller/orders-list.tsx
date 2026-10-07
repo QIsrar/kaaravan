@@ -1,30 +1,39 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React from "react";
-import { SubOrderStatus } from "@/lib/services/order-status";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { formatMinorUnit } from "@/lib/utils";
+import { formatPaisa } from "@/lib/format/currency";
+import { formatDate } from "@/lib/format/date";
 import Link from "next/link";
 import { Search } from "lucide-react";
+import { useTranslations } from "next-intl";
+
+export interface OrderListItem {
+  id: string;
+  orderNumber: string;
+  date: string;
+  customerName: string;
+  customerCity: string;
+  itemCount: number;
+  totalMinor: number;
+  status: string;
+}
 
 export function OrdersList({
   initialOrders,
-  totalCount,
   status,
   search,
-  page
 }: {
-  initialOrders: any[];
-  totalCount: number;
+  initialOrders: OrderListItem[];
   status: string;
   search: string;
-  page: number;
 }) {
+  const t = useTranslations("seller.orders_list");
+  const tOrders = useTranslations("orders");
   const router = useRouter();
   const [searchValue, setSearchValue] = React.useState(search);
 
@@ -66,7 +75,7 @@ export function OrdersList({
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-4 justify-between">
         <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0">
-          {["all", "pending", "confirmed", "packed", "ready_to_ship", "shipped", "delivered"].map(s => (
+          {["all", "pending", "confirmed", "packed", "ready_to_ship", "shipped", "delivered", "cancelled"].map(s => (
             <Button
               key={s}
               variant={status === s ? "default" : "outline"}
@@ -74,13 +83,13 @@ export function OrdersList({
               onClick={() => handleStatusChange(s)}
               className="capitalize whitespace-nowrap"
             >
-              {s.replace(/_/g, " ")}
+              {tOrders(`status.${s}` as Parameters<typeof tOrders>[0]) || s.replace(/_/g, " ")}
             </Button>
           ))}
         </div>
         <form onSubmit={handleSearch} className="flex gap-2 max-w-sm w-full">
           <Input 
-            placeholder="Search Order Number..." 
+            placeholder={t("searchPlaceholder")} 
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
           />
@@ -96,18 +105,18 @@ export function OrdersList({
             <div className="w-16 h-16 bg-secondary/50 rounded-full flex items-center justify-center mb-4">
               <span className="text-2xl">📦</span>
             </div>
-            <p>No orders found.</p>
+            <p>{t("noOrders")}</p>
           </div>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Order #</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Items</TableHead>
-                <TableHead>Total</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>{t("orderNumber")}</TableHead>
+                <TableHead>{t("date")}</TableHead>
+                <TableHead>{t("customer")}</TableHead>
+                <TableHead>{t("items")}</TableHead>
+                <TableHead>{t("total")}</TableHead>
+                <TableHead>{t("status")}</TableHead>
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
@@ -115,16 +124,16 @@ export function OrdersList({
               {initialOrders.map(order => (
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">{order.orderNumber}</TableCell>
-                  <TableCell>{new Date(order.date).toLocaleDateString()}</TableCell>
+                  <TableCell>{formatDate(order.date)}</TableCell>
                   <TableCell>
                     {order.customerName}
                     <div className="text-xs text-muted-foreground">{order.customerCity}</div>
                   </TableCell>
                   <TableCell>{order.itemCount}</TableCell>
-                  <TableCell>{formatMinorUnit(order.totalMinor, "PKR")}</TableCell>
+                  <TableCell>{formatPaisa(order.totalMinor)}</TableCell>
                   <TableCell>
                     <Badge variant="secondary" className={`capitalize ${statusColors[order.status] || ""}`}>
-                      {order.status.replace(/_/g, " ")}
+                      {tOrders(`status.${order.status}` as Parameters<typeof tOrders>[0]) || order.status.replace(/_/g, " ")}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
@@ -132,7 +141,7 @@ export function OrdersList({
                       href={`/seller/orders/${order.id}`}
                       className={buttonVariants({ variant: "outline", size: "sm" })}
                     >
-                      View Details
+                      {t("viewDetails")}
                     </Link>
                   </TableCell>
                 </TableRow>

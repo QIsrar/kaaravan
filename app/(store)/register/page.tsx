@@ -39,8 +39,16 @@ function RegisterForm() {
       return;
     }
 
-    if (password.length < 8) {
-      setErrorMessage("Password must be at least 8 characters.");
+    const passwordRequirements = [
+      password.length >= 8,
+      /[A-Z]/.test(password),
+      /[a-z]/.test(password),
+      /[0-9]/.test(password),
+      /[^A-Za-z0-9]/.test(password)
+    ];
+
+    if (!passwordRequirements.every(Boolean)) {
+      setErrorMessage("Please ensure your password meets all complexity requirements.");
       return;
     }
 
@@ -205,6 +213,24 @@ function RegisterForm() {
                     <Eye className="w-4 h-4" />
                   )}
                 </button>
+              </div>
+              
+              <div className="pt-1 grid grid-cols-2 gap-1 text-[10px] text-muted-foreground">
+                <div className={`flex items-center gap-1 ${password.length >= 8 ? "text-emerald-500" : ""}`}>
+                  <CheckCircle2 className="w-3 h-3" /> Min 8 characters
+                </div>
+                <div className={`flex items-center gap-1 ${/[A-Z]/.test(password) ? "text-emerald-500" : ""}`}>
+                  <CheckCircle2 className="w-3 h-3" /> 1 uppercase letter
+                </div>
+                <div className={`flex items-center gap-1 ${/[a-z]/.test(password) ? "text-emerald-500" : ""}`}>
+                  <CheckCircle2 className="w-3 h-3" /> 1 lowercase letter
+                </div>
+                <div className={`flex items-center gap-1 ${/[0-9]/.test(password) ? "text-emerald-500" : ""}`}>
+                  <CheckCircle2 className="w-3 h-3" /> 1 number
+                </div>
+                <div className={`flex items-center gap-1 ${/[^A-Za-z0-9]/.test(password) ? "text-emerald-500" : ""}`}>
+                  <CheckCircle2 className="w-3 h-3" /> 1 special character
+                </div>
               </div>
             </div>
 

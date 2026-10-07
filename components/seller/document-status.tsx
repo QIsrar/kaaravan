@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState } from "react";
@@ -7,14 +6,24 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { uploadSellerDocumentAction } from "@/lib/actions/seller-documents";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
-export function DocumentStatusList({ documents, sellerId }: { documents: any[], sellerId: string }) {
+export interface SellerDocument {
+  id: string;
+  doc_type: string;
+  status: string;
+  created_at: string;
+  url?: string | null;
+}
+
+export function DocumentStatusList({ documents, sellerId }: { documents: SellerDocument[], sellerId: string }) {
+  const t = useTranslations("seller.document_status");
   const router = useRouter();
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
 
   const missingDocs = [
-    { type: "cnic_front", label: "CNIC Front" },
-    { type: "cnic_back", label: "CNIC Back" }
+    { type: "cnic_front", label: t("cnicFront") },
+    { type: "cnic_back", label: t("cnicBack") }
   ].filter(req => !documents.find(d => d.doc_type === req.type));
 
   const handleReupload = async (e: React.ChangeEvent<HTMLInputElement>, docType: string) => {
@@ -34,8 +43,8 @@ export function DocumentStatusList({ documents, sellerId }: { documents: any[], 
       } else {
         router.refresh();
       }
-    } catch (err: any) {
-      alert("Upload error: " + err.message);
+    } catch (err: unknown) {
+      alert("Upload error: " + (err instanceof Error ? err.message : "Unknown error"));
     } finally {
       setUploadingDoc(null);
     }
@@ -49,7 +58,7 @@ export function DocumentStatusList({ documents, sellerId }: { documents: any[], 
 
   return (
     <div className="space-y-4 text-left">
-      <h3 className="font-bold text-lg">Your Documents</h3>
+      <h3 className="font-bold text-lg">{t("yourDocs")}</h3>
       
       <div className="space-y-3">
         {documents.map(doc => (
@@ -74,14 +83,14 @@ export function DocumentStatusList({ documents, sellerId }: { documents: any[], 
                   rel="noopener noreferrer" 
                   className={buttonVariants({ variant: "outline", size: "sm" })}
                 >
-                  View
+                  {t("view")}
                 </a>
               )}
               
               {(doc.status === "rejected" || doc.status === "pending") && (
                 <div className="relative">
                   <Button variant="secondary" size="sm" disabled={uploadingDoc === doc.doc_type}>
-                    {uploadingDoc === doc.doc_type ? <Loader2 className="w-4 h-4 animate-spin" /> : "Replace"}
+                    {uploadingDoc === doc.doc_type ? <Loader2 className="w-4 h-4 animate-spin" /> : t("replace")}
                   </Button>
                   <input
                     type="file"
@@ -98,13 +107,13 @@ export function DocumentStatusList({ documents, sellerId }: { documents: any[], 
 
         {missingDocs.length > 0 && (
           <div className="mt-6 p-4 border border-dashed rounded-xl bg-destructive/5 space-y-3">
-            <h4 className="font-bold text-destructive">Missing Required Documents</h4>
+            <h4 className="font-bold text-destructive">{t("missingDocs")}</h4>
             {missingDocs.map(missing => (
               <div key={missing.type} className="flex items-center justify-between">
                 <span className="text-sm">{missing.label}</span>
                 <div className="relative">
                   <Button variant="outline" size="sm" disabled={uploadingDoc === missing.type}>
-                    {uploadingDoc === missing.type ? <Loader2 className="w-4 h-4 animate-spin" /> : "Upload"}
+                    {uploadingDoc === missing.type ? <Loader2 className="w-4 h-4 animate-spin" /> : t("upload")}
                   </Button>
                   <input
                     type="file"

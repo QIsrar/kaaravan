@@ -2,7 +2,7 @@
 
 import React, { useState, Suspense } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Loader2, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { BRAND_CONFIG } from "@/config/brand";
@@ -18,7 +18,6 @@ import { getSafeRedirect } from "@/lib/utils";
 function LoginForm() {
   const tAuth = useTranslations("auth");
   const tCommon = useTranslations("common");
-  const router = useRouter();
   const searchParams = useSearchParams();
   const redirectParam = getSafeRedirect(searchParams.get("redirect"));
 
@@ -72,8 +71,7 @@ function LoginForm() {
               ? "/admin"
               : redirectParam;
 
-        router.push(destination);
-        router.refresh();
+        window.location.href = destination;
       }
     } catch (err: unknown) {
       setErrorMessage(err instanceof Error ? err.message : "An unexpected error occurred.");

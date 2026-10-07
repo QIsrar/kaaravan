@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { getApiAuthUser } from "@/lib/auth/api-auth";
 import { changeSubOrderStatus, SubOrderStatus } from "@/lib/services/order-status";
@@ -27,7 +26,7 @@ export async function PATCH(
     await changeSubOrderStatus(id, newStatus, profile.id, "seller", ipAddress, reason);
 
     return NextResponse.json({ success: true, message: "Status updated successfully" });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : "Unknown error" }, { status: 400 });
   }
 }

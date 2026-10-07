@@ -155,8 +155,8 @@ export async function cancelSubOrder(supabase: SupabaseClient<Database>, profile
   const orderProfileId = (subOrder.orders as unknown as { profile_id: string }).profile_id;
   if (orderProfileId !== profileId) throw new Error("Unauthorized");
 
-  if (!["awaiting_confirmation", "pending"].includes(subOrder.status)) {
-    throw new Error("Order cannot be cancelled in its current status");
+  if (!["awaiting_confirmation", "pending", "confirmed"].includes(subOrder.status)) {
+    throw new Error("Order cannot be cancelled after packing. Contact support.");
   }
 
   const adminClient = createAdminClient();

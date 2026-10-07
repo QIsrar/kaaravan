@@ -12,6 +12,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Image } from "@/components/ui/image";
 import { formatPaisa } from "@/lib/format/currency";
+import { formatDate } from "@/lib/format/date";
 import {
   Package,
   Store,
@@ -108,11 +109,7 @@ export default async function CustomerOrderDetailPage({
     notFound();
   }
 
-  const placedDate = new Date(order.placed_at).toLocaleDateString("en-PK", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const placedDate = formatDate(order.placed_at);
 
   const shippingAddr = (order.shipping_address as Record<string, string>) || {};
   const subOrders = order.sub_orders || [];
@@ -170,7 +167,7 @@ export default async function CustomerOrderDetailPage({
           const sellerName = seller?.business_name || "Artisan Workshop";
           const subStatus = sub.status as SubOrderStatus;
           const stage = STATUS_STAGE[subStatus] || "placed";
-          const canCancel = ["awaiting_confirmation", "pending"].includes(subStatus);
+          const canCancel = ["awaiting_confirmation", "pending", "confirmed"].includes(subStatus);
           const isDelivered = subStatus === "delivered";
           const returnWindowDays = seller?.return_window_days || 7;
 
@@ -223,12 +220,14 @@ export default async function CustomerOrderDetailPage({
                   </div>
 
                   {/* Cancel Action if pending */}
-                  {canCancel && (
+                  {canCancel ? (
                     <CancelSubOrderDialog
                       subOrderId={sub.id}
                       sellerName={sellerName}
                     />
-                  )}
+                  ) : ["packed", "ready_to_ship", "shipped"].includes(subStatus) ? (
+                    <div className="text-xs text-muted-foreground self-center">{tOrders("contactSupportToCancel")}</div>
+                  ) : null}
                 </div>
               </CardHeader>
 
@@ -342,12 +341,7 @@ export default async function CustomerOrderDetailPage({
                               {tOrders(`status.${h.to_status}` as Parameters<typeof tOrders>[0]) || h.to_status}
                             </span>
                             <span className="text-[10px] text-muted-foreground">
-                              {new Date(h.created_at).toLocaleDateString("en-PK", {
-                                month: "short",
-                                day: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
+                              {formatDate(h.created_at, "en-PK", true)}
                             </span>
                           </div>
                           {h.note && (

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /*
 Copyright © 2026 One Tech and AI.
 Confidential and Proprietary. All Rights Reserved.
@@ -67,14 +66,14 @@ export async function updateSellerSettings(
   }
 
   // Update sellers table
-  const sellerUpdates: any = {};
+  const sellerUpdates: Record<string, string> = {};
   if (updates.description !== undefined) sellerUpdates.description = updates.description;
   if (updates.logo !== undefined) sellerUpdates.logo = updates.logo;
 
   if (Object.keys(sellerUpdates).length > 0) {
     const { error } = await supabase
       .from("sellers")
-      .update(sellerUpdates)
+      .update(sellerUpdates as never)
       .eq("id", seller.id);
     if (error) throw new Error("Failed to update seller profile");
 
@@ -96,9 +95,13 @@ export async function updateSellerSettings(
       .select("*")
       .eq("seller_id", seller.id)
       .eq("is_default", true)
-      .single();
+      .maybeSingle();
 
-    if (!addressFetchError && oldAddress) {
+    if (addressFetchError) {
+      throw new Error("Failed to fetch pickup address");
+    }
+
+    if (oldAddress) {
       const { error } = await supabase
         .from("seller_pickup_addresses")
         .update(updates.pickupAddress)
@@ -113,6 +116,28 @@ export async function updateSellerSettings(
         entity_id: oldAddress.id,
         before: oldAddress,
         after: updates.pickupAddress,
+        ip: ipAddress
+      });
+    } else {
+      const { data: newAddress, error } = await supabase
+        .from("seller_pickup_addresses")
+        .insert({
+          seller_id: seller.id,
+          is_default: true,
+          ...updates.pickupAddress
+        })
+        .select()
+        .single();
+
+      if (error) throw new Error("Failed to create pickup address");
+
+      await supabase.from("audit_logs").insert({
+        actor_id: profileId,
+        action: "SELLER_ADDRESS_CREATED",
+        entity: "seller_pickup_addresses",
+        entity_id: newAddress.id,
+        before: null,
+        after: newAddress,
         ip: ipAddress
       });
     }

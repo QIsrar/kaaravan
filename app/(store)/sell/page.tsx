@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import type { Metadata } from "next";
 import { getOptionalUserRole } from "@/lib/auth/roles";
@@ -6,7 +5,7 @@ import { OnboardingWizard } from "@/components/seller/onboarding-wizard";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getSellerDocumentsAction } from "@/lib/actions/seller-documents";
-import { DocumentStatusList } from "@/components/seller/document-status";
+import { DocumentStatusList, type SellerDocument } from "@/components/seller/document-status";
 
 export const metadata: Metadata = {
   title: "Sell on Kaaravan — Partner with Pakistan's Artisan Marketplace",
@@ -23,7 +22,7 @@ export default async function SellPage() {
   
   let applicationStatus: string | null = null;
   let sellerId: string | null = null;
-  let documents: any[] = [];
+  let documents: SellerDocument[] = [];
 
   if (userRole) {
     const supabase = await createClient();

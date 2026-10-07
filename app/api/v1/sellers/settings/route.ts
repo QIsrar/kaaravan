@@ -1,17 +1,16 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { getApiAuthUser } from "@/lib/auth/api-auth";
 import { getSellerSettings, updateSellerSettings } from "@/lib/services/seller-settings";
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const { user: profile } = await getApiAuthUser();
     if (!profile) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
 
     const result = await getSellerSettings(profile.id);
     return NextResponse.json({ success: true, data: result });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : "Unknown error" }, { status: 400 });
   }
 }
 
@@ -25,7 +24,7 @@ export async function PATCH(request: Request) {
 
     const result = await updateSellerSettings(profile.id, ipAddress, body);
     return NextResponse.json(result);
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : "Unknown error" }, { status: 400 });
   }
 }

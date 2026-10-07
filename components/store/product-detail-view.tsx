@@ -326,11 +326,11 @@ export function ProductDetailView({
 
           {/* Variant Selector */}
           {variants.length > 1 && (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <label className="text-xs font-semibold text-foreground uppercase tracking-wider block">
                 Select Option / Variant:
               </label>
-              <div className="flex flex-wrap gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {variants.map((v, idx) => {
                   const isSelected = idx === selectedVariantIndex;
                   const label =
@@ -341,13 +341,18 @@ export function ProductDetailView({
                       key={v.id}
                       type="button"
                       onClick={() => setSelectedVariantIndex(idx)}
-                      className={`text-xs px-4 py-2 rounded-xl border transition-all font-semibold ${
+                      className={`text-left p-3 rounded-xl border transition-all flex flex-col justify-center ${
                         isSelected
-                          ? "bg-primary text-primary-foreground border-primary shadow-xs ring-2 ring-primary/20 scale-105"
-                          : "bg-card border-border text-foreground hover:bg-muted"
+                          ? "bg-primary/5 border-primary ring-1 ring-primary shadow-sm"
+                          : "bg-card border-border hover:bg-muted"
                       }`}
                     >
-                      <bdi dir="auto">{label}</bdi>
+                      <span className={`font-semibold text-sm line-clamp-2 ${isSelected ? "text-primary" : "text-foreground"}`}>
+                        <bdi dir="auto">{label}</bdi>
+                      </span>
+                      <span className="text-xs mt-1 text-muted-foreground font-mono">
+                        {formatPaisa(v.priceMinor)}
+                      </span>
                     </button>
                   );
                 })}

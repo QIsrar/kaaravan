@@ -69,8 +69,13 @@ export async function changeSubOrderStatus(
       throw new Error(`Sellers cannot change status to ${newStatus}`);
     }
 
-    if (newStatus === "cancelled" && !reason) {
-      throw new Error("Reason is required when cancelling an order");
+    if (newStatus === "cancelled") {
+      if (!["awaiting_confirmation", "pending", "confirmed"].includes(oldStatus)) {
+        throw new Error("Sellers can only cancel orders before they are packed");
+      }
+      if (!reason) {
+        throw new Error("Reason is required when cancelling an order");
+      }
     }
 
     const { data: seller } = await supabase

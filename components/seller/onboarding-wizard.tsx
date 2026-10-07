@@ -11,6 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useRouter } from "next/navigation";
 import { submitOnboardingAction } from "@/app/(store)/sell/actions";
+import { uploadSellerDocumentAction } from "@/lib/actions/seller-documents";
+import { Loader2 } from "lucide-react";
 
 const steps = [
   { id: 1, title: "Business Info" },
@@ -24,6 +26,9 @@ export function OnboardingWizard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  const [cnicFront, setCnicFront] = useState<File | null>(null);
+  const [cnicBack, setCnicBack] = useState<File | null>(null);
 
   const { register, handleSubmit, trigger, formState: { errors }, setValue, watch } = useForm<SellerOnboardingInput>({
     resolver: zodResolver(sellerOnboardingSchema),
@@ -39,6 +44,13 @@ export function OnboardingWizard() {
     if (currentStep === 3) fieldsToValidate = ["bankName", "accountTitle", "iban"];
     
     const isStepValid = await trigger(fieldsToValidate);
+    
+    if (currentStep === 2 && (!cnicFront || !cnicBack)) {
+      setError("Please select both CNIC Front and Back images.");
+      return;
+    }
+    setError(null);
+
     if (isStepValid) {
       setCurrentStep(s => s + 1);
       window.scrollTo(0, 0);
@@ -51,7 +63,25 @@ export function OnboardingWizard() {
     setIsSubmitting(true);
     setError(null);
     try {
-      await submitOnboardingAction(JSON.stringify(data));
+      const result = await submitOnboardingAction(JSON.stringify(data));
+      
+      if (result?.sellerId) {
+        if (cnicFront) {
+          const fd = new FormData();
+          fd.append("sellerId", result.sellerId);
+          fd.append("docType", "cnic_front");
+          fd.append("file", cnicFront);
+          await uploadSellerDocumentAction(fd);
+        }
+        if (cnicBack) {
+          const fd = new FormData();
+          fd.append("sellerId", result.sellerId);
+          fd.append("docType", "cnic_back");
+          fd.append("file", cnicBack);
+          await uploadSellerDocumentAction(fd);
+        }
+      }
+
       router.refresh(); // Will reload and show "Pending" status
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -119,10 +149,31 @@ export function OnboardingWizard() {
               <Label htmlFor="ntn">NTN (Optional)</Label>
               <Input id="ntn" {...register("ntn")} placeholder="National Tax Number" />
             </div>
-            <div className="p-4 border border-dashed rounded-xl bg-secondary/10 text-center">
-              <p className="text-sm text-muted-foreground mb-2">Upload CNIC & Documents</p>
-              <Button type="button" variant="outline" size="sm" disabled>Select Files (Mocked)</Button>
-              <p className="text-xs text-muted-foreground mt-2">Document uploads will be integrated with Supabase storage.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-4 border border-dashed rounded-xl bg-secondary/10 text-center relative hover:bg-secondary/20 transition-colors">
+                <p className="text-sm font-medium mb-2">CNIC Front *</p>
+                <Button type="button" variant="outline" size="sm" className="w-full relative z-10 pointer-events-none">
+                  {cnicFront ? cnicFront.name : "Select File"}
+                </Button>
+                <input 
+                  type="file" 
+                  accept="image/jpeg, image/png, image/webp, application/pdf"
+                  onChange={(e) => setCnicFront(e.target.files?.[0] || null)}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                />
+              </div>
+              <div className="p-4 border border-dashed rounded-xl bg-secondary/10 text-center relative hover:bg-secondary/20 transition-colors">
+                <p className="text-sm font-medium mb-2">CNIC Back *</p>
+                <Button type="button" variant="outline" size="sm" className="w-full relative z-10 pointer-events-none">
+                  {cnicBack ? cnicBack.name : "Select File"}
+                </Button>
+                <input 
+                  type="file" 
+                  accept="image/jpeg, image/png, image/webp, application/pdf"
+                  onChange={(e) => setCnicBack(e.target.files?.[0] || null)}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                />
+              </div>
             </div>
           </div>
         )}
@@ -214,7 +265,12 @@ export function OnboardingWizard() {
             <Button type="button" onClick={nextStep}>Next Step</Button>
           ) : (
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Submitting..." : "Submit Application"}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Submitting...
+                </>
+              ) : "Submit Application"}
             </Button>
           )}
         </div>

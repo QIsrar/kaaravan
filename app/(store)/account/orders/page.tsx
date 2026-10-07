@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Image } from "@/components/ui/image";
 import { formatPaisa } from "@/lib/format/currency";
+import { formatDate } from "@/lib/format/date";
 import {
   ShoppingBag,
   Store,
@@ -82,11 +83,7 @@ export default async function CustomerOrdersPage() {
       ) : (
         <div className="space-y-5">
           {orders.map((order) => {
-            const placedDate = new Date(order.placed_at).toLocaleDateString("en-PK", {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-            });
+            const placedDate = formatDate(order.placed_at);
             const subOrders = order.sub_orders || [];
 
             return (
@@ -120,10 +117,10 @@ export default async function CustomerOrdersPage() {
                       <div>
                         <span className="text-muted-foreground block text-[11px] flex items-center gap-1">
                           <CreditCard className="w-3 h-3 text-muted-foreground" />
-                          <span>{tOrders("payment")}</span>
+                          <span>{tOrders("paymentLabel")}</span>
                         </span>
                         <span className="font-medium uppercase text-[11px] text-foreground">
-                          {order.payment_method} &bull; {order.payment_status}
+                          {order.payment_method} &bull; {tOrders(`payment.${order.payment_status}` as Parameters<typeof tOrders>[0]) || order.payment_status}
                         </span>
                       </div>
                     </div>
