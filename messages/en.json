@@ -707,7 +707,13 @@
       "variantsCount": "{count} variants",
       "inStockCount": "{count} in stock",
       "lowStockBadge": "Low Stock",
-      "saveProductFirstNotice": "Save product first to upload and manage photos."
+      "saveProductFirstNotice": "Save product first to upload and manage photos.",
+      "singleDefaultVariant": "Single / Default",
+      "draftSaved": "Draft saved",
+      "submittedForReview": "Submitted for review",
+      "submitReviewHintImages": "Upload at least 1 photo to submit for review.",
+      "submitReviewHintVariants": "Add at least 1 active variant with a price to submit for review.",
+      "submitReviewHintBoth": "Upload at least 1 photo and add at least 1 active variant with a price to submit for review."
     }
   }
 }

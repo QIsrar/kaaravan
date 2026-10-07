@@ -15,3 +15,13 @@ export function getSafeRedirect(param: string | null, fallback = "/account"): st
   }
   return fallback;
 }
+
+export function formatMinorUnit(minorUnits: number, currency = "PKR", locale = "en-PK"): string {
+  const formatter = new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: currency,
+    minimumFractionDigits: 2,
+  });
+  // Minor units are 1/100 of a major unit (paisa/cents)
+  return formatter.format(minorUnits / 100);
+}

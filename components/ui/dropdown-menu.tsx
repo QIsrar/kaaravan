@@ -25,8 +25,8 @@ function DropdownMenuContent({
         <MenuPrimitive.Popup
           data-slot="dropdown-menu-content"
           className={cn(
-            "min-w-56 rounded-2xl border-[1.5px] border-border bg-popover/80 backdrop-blur-md p-1.5 text-popover-foreground shadow-md",
-            "data-[starting-style]:opacity-0 data-[starting-style]:scale-95 data-[ending-style]:opacity-0 data-[ending-style]:scale-95 transition-all duration-100",
+            "glass-dropdown min-w-56 rounded-2xl border-[1.5px] border-border bg-popover/70 backdrop-blur-xl backdrop-saturate-150 p-1.5 text-popover-foreground",
+            "data-[starting-style]:opacity-0 data-[starting-style]:scale-95 data-[ending-style]:opacity-0 data-[ending-style]:scale-95 transition-all duration-150 ease-out",
             className
           )}
           {...props}
@@ -41,7 +41,7 @@ function DropdownMenuItem({ className, ...props }: React.ComponentProps<typeof M
     <MenuPrimitive.Item
       data-slot="dropdown-menu-item"
       className={cn(
-        "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-foreground cursor-pointer outline-none transition-colors data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
+        "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-foreground cursor-pointer outline-none transition-colors data-[highlighted]:bg-primary/10 data-[highlighted]:text-primary hover:bg-primary/10 hover:text-primary active:bg-primary/15",
         className
       )}
       {...props}
@@ -54,7 +54,7 @@ function DropdownMenuLinkItem({ className, ...props }: React.ComponentProps<type
     <MenuPrimitive.LinkItem
       data-slot="dropdown-menu-link-item"
       className={cn(
-        "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-foreground cursor-pointer outline-none transition-colors data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
+        "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-foreground cursor-pointer outline-none transition-colors data-[highlighted]:bg-primary/10 data-[highlighted]:text-primary hover:bg-primary/10 hover:text-primary active:bg-primary/15",
         className
       )}
       {...props}

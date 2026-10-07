@@ -113,6 +113,10 @@ export async function upsertProductAction(
       }
     } else if (msg.includes("Original price") || msg.includes("Compare at price")) {
       fieldErrors["compare_at"] = msg;
+    } else if (msg.includes("uploaded image")) {
+      fieldErrors["images"] = msg;
+    } else if (msg.includes("active variant")) {
+      fieldErrors["variants"] = msg;
     }
 
     return {

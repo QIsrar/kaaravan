@@ -82,6 +82,25 @@ export async function upsertSellerProduct(
       ? "active" 
       : input.status;
 
+    if (finalStatus === "pending_review") {
+      const { count: imageCount, error: imgCountErr } = await supabase
+        .from("product_images")
+        .select("id", { count: "exact", head: true })
+        .eq("product_id", dbProductId);
+
+      if (imgCountErr) throw new Error("Failed to verify product images");
+      if (!imageCount || imageCount < 1) {
+        throw new Error("Product must have at least one uploaded image before submitting for review");
+      }
+
+      const hasActiveVariantWithPrice = input.variants.some(
+        (v) => v.is_active && v.price_minor > 0
+      );
+      if (!hasActiveVariantWithPrice) {
+        throw new Error("Product must have at least one active variant with a valid price before submitting for review");
+      }
+    }
+
     const { error: updErr } = await supabase
       .from("products")
       .update({
@@ -107,6 +126,10 @@ export async function upsertSellerProduct(
     });
     if (auditErr1) throw new Error("Failed to write audit log");
   } else {
+    if (input.status === "pending_review") {
+      throw new Error("Product must have at least one uploaded image before submitting for review");
+    }
+
     // Generate unique slug
     let slug = generateSlug(input.title);
     let counter = 1;

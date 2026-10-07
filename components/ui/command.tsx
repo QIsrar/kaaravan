@@ -332,7 +332,7 @@ export function CommandItem({
         "relative flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs cursor-pointer select-none transition-colors outline-none",
         isActive
           ? "bg-primary/10 text-primary font-medium"
-          : "text-foreground hover:bg-muted/60",
+          : "text-foreground hover:bg-primary/10 hover:text-primary data-[highlighted]:bg-primary/10 data-[highlighted]:text-primary",
         disabled && "pointer-events-none opacity-50",
         className
       )}

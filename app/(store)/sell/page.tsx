@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import type { Metadata } from "next";
 import { getOptionalUserRole } from "@/lib/auth/roles";
 import { OnboardingWizard } from "@/components/seller/onboarding-wizard";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getSellerDocumentsAction } from "@/lib/actions/seller-documents";
+import { DocumentStatusList } from "@/components/seller/document-status";
 
 export const metadata: Metadata = {
   title: "Sell on Kaaravan — Partner with Pakistan's Artisan Marketplace",
@@ -19,6 +22,8 @@ export default async function SellPage() {
   // Wait, if they are logged in and pending, we should show "Pending" status.
   
   let applicationStatus: string | null = null;
+  let sellerId: string | null = null;
+  let documents: any[] = [];
 
   if (userRole) {
     const supabase = await createClient();
@@ -26,12 +31,18 @@ export default async function SellPage() {
     if (profile.user) {
       const { data: seller } = await supabase
         .from("sellers")
-        .select("status")
+        .select("id, status")
         .eq("owner_profile_id", profile.user.id)
         .single();
       
       if (seller) {
         applicationStatus = seller.status;
+        sellerId = seller.id;
+        try {
+          documents = await getSellerDocumentsAction(seller.id);
+        } catch (e) {
+          console.error("Failed to load documents", e);
+        }
       }
     }
   }
@@ -59,20 +70,26 @@ export default async function SellPage() {
           </a>
         </div>
       ) : applicationStatus === "pending" ? (
-        <div className="p-8 bg-secondary/10 border-2 border-secondary/30 rounded-3xl text-center space-y-4">
-          <h2 className="text-2xl font-bold text-foreground">Application Under Review</h2>
-          <p className="text-muted-foreground">
-            Your seller application is currently being reviewed by our team. 
-            We will notify you once it&apos;s approved. This usually takes 1-2 business days.
-          </p>
+        <div className="p-8 bg-secondary/10 border-2 border-secondary/30 rounded-3xl text-center space-y-8 max-w-2xl mx-auto">
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-foreground">Application Under Review</h2>
+            <p className="text-muted-foreground">
+              Your seller application is currently being reviewed by our team. 
+              We will notify you once it&apos;s approved. This usually takes 1-2 business days.
+            </p>
+          </div>
+          {sellerId && <DocumentStatusList documents={documents} sellerId={sellerId} />}
         </div>
       ) : applicationStatus === "rejected" ? (
-        <div className="p-8 bg-destructive/10 border-2 border-destructive/30 rounded-3xl text-center space-y-4">
-          <h2 className="text-2xl font-bold text-destructive">Application Rejected</h2>
-          <p className="text-muted-foreground">
-            Unfortunately, your application could not be approved at this time.
-            Please contact support for more details.
-          </p>
+        <div className="p-8 bg-destructive/10 border-2 border-destructive/30 rounded-3xl text-center space-y-8 max-w-2xl mx-auto">
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-destructive">Application Rejected</h2>
+            <p className="text-muted-foreground">
+              Unfortunately, your application could not be approved at this time.
+              Please verify your documents and try re-uploading, or contact support for more details.
+            </p>
+          </div>
+          {sellerId && <DocumentStatusList documents={documents} sellerId={sellerId} />}
         </div>
       ) : (
         <div className="bg-card border rounded-3xl shadow-sm p-6 sm:p-10">

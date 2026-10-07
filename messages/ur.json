@@ -707,7 +707,13 @@
       "variantsCount": "{count} اقسام",
       "inStockCount": "{count} اسٹاک میں",
       "lowStockBadge": "کم اسٹاک",
-      "saveProductFirstNotice": "تصاویر اپلوڈ کرنے کیلئے پہلے مصنوع کو محفوظ کریں۔"
+      "saveProductFirstNotice": "تصاویر اپلوڈ کرنے کیلئے پہلے مصنوع کو محفوظ کریں۔",
+      "singleDefaultVariant": "سنگل / ڈیفالٹ",
+      "draftSaved": "ڈرافٹ محفوظ ہو گیا",
+      "submittedForReview": "جائزے کیلئے بھیج دیا گیا",
+      "submitReviewHintImages": "جائزے کیلئے کم از کم 1 تصویر اپلوڈ کرنا ضروری ہے۔",
+      "submitReviewHintVariants": "جائزے کیلئے کم از کم 1 فعال قسم مع قیمت ہونا ضروری ہے۔",
+      "submitReviewHintBoth": "جائزے کیلئے کم از کم 1 تصویر اور 1 فعال قسم مع قیمت ہونا ضروری ہے۔"
     }
   }
 }

@@ -20,6 +20,7 @@ import {
   Loader2,
   Check,
   ChevronsUpDown,
+  Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -413,6 +414,8 @@ export function ProductForm({
     if (key === "sku") return "field-variants-0-sku";
     if (key === "compare_at") return "field-variants-0-compare_at_rupees";
     if (key === "stock") return "field-variants-0-stock_quantity";
+    if (key === "images") return "field-product-images";
+    if (key === "variants") return "field-variants-0-sku";
     return "field-title";
   };
 
@@ -442,6 +445,10 @@ export function ProductForm({
       } else if (key === "description") {
         const clean = msg.replace(/^Description:\s*/i, "").trim();
         list.push({ key, elementId, label: t("description"), message: `${t("description")}: ${clean || msg}` });
+      } else if (key === "images") {
+        list.push({ key, elementId, label: t("productImages"), message: `${t("productImages")}: ${msg}` });
+      } else if (key === "variants") {
+        list.push({ key, elementId, label: t("variantsTitle"), message: `${t("variantsTitle")}: ${msg}` });
       } else if (key.startsWith("variants.")) {
         const parts = key.split(".");
         const vIdx = parseInt(parts[1], 10);
@@ -526,6 +533,27 @@ export function ProductForm({
 
     // Validate only on save
     const clientErrors: Record<string, string> = {};
+
+    if (targetStatus === "pending_review") {
+      if (!product?.id) {
+        toast.error("Please save the product as draft first before submitting for review.");
+        return;
+      }
+      if (images.length === 0) {
+        clientErrors.images = t("submitReviewHintImages");
+      }
+      const hasActive = variants.some((v) => {
+        if (!v.is_active) return false;
+        try {
+          return parseRupeesToPaisa(v.price_rupees) > 0;
+        } catch {
+          return false;
+        }
+      });
+      if (!hasActive) {
+        clientErrors.variants = t("submitReviewHintVariants");
+      }
+    }
 
     if (!title.trim()) {
       clientErrors.title = "Title is required (at least 5 characters)";
@@ -677,7 +705,15 @@ export function ProductForm({
         }
       }
 
-      toast.success(targetStatus === "archived" ? t("productArchived") : t("productSaved"));
+      if (targetStatus === "pending_review") {
+        toast.success(t("submittedForReview"));
+      } else if (targetStatus === "draft") {
+        toast.success(t("draftSaved"));
+      } else if (targetStatus === "archived") {
+        toast.success(t("productArchived"));
+      } else {
+        toast.success(t("productSaved"));
+      }
       setCurrentStatus(targetStatus);
 
       if (!product?.id && createdProductId) {
@@ -844,6 +880,30 @@ export function ProductForm({
     }
   };
 
+  const isProductSaved = Boolean(product?.id);
+  const hasUploadedImages = images.length > 0;
+  const hasActiveVariantWithPrice = variants.some((v) => {
+    if (!v.is_active) return false;
+    if (!v.price_rupees.trim()) return false;
+    try {
+      return parseRupeesToPaisa(v.price_rupees) > 0;
+    } catch {
+      return false;
+    }
+  });
+  const canSubmitForReview = isProductSaved && hasUploadedImages && hasActiveVariantWithPrice;
+
+  let submitReviewHint: string | null = null;
+  if (isProductSaved && !canSubmitForReview) {
+    if (!hasUploadedImages && !hasActiveVariantWithPrice) {
+      submitReviewHint = t("submitReviewHintBoth");
+    } else if (!hasUploadedImages) {
+      submitReviewHint = t("submitReviewHintImages");
+    } else if (!hasActiveVariantWithPrice) {
+      submitReviewHint = t("submitReviewHintVariants");
+    }
+  }
+
   return (
     <div className="space-y-8 pb-16">
       {/* Top Header & Badges */}
@@ -861,40 +921,53 @@ export function ProductForm({
         </div>
 
         {/* Action Buttons Top */}
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <Button
-            id="save-draft-btn"
-            type="button"
-            variant="outline"
-            disabled={isSaving}
-            onClick={() => handleSubmit("draft")}
-            className="rounded-xl"
-          >
-            {isSaving ? <Loader2 className="w-4 h-4 animate-spin me-2" /> : null}
-            {t("saveDraft")}
-          </Button>
-
-          <Button
-            id="submit-review-btn"
-            type="button"
-            disabled={isSaving}
-            onClick={() => handleSubmit("pending_review")}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-xs"
-          >
-            {isSaving ? <Loader2 className="w-4 h-4 animate-spin me-2" /> : null}
-            {t("submitReview")}
-          </Button>
-
-          {product?.id && currentStatus !== "archived" && (
+        <div className="flex flex-col sm:items-end gap-1.5">
+          <div className="flex items-center gap-2.5 flex-wrap">
             <Button
+              id="save-draft-btn"
               type="button"
               variant="outline"
               disabled={isSaving}
-              onClick={() => setShowArchiveDialog(true)}
-              className="text-destructive hover:bg-destructive/10 hover:text-destructive rounded-xl"
+              onClick={() => handleSubmit("draft")}
+              className="rounded-xl"
             >
-              {t("archive")}
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin me-2" /> : null}
+              {t("saveDraft")}
             </Button>
+
+            {isProductSaved && (
+              <Button
+                id="submit-review-btn"
+                type="button"
+                disabled={isSaving || !canSubmitForReview}
+                onClick={() => handleSubmit("pending_review")}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                title={submitReviewHint || undefined}
+              >
+                {isSaving ? <Loader2 className="w-4 h-4 animate-spin me-2" /> : null}
+                {t("submitReview")}
+              </Button>
+            )}
+
+            {isProductSaved && currentStatus !== "archived" && (
+              <Button
+                id="archive-btn"
+                type="button"
+                variant="outline"
+                disabled={isSaving}
+                onClick={() => setShowArchiveDialog(true)}
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive rounded-xl"
+              >
+                {t("archive")}
+              </Button>
+            )}
+          </div>
+
+          {submitReviewHint && (
+            <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+              <Info className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+              <span>{submitReviewHint}</span>
+            </p>
           )}
         </div>
       </div>
@@ -1316,75 +1389,74 @@ export function ProductForm({
                     const thresholdError =
                       fieldErrors[`variants.${idx}.low_stock_threshold`] || null;
 
-                    const attrLabel =
-                      Object.entries(v.attributes)
-                        .map(([k, val]) => `${k}: ${val}`)
-                        .join(" · ") || "Single / Default";
-
                     return (
                       <div
                         key={idx}
-                        className={`p-4 rounded-2xl border transition-colors ${
+                        className={`p-4 sm:p-5 rounded-2xl border transition-colors ${
                           v.is_active
                             ? "bg-card border-border shadow-2xs"
                             : "bg-muted/30 border-dashed border-border/80 opacity-70"
                         }`}
                       >
-                        {/* Variant Header / Badge */}
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="font-mono text-[11px] px-2 py-0.5">
-                              {attrLabel}
-                            </Badge>
-                            {v.reserved_quantity !== undefined && v.reserved_quantity > 0 && (
-                              <span className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
-                                ({v.reserved_quantity} reserved)
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={v.is_active}
-                                onChange={(e) =>
-                                  updateVariantField(idx, "is_active", e.target.checked)
-                                }
-                                className="rounded text-primary focus:ring-primary h-4 w-4"
-                              />
-                              <span>{t("active")}</span>
-                            </label>
-
-                            {variants.length > 1 && (
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleRemoveVariantRow(idx)}
-                                className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                        {/* Top: Attribute Chips & Delete Button */}
+                        <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {Object.entries(v.attributes).length > 0 ? (
+                              Object.entries(v.attributes).map(([attrK, attrV]) => (
+                                <Badge
+                                  key={attrK}
+                                  variant="outline"
+                                  className="font-mono text-[11px] px-2.5 py-1 rounded-lg bg-background/80 border-border"
+                                >
+                                  <span className="text-muted-foreground font-sans me-1">{attrK}:</span>
+                                  <span className="font-semibold text-foreground">{attrV}</span>
+                                </Badge>
+                              ))
+                            ) : (
+                              <Badge
+                                variant="outline"
+                                className="font-mono text-[11px] px-2.5 py-1 rounded-lg bg-background/80 border-border text-muted-foreground"
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </Button>
+                                {t("singleDefaultVariant")}
+                              </Badge>
+                            )}
+
+                            {v.reserved_quantity !== undefined && v.reserved_quantity > 0 && (
+                              <Badge variant="secondary" className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
+                                {v.reserved_quantity} {t("reservedStock")}
+                              </Badge>
                             )}
                           </div>
+
+                          {variants.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRemoveVariantRow(idx)}
+                              className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg ms-auto"
+                              title={t("removeVariant")}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
                         </div>
 
-                        {/* Variant Row Inputs Grid */}
-                        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                          {/* SKU */}
-                          <div className="col-span-2 sm:col-span-1 space-y-1">
+                        <div className="space-y-4">
+                          {/* SKU on its own full-width line (never truncated) */}
+                          <div className="w-full space-y-1">
                             <Label
                               htmlFor={`field-variants-${idx}-sku`}
                               className="text-[11px] font-semibold text-muted-foreground"
                             >
-                              {t("sku")} *
+                              {t("sku")} <span className="text-destructive">*</span>
                             </Label>
                             <Input
                               id={`field-variants-${idx}-sku`}
                               value={v.sku}
                               onChange={(e) => updateVariantField(idx, "sku", e.target.value)}
                               placeholder="e.g. MK-01-BLU"
-                              className={`h-9 font-mono text-xs rounded-xl ${
+                              className={`w-full h-9 font-mono text-xs rounded-xl ${
                                 skuError
                                   ? "border-destructive focus-visible:ring-destructive ring-1 ring-destructive"
                                   : ""
@@ -1398,131 +1470,159 @@ export function ProductForm({
                             )}
                           </div>
 
-                          {/* Price */}
-                          <div className="space-y-1">
-                            <Label
-                              htmlFor={`field-variants-${idx}-price_rupees`}
-                              className="text-[11px] font-semibold text-muted-foreground"
-                            >
-                              {t("priceRupees")} *
-                            </Label>
-                            <Input
-                              id={`field-variants-${idx}-price_rupees`}
-                              type="text"
-                              inputMode="numeric"
-                              value={v.price_rupees}
-                              onChange={(e) =>
-                                updateVariantField(idx, "price_rupees", e.target.value)
-                              }
-                              placeholder="0"
-                              className={`h-9 font-mono text-xs rounded-xl ${
-                                priceError
-                                  ? "border-destructive focus-visible:ring-destructive ring-1 ring-destructive"
-                                  : ""
-                              }`}
-                            />
-                            {priceError && (
-                              <p className="text-[10px] text-destructive flex items-center gap-1 leading-tight">
-                                <AlertCircle className="w-3 h-3 shrink-0" />
-                                {priceError}
-                              </p>
-                            )}
-                          </div>
+                          {/* Price / original price / stock / low-stock threshold / active in a responsive grid that stacks on mobile */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-start">
+                            {/* Price */}
+                            <div className="space-y-1">
+                              <Label
+                                htmlFor={`field-variants-${idx}-price_rupees`}
+                                className="text-[11px] font-semibold text-muted-foreground"
+                              >
+                                {t("priceRupees")} <span className="text-destructive">*</span>
+                              </Label>
+                              <Input
+                                id={`field-variants-${idx}-price_rupees`}
+                                type="text"
+                                inputMode="numeric"
+                                value={v.price_rupees}
+                                onChange={(e) =>
+                                  updateVariantField(idx, "price_rupees", e.target.value)
+                                }
+                                placeholder="0"
+                                className={`h-9 font-mono text-xs rounded-xl ${
+                                  priceError
+                                    ? "border-destructive focus-visible:ring-destructive ring-1 ring-destructive"
+                                    : ""
+                                }`}
+                              />
+                              {priceError && (
+                                <p className="text-[10px] text-destructive flex items-center gap-1 leading-tight">
+                                  <AlertCircle className="w-3 h-3 shrink-0" />
+                                  {priceError}
+                                </p>
+                              )}
+                            </div>
 
-                          {/* Compare At / Original Price */}
-                          <div className="space-y-1">
-                            <Label
-                              htmlFor={`field-variants-${idx}-compare_at_rupees`}
-                              className="text-[11px] font-semibold text-muted-foreground"
-                            >
-                              {t("compareAtRupees")}
-                            </Label>
-                            <Input
-                              id={`field-variants-${idx}-compare_at_rupees`}
-                              type="text"
-                              inputMode="numeric"
-                              value={v.compare_at_rupees}
-                              onChange={(e) =>
-                                updateVariantField(idx, "compare_at_rupees", e.target.value)
-                              }
-                              placeholder="0"
-                              className={`h-9 font-mono text-xs rounded-xl ${
-                                compareError
-                                  ? "border-destructive focus-visible:ring-destructive ring-1 ring-destructive"
-                                  : ""
-                              }`}
-                            />
-                            <p className="text-[10px] text-muted-foreground leading-tight">
-                              {t("originalPriceHelp")}
-                            </p>
-                            {compareError && (
-                              <p className="text-[10px] text-destructive flex items-center gap-1 leading-tight">
-                                <AlertCircle className="w-3 h-3 shrink-0" />
-                                {compareError}
+                            {/* Compare At / Original Price */}
+                            <div className="space-y-1">
+                              <Label
+                                htmlFor={`field-variants-${idx}-compare_at_rupees`}
+                                className="text-[11px] font-semibold text-muted-foreground"
+                              >
+                                {t("compareAtRupees")}
+                              </Label>
+                              <Input
+                                id={`field-variants-${idx}-compare_at_rupees`}
+                                type="text"
+                                inputMode="numeric"
+                                value={v.compare_at_rupees}
+                                onChange={(e) =>
+                                  updateVariantField(idx, "compare_at_rupees", e.target.value)
+                                }
+                                placeholder="0"
+                                className={`h-9 font-mono text-xs rounded-xl ${
+                                  compareError
+                                    ? "border-destructive focus-visible:ring-destructive ring-1 ring-destructive"
+                                    : ""
+                                }`}
+                              />
+                              <p className="text-[10px] text-muted-foreground leading-tight">
+                                {t("originalPriceHelp")}
                               </p>
-                            )}
-                          </div>
+                              {compareError && (
+                                <p className="text-[10px] text-destructive flex items-center gap-1 leading-tight">
+                                  <AlertCircle className="w-3 h-3 shrink-0" />
+                                  {compareError}
+                                </p>
+                              )}
+                            </div>
 
-                          {/* Stock Quantity */}
-                          <div className="space-y-1">
-                            <Label
-                              htmlFor={`field-variants-${idx}-stock_quantity`}
-                              className="text-[11px] font-semibold text-muted-foreground"
-                            >
-                              {t("stock")} *
-                            </Label>
-                            <Input
-                              id={`field-variants-${idx}-stock_quantity`}
-                              type="text"
-                              inputMode="numeric"
-                              value={v.stock_quantity}
-                              onChange={(e) =>
-                                updateVariantField(idx, "stock_quantity", e.target.value)
-                              }
-                              placeholder="0"
-                              className={`h-9 font-mono text-xs rounded-xl ${
-                                stockError
-                                  ? "border-destructive focus-visible:ring-destructive ring-1 ring-destructive"
-                                  : ""
-                              }`}
-                            />
-                            {stockError && (
-                              <p className="text-[10px] text-destructive flex items-center gap-1 leading-tight">
-                                <AlertCircle className="w-3 h-3 shrink-0" />
-                                {stockError}
-                              </p>
-                            )}
-                          </div>
+                            {/* Stock Quantity */}
+                            <div className="space-y-1">
+                              <Label
+                                htmlFor={`field-variants-${idx}-stock_quantity`}
+                                className="text-[11px] font-semibold text-muted-foreground"
+                              >
+                                {t("stock")} <span className="text-destructive">*</span>
+                              </Label>
+                              <Input
+                                id={`field-variants-${idx}-stock_quantity`}
+                                type="text"
+                                inputMode="numeric"
+                                value={v.stock_quantity}
+                                onChange={(e) =>
+                                  updateVariantField(idx, "stock_quantity", e.target.value)
+                                }
+                                placeholder="0"
+                                className={`h-9 font-mono text-xs rounded-xl ${
+                                  stockError
+                                    ? "border-destructive focus-visible:ring-destructive ring-1 ring-destructive"
+                                    : ""
+                                }`}
+                              />
+                              {stockError && (
+                                <p className="text-[10px] text-destructive flex items-center gap-1 leading-tight">
+                                  <AlertCircle className="w-3 h-3 shrink-0" />
+                                  {stockError}
+                                </p>
+                              )}
+                            </div>
 
-                          {/* Low Stock Alert */}
-                          <div className="space-y-1">
-                            <Label
-                              htmlFor={`field-variants-${idx}-low_stock_threshold`}
-                              className="text-[11px] font-semibold text-muted-foreground"
-                            >
-                              {t("lowStockThreshold")}
-                            </Label>
-                            <Input
-                              id={`field-variants-${idx}-low_stock_threshold`}
-                              type="text"
-                              inputMode="numeric"
-                              value={v.low_stock_threshold}
-                              onChange={(e) =>
-                                updateVariantField(idx, "low_stock_threshold", e.target.value)
-                              }
-                              placeholder="0"
-                              className={`h-9 font-mono text-xs rounded-xl ${
-                                thresholdError
-                                  ? "border-destructive focus-visible:ring-destructive ring-1 ring-destructive"
-                                  : ""
-                              }`}
-                            />
-                            {thresholdError && (
-                              <p className="text-[10px] text-destructive flex items-center gap-1 leading-tight">
-                                <AlertCircle className="w-3 h-3 shrink-0" />
-                                {thresholdError}
-                              </p>
-                            )}
+                            {/* Low Stock Alert */}
+                            <div className="space-y-1">
+                              <Label
+                                htmlFor={`field-variants-${idx}-low_stock_threshold`}
+                                className="text-[11px] font-semibold text-muted-foreground"
+                              >
+                                {t("lowStockThreshold")}
+                              </Label>
+                              <Input
+                                id={`field-variants-${idx}-low_stock_threshold`}
+                                type="text"
+                                inputMode="numeric"
+                                value={v.low_stock_threshold}
+                                onChange={(e) =>
+                                  updateVariantField(idx, "low_stock_threshold", e.target.value)
+                                }
+                                placeholder="0"
+                                className={`h-9 font-mono text-xs rounded-xl ${
+                                  thresholdError
+                                    ? "border-destructive focus-visible:ring-destructive ring-1 ring-destructive"
+                                    : ""
+                                }`}
+                              />
+                              {thresholdError && (
+                                <p className="text-[10px] text-destructive flex items-center gap-1 leading-tight">
+                                  <AlertCircle className="w-3 h-3 shrink-0" />
+                                  {thresholdError}
+                                </p>
+                              )}
+                            </div>
+
+                            {/* Active Status */}
+                            <div className="space-y-1 flex flex-col justify-start">
+                              <Label
+                                htmlFor={`field-variants-${idx}-active`}
+                                className="text-[11px] font-semibold text-muted-foreground"
+                              >
+                                {t("status")}
+                              </Label>
+                              <label
+                                htmlFor={`field-variants-${idx}-active`}
+                                className="flex items-center gap-2 h-9 px-3 rounded-xl border border-border/80 bg-background/50 hover:bg-background cursor-pointer text-xs font-medium transition-colors"
+                              >
+                                <input
+                                  id={`field-variants-${idx}-active`}
+                                  type="checkbox"
+                                  checked={v.is_active}
+                                  onChange={(e) =>
+                                    updateVariantField(idx, "is_active", e.target.checked)
+                                  }
+                                  className="rounded text-primary focus:ring-primary h-4 w-4"
+                                />
+                                <span>{t("active")}</span>
+                              </label>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1537,12 +1637,18 @@ export function ProductForm({
         {/* Right Column (1 col): Product Images & Guidelines */}
         <div className="space-y-8">
           {/* Card 3: Images */}
-          <Card className="rounded-3xl border-border/80 shadow-2xs">
+          <Card id="field-product-images" className="rounded-3xl border-border/80 shadow-2xs">
             <CardHeader className="pb-4">
               <CardTitle className="font-heading text-lg">{t("productImages")}</CardTitle>
               <CardDescription>{t("imagesMaxNotice")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {fieldErrors.images && (
+                <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{fieldErrors.images}</span>
+                </div>
+              )}
               {product?.id ? (
                 <>
                   {/* Upload Drop Zone / Button */}
