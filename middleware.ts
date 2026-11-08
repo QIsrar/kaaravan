@@ -5,6 +5,9 @@ export async function middleware(request: NextRequest) {
   const { supabaseResponse, user } = await updateSession(request);
   const pathname = request.nextUrl.pathname;
 
+  // Set x-pathname header so Server Components & Layouts can read current path
+  supabaseResponse.headers.set("x-pathname", pathname);
+
   // Protect /seller routes (except public seller login/register pages)
   if (pathname.startsWith("/seller") && !pathname.startsWith("/seller/login")) {
     if (!user) {

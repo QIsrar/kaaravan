@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { HeroBanner, type BannerItem } from "@/components/store/hero-banner";
 import { CategoryGrid, type CategoryCardData } from "@/components/store/category-grid";
@@ -16,42 +16,32 @@ export const revalidate = 60;
 
 export default async function HomePage() {
   const t = await getTranslations("store");
+  const locale = await getLocale();
+  const isUrdu = locale === "ur";
   const supabase = await createClient();
 
-  // 1. Fetch active banners
+  // 1. Fetch active banners (using database locale columns, replacing translation-file mapping)
   const { data: rawBanners } = await supabase
     .from("banners")
-    .select("id, title, image_url, link_url, sort_order")
+    .select("id, title, title_en, title_ur, subtitle_en, subtitle_ur, tag_en, tag_ur, image_url, link_url, sort_order")
     .eq("is_active", true)
     .order("sort_order", { ascending: true });
-
-  const bannerMeta: Record<string, { titleKey?: string; tagKey?: string; subtitleKey?: string }> = {
-    "Handcrafted Across Pakistan": {
-      titleKey: "banner1Title",
-      tagKey: "bannerHighlightsTag",
-      subtitleKey: "banner1Subtitle",
-    },
-    "Pure Mountain Harvests": {
-      titleKey: "banner2Title",
-      tagKey: "bannerGilgitTag",
-      subtitleKey: "banner2Subtitle",
-    },
-    "The Heritage Leatherwork": {
-      titleKey: "banner3Title",
-      tagKey: "bannerPeshawarTag",
-      subtitleKey: "banner3Subtitle",
-    },
-  };
 
   const banners: BannerItem[] =
     rawBanners && rawBanners.length > 0
       ? rawBanners.map((b) => {
-          const meta = b.title ? bannerMeta[b.title] : undefined;
+          const title = isUrdu
+            ? b.title_ur || b.title_en || b.title
+            : b.title_en || b.title || b.title_ur;
+          const subtitle = isUrdu
+            ? b.subtitle_ur || b.subtitle_en
+            : b.subtitle_en || b.subtitle_ur;
+          const tag = isUrdu ? b.tag_ur || b.tag_en : b.tag_en || b.tag_ur;
           return {
             id: b.id,
-            title: meta?.titleKey ? t(meta.titleKey) : b.title,
-            subtitle: meta?.subtitleKey ? t(meta.subtitleKey) : null,
-            tag: meta?.tagKey ? t(meta.tagKey) : null,
+            title,
+            subtitle,
+            tag,
             imageUrl: b.image_url || "/placeholder-product.svg",
             linkUrl: b.link_url,
           };

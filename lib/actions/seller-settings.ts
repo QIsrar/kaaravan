@@ -93,3 +93,27 @@ export async function uploadSellerLogoAction(formData: FormData) {
 
   return { success: true, logoPath: objectPath };
 }
+
+export async function requestBankChangeAction(data: {
+  bankName: string;
+  accountTitle: string;
+  iban: string;
+  reason?: string;
+}) {
+  const profile = await requireAuth(["seller"]);
+  if (!profile || !profile.seller_id) throw new Error("Unauthorized");
+
+  const headersList = await headers();
+  const ipAddress = getClientIp(headersList);
+
+  const { submitSellerBankChangeRequest } = await import("@/lib/services/admin-finance");
+  return submitSellerBankChangeRequest(profile.seller_id, data, profile.id, ipAddress);
+}
+
+export async function getSellerBankChangeStatusAction() {
+  const profile = await requireAuth(["seller"]);
+  if (!profile || !profile.seller_id) throw new Error("Unauthorized");
+
+  const { getSellerBankChangeStatus } = await import("@/lib/services/admin-finance");
+  return getSellerBankChangeStatus(profile.seller_id);
+}

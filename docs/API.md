@@ -709,3 +709,291 @@ This document outlines the REST API endpoints available under `/api/v1/` for mob
   }
   ```
 - **Description:** Move order forward (e.g. pending -> confirmed -> packed -> ready_to_ship) or cancel before shipping.
+
+---
+
+## Admin Operations (Phase 7 Part 1)
+
+All endpoints under `/api/v1/admin/*` require administrative privileges (`superadmin` or `admin_staff` holding the declared permission). Suspended user accounts are rejected with `403 Forbidden`.
+
+### 1. Sellers Management (`manage_sellers`)
+
+#### Approve Seller Application
+- **Method:** `POST`
+- **Path:** `/api/v1/admin/sellers/:id/approve`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_sellers` or `superadmin`)
+- **Request Body:** None
+- **Response:** `200 OK`
+  ```json
+  { "success": true, "message": "Seller approved successfully" }
+  ```
+- **Errors:** `401 Unauthorized`, `403 Forbidden`, `400 Bad Request`
+
+#### Reject Seller Application
+- **Method:** `POST`
+- **Path:** `/api/v1/admin/sellers/:id/reject`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_sellers` or `superadmin`)
+- **Request Body:**
+  ```json
+  { "reason": "CNIC document blurred, please re-upload clear photos." }
+  ```
+- **Response:** `200 OK`
+  ```json
+  { "success": true, "message": "Seller rejected successfully" }
+  ```
+
+#### Suspend Seller
+- **Method:** `POST`
+- **Path:** `/api/v1/admin/sellers/:id/suspend`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_sellers` or `superadmin`)
+- **Request Body:**
+  ```json
+  { "reason": "Multiple policy violations regarding counterfeit items." }
+  ```
+- **Response:** `200 OK`
+
+#### Unsuspend Seller
+- **Method:** `POST`
+- **Path:** `/api/v1/admin/sellers/:id/unsuspend`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_sellers` or `superadmin`)
+- **Request Body:** Optional `{ "reason": "Reinstated after review" }`
+- **Response:** `200 OK`
+
+#### Update Seller Commission Rate
+- **Method:** `PATCH`
+- **Path:** `/api/v1/admin/sellers/:id/commission`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_sellers` or `superadmin`)
+- **Request Body:**
+  ```json
+  { "commissionRateBps": 850 }
+  ```
+- **Response:** `200 OK`
+
+#### View KYC Document (Signed URL)
+- **Method:** `GET`
+- **Path:** `/api/v1/admin/sellers/:id/kyc-document?filePath=<path>`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_sellers` or `superadmin`)
+- **Response:** `200 OK`
+  ```json
+  { "success": true, "signedUrl": "https://...", "expiresInSeconds": 300 }
+  ```
+
+---
+
+### 2. Bank Details Change Requests (`manage_finance`)
+
+#### List Bank Requests
+- **Method:** `GET`
+- **Path:** `/api/v1/admin/bank-requests?status=pending`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_finance` or `superadmin`)
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "data": [
+      {
+        "id": "uuid",
+        "seller_id": "uuid",
+        "bank_name": "Meezan Bank",
+        "account_title": "Tariq Mahmood",
+        "ibanMasked": "****6789",
+        "status": "pending",
+        "created_at": "2026-11-08T12:00:00Z",
+        "sellers": { "business_name": "Lahore Crafts", "slug": "lahore-crafts" }
+      }
+    ]
+  }
+  ```
+
+#### Approve Bank Request
+- **Method:** `POST`
+- **Path:** `/api/v1/admin/bank-requests/:id/approve`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_finance` or `superadmin`)
+- **Request Body:** Optional `{ "note": "Verified with official cheque leaf" }`
+- **Response:** `200 OK`
+
+#### Reject Bank Request
+- **Method:** `POST`
+- **Path:** `/api/v1/admin/bank-requests/:id/reject`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_finance` or `superadmin`)
+- **Request Body:** `{ "reason": "Title mismatch with CNIC" }`
+- **Response:** `200 OK`
+
+---
+
+### 3. Product Catalog Moderation (`manage_catalog`)
+
+#### Moderation Queue
+- **Method:** `GET`
+- **Path:** `/api/v1/admin/products?status=pending_review`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_catalog` or `superadmin`)
+- **Response:** `200 OK`
+
+#### Approve Product
+- **Method:** `POST`
+- **Path:** `/api/v1/admin/products/:id/approve`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_catalog` or `superadmin`)
+- **Response:** `200 OK`
+
+#### Reject Product
+- **Method:** `POST`
+- **Path:** `/api/v1/admin/products/:id/reject`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_catalog` or `superadmin`)
+- **Request Body:** `{ "reason": "Images do not meet white background guidelines." }`
+- **Response:** `200 OK`
+
+#### Take Down Product (Archive)
+- **Method:** `POST`
+- **Path:** `/api/v1/admin/products/:id/take-down`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_catalog` or `superadmin`)
+- **Request Body:** `{ "reason": "Copyright infringement claim received." }`
+- **Response:** `200 OK`
+
+---
+
+### 4. Admin Orders Force Action (`manage_orders`)
+
+#### Force Status Change & Force Cancellation
+- **Method:** `PATCH`
+- **Path:** `/api/v1/admin/orders/:id/status`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_orders` or `superadmin`)
+- **Request Body:**
+  ```json
+  {
+    "newStatus": "cancelled",
+    "note": "Customer requested cancellation directly via telephone emergency line after packing."
+  }
+  ```
+- **Response:** `200 OK`
+
+---
+
+### 5. Banners & Content (`manage_content`)
+
+#### List Banners
+- **Method:** `GET`
+- **Path:** `/api/v1/admin/banners`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_content` or `superadmin`)
+- **Response:** `200 OK`
+
+#### Upload Banner Image or Create Banner
+- **Method:** `POST`
+- **Path:** `/api/v1/admin/banners`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_content` or `superadmin`)
+- **Multipart Upload Body:** `multipart/form-data` with `file`
+  - Response: `{ "success": true, "imagePath": "banners/hero/uuid.webp" }`
+- **JSON Create Body:**
+  ```json
+  {
+    "titleEn": "Winter Shawls & Pashmina",
+    "titleUr": "سردیوں کی شالیں اور پشمینہ",
+    "subtitleEn": "Authentic Himalayan wool woven by northern masters",
+    "subtitleUr": "شمالی کاریگروں کا بونا ہوا خالص ہمالیائی اون",
+    "tagEn": "Northern Heritage",
+    "tagUr": "شمالی ورثہ",
+    "imageUrl": "banners/hero/uuid.webp",
+    "linkUrl": "/category/shawls",
+    "sortOrder": 1,
+    "isActive": true
+  }
+  ```
+- **Response:** `201 Created`
+
+#### Update / Delete Banner
+- **Method:** `PATCH` or `DELETE`
+- **Path:** `/api/v1/admin/banners/:id`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_content` or `superadmin`, MFA `aal2`)
+
+---
+
+### 6. Catalog Management (`manage_catalog`)
+
+#### Create Category
+- **Method:** `POST`
+- **Path:** `/api/v1/admin/catalog/categories`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_catalog` or `superadmin`, MFA `aal2`)
+- **Request Body:**
+  ```json
+  {
+    "name": "Handmade Leather Goods",
+    "slug": "leather-goods",
+    "parentId": null,
+    "commissionRateBps": 800,
+    "sortOrder": 1,
+    "isActive": true
+  }
+  ```
+- **Response:** `200 OK`
+
+#### Update Category
+- **Method:** `PATCH`
+- **Path:** `/api/v1/admin/catalog/categories/:id`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_catalog` or `superadmin`, MFA `aal2`)
+
+#### Create / Delete Brand
+- **Method:** `POST` / `DELETE`
+- **Path:** `/api/v1/admin/catalog/brands` / `/api/v1/admin/catalog/brands/:id`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_catalog` or `superadmin`, MFA `aal2`)
+
+#### Create / Delete Search Synonym
+- **Method:** `POST` / `DELETE`
+- **Path:** `/api/v1/admin/catalog/synonyms` / `/api/v1/admin/catalog/synonyms/:id`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_catalog` or `superadmin`, MFA `aal2`)
+
+---
+
+### 7. Logistics & Couriers (`manage_logistics`)
+
+#### Update Courier Status / Flags
+- **Method:** `PATCH`
+- **Path:** `/api/v1/admin/couriers/:id/status`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_logistics` or `superadmin`, MFA `aal2`)
+
+#### Update Courier Rate Card
+- **Method:** `PUT`
+- **Path:** `/api/v1/admin/couriers/:id/rates`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_logistics` or `superadmin`, MFA `aal2`)
+
+---
+
+### 8. Promotions & Marketing (`manage_promotions`)
+
+#### Create Coupon
+- **Method:** `POST`
+- **Path:** `/api/v1/admin/coupons`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_promotions` or `superadmin`, MFA `aal2`)
+
+#### Toggle Coupon Status
+- **Method:** `PATCH`
+- **Path:** `/api/v1/admin/coupons/:id/status`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_promotions` or `superadmin`, MFA `aal2`)
+
+---
+
+### 9. Platform Settings (`manage_settings`)
+
+#### Update Platform Setting
+- **Method:** `PUT`
+- **Path:** `/api/v1/admin/settings/:key`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_settings` or `superadmin`, MFA `aal2`)
+
+---
+
+### 10. Staff & Customer Management (`manage_users`)
+
+#### Promote User to Admin Staff
+- **Method:** `POST`
+- **Path:** `/api/v1/admin/staff/promote`
+- **Auth:** Required (`Authorization: Bearer <token>`, role `superadmin` ONLY, MFA `aal2`)
+
+#### Update Staff Permissions
+- **Method:** `PUT`
+- **Path:** `/api/v1/admin/staff/:id/permissions`
+- **Auth:** Required (`Authorization: Bearer <token>`, role `superadmin` ONLY, MFA `aal2`)
+
+#### Suspend / Reactivate Customer Profile
+- **Method:** `POST`
+- **Path:** `/api/v1/admin/customers/:id/suspend` / `/api/v1/admin/customers/:id/unsuspend`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_users` or `superadmin`, MFA `aal2`)
+
+

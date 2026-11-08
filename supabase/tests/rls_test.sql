@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(46);
+SELECT plan(63);
 
 CREATE OR REPLACE FUNCTION tests_set_auth(user_id uuid, role text DEFAULT 'authenticated') RETURNS void AS $$
 BEGIN
@@ -524,6 +524,166 @@ SELECT throws_ok(
   NULL,
   'authenticated cannot execute private.record_price_history() directly'
 );
+
+-- ========================================================
+-- Phase 7 Part 1 Test Fixtures & Tests (Tests 47 to 63)
+-- ========================================================
+RESET ROLE;
+SET local role postgres;
+
+-- Fixture: Admin staff with manage_sellers and manage_finance
+INSERT INTO auth.users (id, email) VALUES ('55555555-5555-5555-5555-555555555555', 'admin_finance@test.com');
+UPDATE public.profiles SET role = 'admin_staff' WHERE id = '55555555-5555-5555-5555-555555555555';
+INSERT INTO public.admin_permissions (profile_id, permission) VALUES 
+  ('55555555-5555-5555-5555-555555555555', 'manage_sellers'),
+  ('55555555-5555-5555-5555-555555555555', 'manage_finance');
+
+-- Fixture: Admin staff with manage_catalog only
+INSERT INTO auth.users (id, email) VALUES ('66666666-6666-6666-6666-666666666666', 'admin_catalog@test.com');
+UPDATE public.profiles SET role = 'admin_staff' WHERE id = '66666666-6666-6666-6666-666666666666';
+INSERT INTO public.admin_permissions (profile_id, permission) VALUES 
+  ('66666666-6666-6666-6666-666666666666', 'manage_catalog');
+
+-- Fixture: Superadmin user
+INSERT INTO auth.users (id, email) VALUES ('77777777-7777-7777-7777-777777777777', 'superadmin@test.com');
+UPDATE public.profiles SET role = 'superadmin' WHERE id = '77777777-7777-7777-7777-777777777777';
+
+-- Fixture: Pending seller to test approve_seller function
+INSERT INTO auth.users (id, email) VALUES ('88888888-8888-8888-8888-888888888888', 'pending_seller@test.com');
+INSERT INTO public.profiles (id, role, status) VALUES ('88888888-8888-8888-8888-888888888888', 'customer', 'active')
+  ON CONFLICT (id) DO UPDATE SET role = 'customer';
+INSERT INTO public.sellers (id, owner_profile_id, business_name, slug, status) VALUES 
+  ('88888888-aaaa-aaaa-aaaa-888888888888', '88888888-8888-8888-8888-888888888888', 'Pending Shop', 'pending-shop', 'pending');
+
+-- Fixture: Bank account for Seller A
+INSERT INTO public.seller_bank_accounts (seller_id, bank_name, account_title, iban, is_verified) VALUES 
+  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Old Bank', 'Seller A', 'PK36SCBL0000001123456701', true);
+
+-- 47. Seller A can insert a bank change request with status 'pending'
+RESET ROLE;
+SELECT tests_set_auth('11111111-1111-1111-1111-111111111111', 'authenticated');
+SELECT lives_ok(
+  $$ INSERT INTO public.seller_bank_change_requests (id, seller_id, bank_name, account_title, iban, status)
+     VALUES ('a1a1a1a1-1111-1111-1111-111111111111', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'New Bank', 'Seller A', 'PK36MEZN0000001123456702', 'pending') $$,
+  'Seller A can insert own bank change request with status pending'
+);
+
+-- 48. Seller A cannot insert a bank change request with status 'approved' (RLS check fails)
+SELECT throws_ok(
+  $$ INSERT INTO public.seller_bank_change_requests (id, seller_id, bank_name, account_title, iban, status)
+     VALUES ('a2a2a2a2-1111-1111-1111-111111111111', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Evil Bank', 'Seller A', 'PK36MEZN0000001123456703', 'approved') $$,
+  '42501',
+  NULL,
+  'Seller A cannot insert bank change request with status approved'
+);
+
+-- 49. Seller A can read own bank change request
+SELECT is(
+  (SELECT count(*) FROM public.seller_bank_change_requests WHERE seller_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+  1::bigint,
+  'Seller A can read own bank change request'
+);
+
+-- 50. Seller B cannot read Seller A bank change request
+RESET ROLE;
+SELECT tests_set_auth('22222222-2222-2222-2222-222222222222', 'authenticated');
+SELECT is(
+  (SELECT count(*) FROM public.seller_bank_change_requests WHERE seller_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+  0::bigint,
+  'Seller B cannot read Seller A bank change request'
+);
+
+-- 51. Superadmin can read all bank change requests
+RESET ROLE;
+SELECT tests_set_auth('77777777-7777-7777-7777-777777777777', 'authenticated');
+SELECT is(
+  (SELECT count(*) FROM public.seller_bank_change_requests),
+  1::bigint,
+  'Superadmin can read all bank change requests'
+);
+
+-- 52. Admin with manage_finance can read all bank change requests
+RESET ROLE;
+SELECT tests_set_auth('55555555-5555-5555-5555-555555555555', 'authenticated');
+SELECT is(
+  (SELECT count(*) FROM public.seller_bank_change_requests),
+  1::bigint,
+  'Admin with manage_finance can read all bank change requests'
+);
+
+-- 53. Admin without manage_finance cannot read bank change requests
+RESET ROLE;
+SELECT tests_set_auth('66666666-6666-6666-6666-666666666666', 'authenticated');
+SELECT is(
+  (SELECT count(*) FROM public.seller_bank_change_requests),
+  0::bigint,
+  'Admin without manage_finance cannot read bank change requests'
+);
+
+-- 54. Admin with manage_sellers can call approve_seller function
+RESET ROLE;
+SELECT tests_set_auth('55555555-5555-5555-5555-555555555555', 'authenticated');
+SELECT lives_ok(
+  $$ SELECT public.approve_seller('88888888-aaaa-aaaa-aaaa-888888888888', '55555555-5555-5555-5555-555555555555', '127.0.0.1') $$,
+  'Admin with manage_sellers can call approve_seller'
+);
+
+-- 55. approve_seller sets seller status to approved
+SELECT is(
+  (SELECT status::text FROM public.sellers WHERE id = '88888888-aaaa-aaaa-aaaa-888888888888'),
+  'approved',
+  'approve_seller sets seller status to approved'
+);
+
+-- 56. approve_seller sets profile role to seller
+RESET ROLE;
+SELECT tests_set_auth('88888888-8888-8888-8888-888888888888', 'authenticated');
+SELECT is(
+  (SELECT role::text FROM public.profiles WHERE id = '88888888-8888-8888-8888-888888888888'),
+  'seller',
+  'approve_seller sets profile role to seller'
+);
+
+-- 57. Customer cannot call approve_seller
+RESET ROLE;
+SELECT tests_set_auth('33333333-3333-3333-3333-333333333333', 'authenticated');
+SELECT throws_ok(
+  $$ SELECT public.approve_seller('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '33333333-3333-3333-3333-333333333333', '127.0.0.1') $$,
+  'P0001',
+  'Access denied',
+  'Customer cannot call approve_seller'
+);
+
+-- 58. Admin with manage_finance can call approve_seller_bank_change_request
+RESET ROLE;
+SELECT tests_set_auth('55555555-5555-5555-5555-555555555555', 'authenticated');
+SELECT lives_ok(
+  $$ SELECT public.approve_seller_bank_change_request('a1a1a1a1-1111-1111-1111-111111111111', '55555555-5555-5555-5555-555555555555', '127.0.0.1', 'Approved test note') $$,
+  'Admin with manage_finance can call approve_seller_bank_change_request'
+);
+
+-- 59. approve_seller_bank_change_request marks request as approved
+SELECT is(
+  (SELECT status FROM public.seller_bank_change_requests WHERE id = 'a1a1a1a1-1111-1111-1111-111111111111'),
+  'approved',
+  'approve_seller_bank_change_request marks request as approved'
+);
+
+-- 60. approve_seller_bank_change_request updates bank account row
+SELECT is(
+  (SELECT bank_name FROM public.seller_bank_accounts WHERE seller_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+  'New Bank',
+  'approve_seller_bank_change_request updates bank account row'
+);
+
+-- 61. Banners table has localized column title_en
+SELECT has_column('public', 'banners', 'title_en', 'banners has title_en column');
+
+-- 62. Banners table has localized column title_ur
+SELECT has_column('public', 'banners', 'title_ur', 'banners has title_ur column');
+
+-- 63. Sellers table has status_reason column
+SELECT has_column('public', 'sellers', 'status_reason', 'sellers has status_reason column');
 
 SELECT * FROM finish();
 ROLLBACK;

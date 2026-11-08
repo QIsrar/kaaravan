@@ -5,6 +5,7 @@ Unauthorised copying, disclosure, modification, distribution or use is prohibite
 */
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { checkAdminPermission } from "@/lib/auth/admin";
 
 export type SubOrderStatus = 
   | "awaiting_confirmation"
@@ -17,14 +18,16 @@ export type SubOrderStatus =
   | "cancelled"
   | "returned";
 
+export type ActorRole = "superadmin" | "admin_staff" | "seller";
+
 export async function changeSubOrderStatus(
   subOrderId: string,
   newStatus: SubOrderStatus,
   actorId: string,
-  actorRole: "superadmin" | "seller",
+  actorRole: ActorRole,
   ipAddress: string,
   reason?: string
-) {
+): Promise<{ success: true }> {
   const supabase = createAdminClient();
 
   // Fetch current sub order
@@ -44,26 +47,36 @@ export async function changeSubOrderStatus(
     return { success: true };
   }
 
-  // State machine validation
-  const validTransitions: Record<SubOrderStatus, SubOrderStatus[]> = {
-    "awaiting_confirmation": ["pending", "cancelled"],
-    "pending": ["confirmed", "cancelled"],
-    "confirmed": ["packed", "cancelled"],
-    "packed": ["ready_to_ship", "cancelled"],
-    "ready_to_ship": ["shipped", "cancelled"],
-    "shipped": ["delivered", "returned"],
-    "delivered": ["returned"],
-    "cancelled": [],
-    "returned": []
-  };
-
-  if (!validTransitions[oldStatus].includes(newStatus)) {
-    throw new Error(`Invalid state transition from ${oldStatus} to ${newStatus}`);
-  }
+  const isAdmin = actorRole === "superadmin" || actorRole === "admin_staff";
 
   // Authorization check
-  if (actorRole === "seller") {
-    // Sellers may only do: pending→confirmed, confirmed→packed, packed→ready_to_ship, and →cancelled before shipped.
+  if (isAdmin) {
+    const hasPerm = await checkAdminPermission(actorId, actorRole, "manage_orders");
+    if (!hasPerm) {
+      throw new Error("Access denied: manage_orders permission required");
+    }
+    // Mandatory note required for all admin force changes and force cancellations
+    if (!reason || reason.trim().length === 0) {
+      throw new Error("A mandatory note explaining this admin status modification is required");
+    }
+  } else if (actorRole === "seller") {
+    // State machine validation for regular seller actions
+    const validTransitions: Record<SubOrderStatus, SubOrderStatus[]> = {
+      "awaiting_confirmation": ["pending", "cancelled"],
+      "pending": ["confirmed", "cancelled"],
+      "confirmed": ["packed", "cancelled"],
+      "packed": ["ready_to_ship", "cancelled"],
+      "ready_to_ship": ["shipped", "cancelled"],
+      "shipped": ["delivered", "returned"],
+      "delivered": ["returned"],
+      "cancelled": [],
+      "returned": []
+    };
+
+    if (!validTransitions[oldStatus]?.includes(newStatus)) {
+      throw new Error(`Invalid state transition from ${oldStatus} to ${newStatus}`);
+    }
+
     const sellerAllowedTransitions = ["confirmed", "packed", "ready_to_ship", "cancelled"];
     if (!sellerAllowedTransitions.includes(newStatus)) {
       throw new Error(`Sellers cannot change status to ${newStatus}`);
@@ -87,9 +100,9 @@ export async function changeSubOrderStatus(
     if (!seller || seller.owner_profile_id !== actorId || seller.status !== "approved") {
       throw new Error("Unauthorized to change this sub-order status");
     }
+  } else {
+    throw new Error("Unauthorized role for sub-order status change");
   }
-
-  // TODO: Courier adapter phase - Handle real tracking logic here
 
   // Optimistic concurrency update
   const { data: updatedSubOrder, error: updateError } = await supabase
@@ -126,11 +139,11 @@ export async function changeSubOrderStatus(
   // Audit log
   const { error: auditError } = await supabase.from("audit_logs").insert({
     actor_id: actorId,
-    action: "SUB_ORDER_STATUS_CHANGED",
+    action: isAdmin ? "ADMIN_SUB_ORDER_STATUS_OVERRIDE" : "SUB_ORDER_STATUS_CHANGED",
     entity: "sub_orders",
     entity_id: subOrderId,
     before: { status: oldStatus },
-    after: { status: newStatus },
+    after: { status: newStatus, note: reason ?? null },
     ip: ipAddress
   });
 

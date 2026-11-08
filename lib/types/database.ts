@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.17"
   }
   graphql_public: {
     Tables: {
@@ -259,7 +259,13 @@ export type Database = {
           is_active: boolean
           link_url: string | null
           sort_order: number
+          subtitle_en: string | null
+          subtitle_ur: string | null
+          tag_en: string | null
+          tag_ur: string | null
           title: string | null
+          title_en: string | null
+          title_ur: string | null
           updated_at: string
         }
         Insert: {
@@ -269,7 +275,13 @@ export type Database = {
           is_active?: boolean
           link_url?: string | null
           sort_order?: number
+          subtitle_en?: string | null
+          subtitle_ur?: string | null
+          tag_en?: string | null
+          tag_ur?: string | null
           title?: string | null
+          title_en?: string | null
+          title_ur?: string | null
           updated_at?: string
         }
         Update: {
@@ -279,7 +291,13 @@ export type Database = {
           is_active?: boolean
           link_url?: string | null
           sort_order?: number
+          subtitle_en?: string | null
+          subtitle_ur?: string | null
+          tag_en?: string | null
+          tag_ur?: string | null
           title?: string | null
+          title_en?: string | null
+          title_ur?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -1720,6 +1738,60 @@ export type Database = {
           },
         ]
       }
+      seller_bank_change_requests: {
+        Row: {
+          account_title: string
+          bank_name: string
+          created_at: string
+          iban: string
+          id: string
+          reason: string | null
+          reviewed_by: string | null
+          seller_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          account_title: string
+          bank_name: string
+          created_at?: string
+          iban: string
+          id?: string
+          reason?: string | null
+          reviewed_by?: string | null
+          seller_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          account_title?: string
+          bank_name?: string
+          created_at?: string
+          iban?: string
+          id?: string
+          reason?: string | null
+          reviewed_by?: string | null
+          seller_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_bank_change_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_bank_change_requests_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       seller_documents: {
         Row: {
           created_at: string
@@ -1926,6 +1998,7 @@ export type Database = {
           return_window_days: number
           slug: string
           status: Database["public"]["Enums"]["seller_status"]
+          status_reason: string | null
           updated_at: string
         }
         Insert: {
@@ -1943,6 +2016,7 @@ export type Database = {
           return_window_days?: number
           slug: string
           status?: Database["public"]["Enums"]["seller_status"]
+          status_reason?: string | null
           updated_at?: string
         }
         Update: {
@@ -1960,6 +2034,7 @@ export type Database = {
           return_window_days?: number
           slug?: string
           status?: Database["public"]["Enums"]["seller_status"]
+          status_reason?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -2183,6 +2258,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_seller: {
+        Args: { p_admin_id: string; p_ip_address: string; p_seller_id: string }
+        Returns: undefined
+      }
+      approve_seller_bank_change_request: {
+        Args: {
+          p_admin_id: string
+          p_ip_address: string
+          p_note?: string
+          p_request_id: string
+        }
+        Returns: undefined
+      }
       get_seller_dashboard_stats: {
         Args: { p_seller_id: string }
         Returns: Json
