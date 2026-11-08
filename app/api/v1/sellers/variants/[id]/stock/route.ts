@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getApiAuthUser } from "@/lib/auth/api-auth";
 import { stockUpdateSchema } from "@/lib/validators/seller-catalog";
 import { updateVariantStock } from "@/lib/services/seller-products";
+import { getClientIp } from "@/lib/utils";
 
 export async function PATCH(
   req: Request,
@@ -29,7 +30,7 @@ export async function PATCH(
     const variantId = (await params).id;
     const body = await req.json();
     const validatedData = stockUpdateSchema.parse(body);
-    const ipAddress = req.headers.get("x-forwarded-for") || "unknown";
+    const ipAddress = getClientIp(req.headers);
 
     const result = await updateVariantStock(
       sellerId,

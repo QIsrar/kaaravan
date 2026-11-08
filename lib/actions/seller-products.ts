@@ -7,6 +7,7 @@ Unauthorised copying, disclosure, modification, distribution or use is prohibite
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getClientIp } from "@/lib/utils";
 import { headers } from "next/headers";
 import { requireAuth } from "@/lib/auth/roles";
 import {
@@ -14,6 +15,7 @@ import {
   stockUpdateSchema,
   reorderImagesSchema,
   ProductUpsertInput,
+  uuidSchema,
 } from "@/lib/validators/seller-catalog";
 import {
   upsertSellerProduct,
@@ -24,14 +26,6 @@ import {
 } from "@/lib/services/seller-products";
 import { ZodError } from "zod";
 
-async function getClientIp(): Promise<string> {
-  const headersList = await headers();
-  return (
-    headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    headersList.get("x-real-ip") ||
-    "127.0.0.1"
-  );
-}
 
 export type ActionResult<T = unknown> = {
   success: boolean;
@@ -51,7 +45,7 @@ export async function upsertProductAction(
       return { success: false, error: "Seller account not found or not approved" };
     }
 
-    const ip = await getClientIp();
+    const ip = getClientIp(await headers());
 
     let input: ProductUpsertInput;
     try {
@@ -72,12 +66,17 @@ export async function upsertProductAction(
       throw err;
     }
 
+    let parsedId: string | undefined;
+    if (productId) {
+      parsedId = uuidSchema.parse(productId);
+    }
+
     const result = await upsertSellerProduct(
       sellerId,
       profile.id,
       ip,
       input,
-      productId
+      parsedId
     );
 
     revalidatePath("/seller/products");
@@ -87,8 +86,12 @@ export async function upsertProductAction(
 
     return { success: true, data: result };
   } catch (error: unknown) {
+    console.error("upsertProductAction error:", error);
     const err = error as Error;
-    const msg = err.message || "Failed to save product";
+    let msg = "Failed to save product";
+    if (err.message.includes("SKU") || err.message.includes("Stock") || err.message.includes("Original price") || err.message.includes("active variant")) {
+      msg = err.message;
+    }
 
     const fieldErrors: Record<string, string> = {};
     const rawVariants = (rawInput as { variants?: { sku?: string }[] })?.variants;
@@ -139,10 +142,11 @@ export async function updateVariantStockAction(
       return { success: false, error: "Unauthorized" };
     }
 
+    const parsedVariantId = uuidSchema.parse(variantId);
     const parsed = stockUpdateSchema.parse({ stock_quantity: newStock });
-    const ip = await getClientIp();
+    const ip = getClientIp(await headers());
 
-    await updateVariantStock(sellerId, profile.id, variantId, parsed.stock_quantity, ip);
+    await updateVariantStock(sellerId, profile.id, parsedVariantId, parsed.stock_quantity, ip);
 
     revalidatePath("/seller/products");
     if (productId) {
@@ -151,8 +155,12 @@ export async function updateVariantStockAction(
 
     return { success: true };
   } catch (error: unknown) {
-    const err = error as Error;
-    return { success: false, error: err.message || "Failed to update stock" };
+    console.error("updateVariantStockAction error:", error);
+    let msg = "Failed to update stock";
+    if (error instanceof Error && error.message.includes("cannot be lower than reserved")) {
+      msg = error.message;
+    }
+    return { success: false, error: msg };
   }
 }
 
@@ -172,8 +180,9 @@ export async function uploadProductImageAction(
       return { success: false, error: "Missing image file" };
     }
 
-    const ip = await getClientIp();
-    const result = await uploadProductImage(sellerId, productId, file, profile.id, ip);
+    const parsedProductId = uuidSchema.parse(productId);
+    const ip = getClientIp(await headers());
+    const result = await uploadProductImage(sellerId, parsedProductId, file, profile.id, ip);
 
     revalidatePath(`/seller/products/${productId}`);
     return {
@@ -185,8 +194,12 @@ export async function uploadProductImageAction(
       },
     };
   } catch (error: unknown) {
-    const err = error as Error;
-    return { success: false, error: err.message || "Failed to upload image" };
+    console.error("uploadProductImageAction error:", error);
+    let msg = "Failed to upload image";
+    if (error instanceof Error && (error.message.includes("Maximum of 8 images") || error.message.includes("smaller than 5MB") || error.message.includes("converted to WebP"))) {
+      msg = error.message;
+    }
+    return { success: false, error: msg };
   }
 }
 
@@ -201,14 +214,15 @@ export async function deleteProductImageAction(
       return { success: false, error: "Unauthorized" };
     }
 
-    const ip = await getClientIp();
-    await deleteProductImage(sellerId, imageId, profile.id, ip);
+    const parsedImageId = uuidSchema.parse(imageId);
+    const ip = getClientIp(await headers());
+    await deleteProductImage(sellerId, parsedImageId, profile.id, ip);
 
     revalidatePath(`/seller/products/${productId}`);
     return { success: true };
   } catch (error: unknown) {
-    const err = error as Error;
-    return { success: false, error: err.message || "Failed to delete image" };
+    console.error("deleteProductImageAction error:", error);
+    return { success: false, error: "Failed to delete image" };
   }
 }
 
@@ -223,12 +237,13 @@ export async function reorderProductImagesAction(
       return { success: false, error: "Unauthorized" };
     }
 
+    const parsedProductId = uuidSchema.parse(productId);
     const parsed = reorderImagesSchema.parse({ orderedImageIds });
-    const ip = await getClientIp();
+    const ip = getClientIp(await headers());
 
     await updateProductImageOrder(
       sellerId,
-      productId,
+      parsedProductId,
       parsed.orderedImageIds,
       profile.id,
       ip
@@ -237,7 +252,7 @@ export async function reorderProductImagesAction(
     revalidatePath(`/seller/products/${productId}`);
     return { success: true };
   } catch (error: unknown) {
-    const err = error as Error;
-    return { success: false, error: err.message || "Failed to reorder images" };
+    console.error("reorderProductImagesAction error:", error);
+    return { success: false, error: "Failed to reorder images" };
   }
 }

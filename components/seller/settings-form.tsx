@@ -12,30 +12,50 @@ import Image from "next/image";
 import { getPublicImageUrl } from "@/lib/format/image-url";
 import { useTranslations } from "next-intl";
 
-export function SettingsForm({ initialData }: { initialData: Record<string, unknown> }) {
+export interface SellerSettingsData {
+  description: string | null;
+  business_name: string;
+  logo: string | null;
+  status: string;
+  seller_pickup_addresses: Array<{
+    full_name: string;
+    phone: string;
+    province: string;
+    city: string;
+    area: string;
+    street: string;
+    postal_code: string | null;
+  }>;
+  seller_bank_accounts: Array<{
+    bank_name: string;
+    iban: string | null;
+  }>;
+}
+
+export function SettingsForm({ initialData }: { initialData: SellerSettingsData }) {
   const t = useTranslations("seller.settings_form");
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   
-  const defaultAddress = (initialData.seller_pickup_addresses as Record<string, unknown>[])?.[0] || {};
-  const defaultBank = (initialData.seller_bank_accounts as Record<string, unknown>[])?.[0] || {};
+  const defaultAddress = initialData.seller_pickup_addresses?.[0] || {};
+  const defaultBank = initialData.seller_bank_accounts?.[0] || {};
 
   const { register, handleSubmit } = useForm({
     defaultValues: {
-      description: String(initialData.description || ""),
-      fullName: String(defaultAddress.full_name || ""),
-      phone: String(defaultAddress.phone || ""),
-      province: String(defaultAddress.province || ""),
-      city: String(defaultAddress.city || ""),
-      area: String(defaultAddress.area || ""),
-      street: String(defaultAddress.street || ""),
-      postalCode: String(defaultAddress.postal_code || ""),
-    } as Record<string, string>
+      description: initialData.description || "",
+      fullName: defaultAddress.full_name || "",
+      phone: defaultAddress.phone || "",
+      province: defaultAddress.province || "",
+      city: defaultAddress.city || "",
+      area: defaultAddress.area || "",
+      street: defaultAddress.street || "",
+      postalCode: defaultAddress.postal_code || "",
+    }
   });
 
-  const [logoPreview, setLogoPreview] = useState<string | null>(initialData.logo ? getPublicImageUrl(initialData.logo as string) : null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(initialData.logo ? getPublicImageUrl(initialData.logo) : null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,7 +95,7 @@ export function SettingsForm({ initialData }: { initialData: Record<string, unkn
     setSuccess(false);
 
     try {
-      let logoPath = initialData.logo as string | undefined;
+      let logoPath = initialData.logo || undefined;
       
       if (logoFile) {
         const formData = new FormData();
@@ -103,7 +123,7 @@ export function SettingsForm({ initialData }: { initialData: Record<string, unkn
       
       setTimeout(() => setSuccess(false), 3000);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t("updateFailed", { defaultMessage: "Failed to update settings" }));
+      setError(err instanceof Error ? err.message : t("updateFailed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -133,7 +153,7 @@ export function SettingsForm({ initialData }: { initialData: Record<string, unkn
                     <Image src={logoPreview} alt="Logo" width={64} height={64} className="object-cover w-full h-full" />
                   ) : (
                     <span className="text-muted-foreground font-bold text-xl uppercase">
-                      {initialData.business_name ? (initialData.business_name as string).substring(0, 2) : "NA"}
+                      {initialData.business_name ? initialData.business_name.substring(0, 2) : "NA"}
                     </span>
                   )}
                 </div>
@@ -212,11 +232,11 @@ export function SettingsForm({ initialData }: { initialData: Record<string, unkn
           <h2 className="text-lg font-bold font-heading">{t("businessDetails")}</h2>
           <div className="space-y-1">
             <p className="text-sm font-medium text-muted-foreground">{t("businessName")}</p>
-            <p className="font-bold">{initialData.business_name as string}</p>
+            <p className="font-bold">{initialData.business_name}</p>
           </div>
           <div className="space-y-1">
             <p className="text-sm font-medium text-muted-foreground">{t("businessStatus")}</p>
-            <p className="capitalize font-bold">{initialData.status as string}</p>
+            <p className="capitalize font-bold">{initialData.status}</p>
           </div>
           <p className="text-xs text-muted-foreground">{t("changeBusinessHelp")}</p>
         </div>
@@ -225,11 +245,11 @@ export function SettingsForm({ initialData }: { initialData: Record<string, unkn
           <h2 className="text-lg font-bold font-heading">{t("payoutBank")}</h2>
           <div className="space-y-1">
             <p className="text-sm font-medium text-muted-foreground">{t("bankName")}</p>
-            <p className="font-bold">{(defaultBank.bank_name as string)}</p>
+            <p className="font-bold">{defaultBank.bank_name || "NA"}</p>
           </div>
           <div className="space-y-1">
             <p className="text-sm font-medium text-muted-foreground">{t("iban")}</p>
-            <p className="font-mono bg-card px-2 py-1 rounded border text-sm inline-block">{maskIban(defaultBank.iban as string)}</p>
+            <p className="font-mono bg-card px-2 py-1 rounded border text-sm inline-block">{maskIban(defaultBank.iban || "")}</p>
           </div>
           <p className="text-xs text-muted-foreground text-amber-700 bg-amber-50 p-2 rounded">
             {t("changeBankHelp")}
@@ -238,9 +258,9 @@ export function SettingsForm({ initialData }: { initialData: Record<string, unkn
 
         <div className="bg-secondary/20 border rounded-xl p-6 space-y-4">
           <h2 className="text-lg font-bold font-heading">{t("accountSecurity")}</h2>
-          <p className="text-sm text-muted-foreground">{t("manageCredentials", { defaultMessage: "Manage your login credentials, email, and password." })}</p>
+          <p className="text-sm text-muted-foreground">{t("manageCredentials")}</p>
           <Button variant="outline" onClick={() => router.push("/account/settings")}>
-            {t("accountSettings", { defaultMessage: "Account & Password Settings" })}
+            {t("accountSettings")}
           </Button>
         </div>
       </div>

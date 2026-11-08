@@ -13,15 +13,17 @@ import { useRouter } from "next/navigation";
 import { submitOnboardingAction } from "@/app/(store)/sell/actions";
 import { uploadSellerDocumentAction } from "@/lib/actions/seller-documents";
 import { Loader2 } from "lucide-react";
-
-const steps = [
-  { id: 1, title: "Business Info" },
-  { id: 2, title: "KYC & Documents" },
-  { id: 3, title: "Bank Details" },
-  { id: 4, title: "Pickup Address" },
-];
+import { useTranslations } from "next-intl";
 
 export function OnboardingWizard() {
+  const t = useTranslations("seller.onboarding_wizard");
+
+  const steps = [
+    { id: 1, title: t("stepBusiness") },
+    { id: 2, title: t("stepKyc") },
+    { id: 3, title: t("stepBank") },
+    { id: 4, title: t("stepAddress") },
+  ];
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +48,7 @@ export function OnboardingWizard() {
     const isStepValid = await trigger(fieldsToValidate);
     
     if (currentStep === 2 && (!cnicFront || !cnicBack)) {
-      setError("Please select both CNIC Front and Back images.");
+      setError(t("errorBothImages"));
       return;
     }
     setError(null);
@@ -68,14 +70,12 @@ export function OnboardingWizard() {
       if (result?.sellerId) {
         if (cnicFront) {
           const fd = new FormData();
-          fd.append("sellerId", result.sellerId);
           fd.append("docType", "cnic_front");
           fd.append("file", cnicFront);
           await uploadSellerDocumentAction(fd);
         }
         if (cnicBack) {
           const fd = new FormData();
-          fd.append("sellerId", result.sellerId);
           fd.append("docType", "cnic_back");
           fd.append("file", cnicBack);
           await uploadSellerDocumentAction(fd);
@@ -84,7 +84,7 @@ export function OnboardingWizard() {
 
       router.refresh(); // Will reload and show "Pending" status
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      setError(err instanceof Error ? err.message : t("errorGeneric"));
     } finally {
       setIsSubmitting(false);
     }
@@ -114,24 +114,24 @@ export function OnboardingWizard() {
         {/* Step 1: Business */}
         {currentStep === 1 && (
           <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
-            <h3 className="text-xl font-bold font-heading">Business Information</h3>
+            <h3 className="text-xl font-bold font-heading">{t("businessHeading")}</h3>
             <div className="grid gap-2">
-              <Label htmlFor="businessName">Business Name *</Label>
-              <Input id="businessName" {...register("businessName")} placeholder="e.g. Lahore Artisans" />
+              <Label htmlFor="businessName">{t("businessName")}</Label>
+              <Input id="businessName" {...register("businessName")} placeholder={t("businessNamePlaceholder")} />
               {errors.businessName && <span className="text-xs text-destructive">{errors.businessName.message}</span>}
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="businessType">Business Type *</Label>
+              <Label htmlFor="businessType">{t("businessType")}</Label>
               <select id="businessType" {...register("businessType")} className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                <option value="">Select Type</option>
-                <option value="individual">Individual / Sole Proprietor</option>
-                <option value="company">Registered Company</option>
+                <option value="">{t("selectType")}</option>
+                <option value="individual">{t("typeIndividual")}</option>
+                <option value="company">{t("typeCompany")}</option>
               </select>
               {errors.businessType && <span className="text-xs text-destructive">{errors.businessType.message}</span>}
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="description">Short Description</Label>
-              <Textarea id="description" {...register("description")} placeholder="What do you sell?" />
+              <Label htmlFor="description">{t("shortDesc")}</Label>
+              <Textarea id="description" {...register("description")} placeholder={t("shortDescPlaceholder")} />
             </div>
           </div>
         )}
@@ -139,21 +139,21 @@ export function OnboardingWizard() {
         {/* Step 2: KYC */}
         {currentStep === 2 && (
           <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
-            <h3 className="text-xl font-bold font-heading">Identity Verification</h3>
+            <h3 className="text-xl font-bold font-heading">{t("kycHeading")}</h3>
             <div className="grid gap-2">
-              <Label htmlFor="cnicNumber">CNIC Number *</Label>
-              <Input id="cnicNumber" {...register("cnicNumber")} placeholder="XXXXX-XXXXXXX-X" />
+              <Label htmlFor="cnicNumber">{t("cnicNumber")}</Label>
+              <Input id="cnicNumber" {...register("cnicNumber")} placeholder={t("cnicPlaceholder")} />
               {errors.cnicNumber && <span className="text-xs text-destructive">{errors.cnicNumber.message}</span>}
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="ntn">NTN (Optional)</Label>
-              <Input id="ntn" {...register("ntn")} placeholder="National Tax Number" />
+              <Label htmlFor="ntn">{t("ntn")}</Label>
+              <Input id="ntn" {...register("ntn")} placeholder={t("ntnPlaceholder")} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="p-4 border border-dashed rounded-xl bg-secondary/10 text-center relative hover:bg-secondary/20 transition-colors">
-                <p className="text-sm font-medium mb-2">CNIC Front *</p>
+                <p className="text-sm font-medium mb-2">{t("cnicFront")}</p>
                 <Button type="button" variant="outline" size="sm" className="w-full relative z-10 pointer-events-none">
-                  {cnicFront ? cnicFront.name : "Select File"}
+                  {cnicFront ? cnicFront.name : t("selectFile")}
                 </Button>
                 <input 
                   type="file" 
@@ -163,9 +163,9 @@ export function OnboardingWizard() {
                 />
               </div>
               <div className="p-4 border border-dashed rounded-xl bg-secondary/10 text-center relative hover:bg-secondary/20 transition-colors">
-                <p className="text-sm font-medium mb-2">CNIC Back *</p>
+                <p className="text-sm font-medium mb-2">{t("cnicBack")}</p>
                 <Button type="button" variant="outline" size="sm" className="w-full relative z-10 pointer-events-none">
-                  {cnicBack ? cnicBack.name : "Select File"}
+                  {cnicBack ? cnicBack.name : t("selectFile")}
                 </Button>
                 <input 
                   type="file" 
@@ -181,20 +181,20 @@ export function OnboardingWizard() {
         {/* Step 3: Bank */}
         {currentStep === 3 && (
           <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
-            <h3 className="text-xl font-bold font-heading">Bank Details for Payouts</h3>
+            <h3 className="text-xl font-bold font-heading">{t("bankHeading")}</h3>
             <div className="grid gap-2">
-              <Label htmlFor="bankName">Bank Name *</Label>
-              <Input id="bankName" {...register("bankName")} placeholder="e.g. Meezan Bank" />
+              <Label htmlFor="bankName">{t("bankName")}</Label>
+              <Input id="bankName" {...register("bankName")} placeholder={t("bankNamePlaceholder")} />
               {errors.bankName && <span className="text-xs text-destructive">{errors.bankName.message}</span>}
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="accountTitle">Account Title *</Label>
-              <Input id="accountTitle" {...register("accountTitle")} placeholder="Exact name on account" />
+              <Label htmlFor="accountTitle">{t("accountTitle")}</Label>
+              <Input id="accountTitle" {...register("accountTitle")} placeholder={t("accountTitlePlaceholder")} />
               {errors.accountTitle && <span className="text-xs text-destructive">{errors.accountTitle.message}</span>}
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="iban">IBAN *</Label>
-              <Input id="iban" {...register("iban")} placeholder="PKXX MEEZ 0000..." />
+              <Label htmlFor="iban">{t("iban")}</Label>
+              <Input id="iban" {...register("iban")} placeholder={t("ibanPlaceholder")} />
               {errors.iban && <span className="text-xs text-destructive">{errors.iban.message}</span>}
             </div>
           </div>
@@ -203,35 +203,35 @@ export function OnboardingWizard() {
         {/* Step 4: Address & Submit */}
         {currentStep === 4 && (
           <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
-            <h3 className="text-xl font-bold font-heading">Pickup Address</h3>
+            <h3 className="text-xl font-bold font-heading">{t("addressHeading")}</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="fullName">Contact Name *</Label>
+                <Label htmlFor="fullName">{t("contactName")}</Label>
                 <Input id="fullName" {...register("fullName")} />
                 {errors.fullName && <span className="text-xs text-destructive">{errors.fullName.message}</span>}
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="phone">Phone *</Label>
+                <Label htmlFor="phone">{t("phone")}</Label>
                 <Input id="phone" {...register("phone")} />
                 {errors.phone && <span className="text-xs text-destructive">{errors.phone.message}</span>}
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="province">Province *</Label>
+                <Label htmlFor="province">{t("province")}</Label>
                 <Input id="province" {...register("province")} />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="city">City *</Label>
+                <Label htmlFor="city">{t("city")}</Label>
                 <Input id="city" {...register("city")} />
               </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="area">Area *</Label>
+              <Label htmlFor="area">{t("area")}</Label>
               <Input id="area" {...register("area")} />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="street">Street Address *</Label>
+              <Label htmlFor="street">{t("street")}</Label>
               <Input id="street" {...register("street")} />
             </div>
 
@@ -240,14 +240,14 @@ export function OnboardingWizard() {
                 <Checkbox 
                   id="agreementAccepted" 
                   checked={!!watch("agreementAccepted")}
-                  onCheckedChange={(c) => setValue("agreementAccepted", (c === true) as unknown as true, { shouldValidate: true })}
+                  onCheckedChange={(c) => setValue("agreementAccepted", c === true, { shouldValidate: true })}
                 />
                 <div className="grid gap-1.5 leading-none">
                   <label
                     htmlFor="agreementAccepted"
                     className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
-                    I agree to the <a href="/legal/seller-agreement" target="_blank" className="text-primary underline">Kaaravan Seller Agreement</a>.
+                    {t("agreeText")} <a href="/legal/seller-agreement" target="_blank" className="text-primary underline">{t("agreementLink")}</a>.
                   </label>
                   {errors.agreementAccepted && <span className="text-xs text-destructive">{errors.agreementAccepted.message}</span>}
                 </div>
@@ -259,18 +259,18 @@ export function OnboardingWizard() {
         {/* Controls */}
         <div className="flex justify-between pt-4">
           <Button type="button" variant="outline" onClick={prevStep} disabled={currentStep === 1 || isSubmitting}>
-            Back
+            {t("back")}
           </Button>
           {currentStep < 4 ? (
-            <Button type="button" onClick={nextStep}>Next Step</Button>
+            <Button type="button" onClick={nextStep}>{t("nextStep")}</Button>
           ) : (
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Submitting...
+                  <Loader2 className="me-2 h-4 w-4 animate-spin" />
+                  {t("submitting")}
                 </>
-              ) : "Submit Application"}
+              ) : t("submitApp")}
             </Button>
           )}
         </div>

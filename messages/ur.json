@@ -315,13 +315,13 @@
     "emptyDesc": "جب آپ روایتی دستکاریاں آرڈر کریں گے تو ان کے سفری مراحل یہاں ظاہر ہوں گے۔",
     "status": {
       "awaiting_confirmation": "تصدیق کے منتظر",
-      "pending": "زیر التواء",
-      "confirmed": "تصدیق شدہ",
-      "packed": "پیک شدہ",
-      "ready_to_ship": "شپ کے لیے تیار",
-      "shipped": "شپ شدہ",
-      "delivered": "پہنچایا گیا",
-      "cancelled": "منسوخ شدہ",
+      "pending": "زیرِ التواء",
+      "confirmed": "آرڈر کی تصدیق ہو گئی",
+      "packed": "دستکار نے پیک کر دیا",
+      "ready_to_ship": "کوریئر کے لیے تیار",
+      "shipped": "راستے میں ہے",
+      "delivered": "پہنچ گیا",
+      "cancelled": "منسوخ کر دیا گیا",
       "returned": "واپس کر دیا گیا",
       "all": "تمام"
     },
@@ -392,7 +392,8 @@
     "exploreBazaar": "بازار کی سیر کریں",
     "orderNumberLabel": "آرڈر نمبر",
     "packageSubtotal": "پارسل کا میزان",
-    "packageTotal": "پارسل کی کل رقم:"
+    "packageTotal": "پارسل کی کل رقم:",
+    "contactSupportToCancel": "منسوخ کرنے کے لیے سپورٹ سے رابطہ کریں"
   },
   "addresses": {
     "title": "محفوظ شدہ پتے",
@@ -718,7 +719,8 @@
       "submittedForReview": "جائزے کیلئے بھیج دیا گیا",
       "submitReviewHintImages": "جائزے کیلئے کم از کم 1 تصویر اپلوڈ کرنا ضروری ہے۔",
       "submitReviewHintVariants": "جائزے کیلئے کم از کم 1 فعال قسم مع قیمت ہونا ضروری ہے۔",
-      "submitReviewHintBoth": "جائزے کیلئے کم از کم 1 تصویر اور 1 فعال قسم مع قیمت ہونا ضروری ہے۔"
+      "submitReviewHintBoth": "جائزے کیلئے کم از کم 1 تصویر اور 1 فعال قسم مع قیمت ہونا ضروری ہے۔",
+      "optional": "اختیاری"
     },
     "orders_list": {
       "orderNumber": "آرڈر نمبر",
@@ -756,7 +758,15 @@
       "statusTitle": "صورتحال",
       "paymentLabel": "ادائیگی",
       "shippingAddressTitle": "ترسیل کا پتہ",
-      "addressHidden": "آرڈر کنفرم ہونے تک مکمل پتہ چھپا ہوا ہے۔"
+      "addressHidden": "آرڈر کنفرم ہونے تک مکمل پتہ چھپا ہوا ہے۔",
+      "orderNumberLabel": "آرڈر نمبر",
+      "orderDate": "آرڈر کی تاریخ",
+      "printedDate": "پرنٹ کی تاریخ",
+      "shipTo": "شپ ٹو",
+      "addressConcealed": "پتہ پوشیدہ",
+      "paymentMethod": "طریقہ ادائیگی",
+      "amountToCollect": "وصول کرنے کی رقم",
+      "itemDescription": "آئٹم کی تفصیل"
     },
     "settings_form": {
       "shopProfile": "دکان کی پروفائل",
@@ -785,7 +795,10 @@
       "changeBankHelp": "بینک کی تفصیلات تبدیل کرنے کے لیے سپورٹ سے رابطہ کریں۔ ادائیگیوں سے پہلے تبدیلیوں کی تصدیق کی جاتی ہے۔",
       "uploadLogo": "لوگو اپ لوڈ کریں",
       "accountSecurity": "اکاؤنٹ سیکیورٹی",
-      "settingsUpdated": "ترتیبات کامیابی سے اپ ڈیٹ ہو گئیں!"
+      "settingsUpdated": "ترتیبات کامیابی سے اپ ڈیٹ ہو گئیں!",
+      "updateFailed": "اپ ڈیٹ ناکام ہو گیا",
+      "manageCredentials": "اپنے لاگ ان کی اسناد، ای میل، اور پاس ورڈ کا نظم کریں۔",
+      "accountSettings": "اکاؤنٹ اور پاس ورڈ کی ترتیبات"
     },
     "document_status": {
       "yourDocs": "آپ کی دستاویزات",
@@ -794,7 +807,67 @@
       "replace": "تبدیل کریں",
       "view": "دیکھیں",
       "cnicFront": "شناختی کارڈ سامنے سے",
-      "cnicBack": "شناختی کارڈ پیچھے سے"
+      "cnicBack": "شناختی کارڈ پیچھے سے",
+      "rejectDocument": "دستاویز مسترد کریں"
+    },
+    "onboarding_wizard": {
+      "stepBusiness": "کاروباری تفصیلات",
+      "stepKyc": "کے وائی سی دستاویزات",
+      "stepBank": "بینک اکاؤنٹ",
+      "stepAddress": "پتہ اور رابطہ",
+      "errorBothImages": "براہ کرم سامنے اور پیچھے کی تصاویر اپ لوڈ کریں",
+      "errorGeneric": "آن بورڈنگ کے دوران ایک خامی پیش آ گئی",
+      "businessHeading": "کاروباری معلومات",
+      "businessName": "کاروبار کا نام",
+      "businessNamePlaceholder": "اپنے کاروبار کا نام درج کریں",
+      "businessType": "کاروبار کی قسم",
+      "selectType": "قسم منتخب کریں",
+      "typeIndividual": "انفرادی",
+      "typeCompany": "کمپنی",
+      "shortDesc": "مختصر تفصیل",
+      "shortDescPlaceholder": "اپنے کاروبار کی مختصر تفصیل دیں",
+      "kycHeading": "شناخت کی تصدیق",
+      "cnicNumber": "شناختی کارڈ نمبر",
+      "cnicPlaceholder": "00000-0000000-0",
+      "ntn": "این ٹی این (اختیاری)",
+      "ntnPlaceholder": "این ٹی این درج کریں",
+      "cnicFront": "شناختی کارڈ کے سامنے کی تصویر",
+      "cnicBack": "شناختی کارڈ کے پیچھے کی تصویر",
+      "selectFile": "فائل منتخب کریں",
+      "bankHeading": "بینک کی معلومات",
+      "bankName": "بینک کا نام",
+      "bankNamePlaceholder": "بینک کا نام درج کریں",
+      "accountTitle": "اکاؤنٹ کا عنوان",
+      "accountTitlePlaceholder": "اکاؤنٹ کا عنوان درج کریں",
+      "iban": "آئی بی اے این",
+      "ibanPlaceholder": "PK00XXXX0000000000000000",
+      "addressHeading": "پتے کی تفصیلات",
+      "contactName": "رابطہ کرنے والے کا نام",
+      "phone": "فون نمبر",
+      "province": "صوبہ",
+      "city": "شہر",
+      "area": "علاقہ / تحصیل",
+      "street": "گلی کا پتہ",
+      "agreeText": "میں سروس کی شرائط سے متفق ہوں",
+      "agreementLink": "شرائط و ضوابط",
+      "back": "پیچھے",
+      "nextStep": "اگلا مرحلہ",
+      "submitting": "جمع کیا جا رہا ہے...",
+      "submitApp": "درخواست جمع کرائیں"
+    },
+    "orders": {
+      "status": {
+        "awaiting_confirmation": "تصدیق کے منتظر",
+        "pending": "زیر التواء",
+        "confirmed": "تصدیق شدہ",
+        "packed": "پیک شدہ",
+        "ready_to_ship": "شپ کے لیے تیار",
+        "shipped": "شپ شدہ",
+        "delivered": "پہنچایا گیا",
+        "cancelled": "منسوخ شدہ",
+        "returned": "واپس کر دیا گیا",
+        "all": "تمام"
+      }
     }
   }
 }

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { parseRupeesToPaisa } from "@/lib/format/currency";
 
-const uuidSchema = z
+export const uuidSchema = z
   .string()
   .regex(
     /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/,

@@ -101,7 +101,8 @@ export async function changeSubOrderStatus(
     .maybeSingle();
 
   if (updateError) {
-    throw new Error(`Failed to update status: ${updateError.message}`);
+    console.error(`Failed to update status: ${updateError.message}`);
+    throw new Error("Failed to update status");
   }
 
   if (!updatedSubOrder) {
@@ -118,7 +119,8 @@ export async function changeSubOrderStatus(
   });
 
   if (historyError) {
-    throw new Error(`Failed to append history: ${historyError.message}`);
+    console.error(`Failed to append history: ${historyError.message}`);
+    throw new Error("Failed to append history");
   }
 
   // Audit log
@@ -133,7 +135,8 @@ export async function changeSubOrderStatus(
   });
 
   if (auditError) {
-    throw new Error(`Failed to insert audit log: ${auditError.message}`);
+    console.error(`Failed to insert audit log: ${auditError.message}`);
+    throw new Error("Failed to log action");
   }
 
   return { success: true };

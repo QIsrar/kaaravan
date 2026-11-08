@@ -315,11 +315,11 @@
     "emptyDesc": "When you order handcrafted treasures, their journey stops will appear here.",
     "status": {
       "awaiting_confirmation": "Awaiting Confirmation",
-      "pending": "Pending",
-      "confirmed": "Confirmed",
-      "packed": "Packed",
-      "ready_to_ship": "Ready to Ship",
-      "shipped": "Shipped",
+      "pending": "Pending Confirmation",
+      "confirmed": "Order Confirmed",
+      "packed": "Packed by Artisan",
+      "ready_to_ship": "Ready for Courier",
+      "shipped": "On the Way",
       "delivered": "Delivered",
       "cancelled": "Cancelled",
       "returned": "Returned",
@@ -392,7 +392,8 @@
     "exploreBazaar": "Explore the Bazaar",
     "orderNumberLabel": "Order Number",
     "packageSubtotal": "Package Subtotal",
-    "packageTotal": "Package Total:"
+    "packageTotal": "Package Total:",
+    "contactSupportToCancel": "Contact Support to Cancel"
   },
   "addresses": {
     "title": "Saved Addresses",
@@ -718,7 +719,8 @@
       "submittedForReview": "Submitted for review",
       "submitReviewHintImages": "Upload at least 1 photo to submit for review.",
       "submitReviewHintVariants": "Add at least 1 active variant with a price to submit for review.",
-      "submitReviewHintBoth": "Upload at least 1 photo and add at least 1 active variant with a price to submit for review."
+      "submitReviewHintBoth": "Upload at least 1 photo and add at least 1 active variant with a price to submit for review.",
+      "optional": "Optional"
     },
     "orders_list": {
       "orderNumber": "Order #",
@@ -756,7 +758,15 @@
       "statusTitle": "Status",
       "paymentLabel": "Payment",
       "shippingAddressTitle": "Shipping Address",
-      "addressHidden": "Full address hidden until order is confirmed."
+      "addressHidden": "Full address hidden until order is confirmed.",
+      "orderNumberLabel": "Order Number",
+      "orderDate": "Order Date",
+      "printedDate": "Printed Date",
+      "shipTo": "Ship To",
+      "addressConcealed": "Address Concealed",
+      "paymentMethod": "Payment Method",
+      "amountToCollect": "Amount To Collect",
+      "itemDescription": "Item Description"
     },
     "settings_form": {
       "shopProfile": "Shop Profile",
@@ -785,7 +795,10 @@
       "changeBankHelp": "To change bank details, contact support. Changes are verified before payouts.",
       "uploadLogo": "Upload Logo",
       "accountSecurity": "Account Security",
-      "settingsUpdated": "Settings updated successfully!"
+      "settingsUpdated": "Settings updated successfully!",
+      "updateFailed": "Update Failed",
+      "manageCredentials": "Manage your login credentials, email, and password.",
+      "accountSettings": "Account & Password Settings"
     },
     "document_status": {
       "yourDocs": "Your Documents",
@@ -794,7 +807,67 @@
       "replace": "Replace",
       "view": "View",
       "cnicFront": "CNIC Front",
-      "cnicBack": "CNIC Back"
+      "cnicBack": "CNIC Back",
+      "rejectDocument": "Reject Document"
+    },
+    "onboarding_wizard": {
+      "stepBusiness": "Business Info",
+      "stepKyc": "KYC & Documents",
+      "stepBank": "Bank Details",
+      "stepAddress": "Pickup Address",
+      "errorBothImages": "Please select both CNIC Front and Back images.",
+      "errorGeneric": "Something went wrong.",
+      "businessHeading": "Business Information",
+      "businessName": "Business Name *",
+      "businessNamePlaceholder": "e.g. Lahore Artisans",
+      "businessType": "Business Type *",
+      "selectType": "Select Type",
+      "typeIndividual": "Individual / Sole Proprietor",
+      "typeCompany": "Registered Company",
+      "shortDesc": "Short Description",
+      "shortDescPlaceholder": "What do you sell?",
+      "kycHeading": "Identity Verification",
+      "cnicNumber": "CNIC Number *",
+      "cnicPlaceholder": "XXXXX-XXXXXXX-X",
+      "ntn": "NTN (Optional)",
+      "ntnPlaceholder": "National Tax Number",
+      "cnicFront": "CNIC Front *",
+      "cnicBack": "CNIC Back *",
+      "selectFile": "Select File",
+      "bankHeading": "Bank Details for Payouts",
+      "bankName": "Bank Name *",
+      "bankNamePlaceholder": "e.g. Meezan Bank",
+      "accountTitle": "Account Title *",
+      "accountTitlePlaceholder": "Exact name on account",
+      "iban": "IBAN *",
+      "ibanPlaceholder": "PKXX MEEZ 0000...",
+      "addressHeading": "Pickup Address",
+      "contactName": "Contact Name *",
+      "phone": "Phone *",
+      "province": "Province *",
+      "city": "City *",
+      "area": "Area *",
+      "street": "Street Address *",
+      "agreeText": "I agree to the",
+      "agreementLink": "Kaaravan Seller Agreement",
+      "back": "Back",
+      "nextStep": "Next Step",
+      "submitting": "Submitting...",
+      "submitApp": "Submit Application"
+    },
+    "orders": {
+      "status": {
+        "awaiting_confirmation": "Awaiting Confirmation",
+        "pending": "Pending",
+        "confirmed": "Confirmed",
+        "packed": "Packed",
+        "ready_to_ship": "Ready to Ship",
+        "shipped": "Shipped",
+        "delivered": "Delivered",
+        "cancelled": "Cancelled",
+        "returned": "Returned",
+        "all": "All"
+      }
     }
   }
 }

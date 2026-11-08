@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Image } from "@/components/ui/image";
+import { getPublicImageUrl } from "@/lib/format/image-url";
 import {
   checkoutSchema,
   type CheckoutInput,
@@ -484,7 +485,7 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
               {cart.sellerGroups.flatMap((group) => group.items).map((item) => (
                 <div key={item.cartItemId} className="flex items-center gap-3">
                   <div className="relative w-12 h-12 shrink-0 rounded-xl overflow-hidden bg-muted border border-border">
-                    <Image src={item.image} alt={item.productTitle} fill sizes="48px" className="object-cover" />
+                    <Image src={getPublicImageUrl(item.image)} alt={item.productTitle} fill sizes="48px" className="object-cover" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-foreground line-clamp-1">

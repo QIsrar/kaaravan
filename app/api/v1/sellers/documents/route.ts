@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { uploadSellerDocument } from "@/lib/services/seller-documents";
+import { getClientIp } from "@/lib/utils";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(req: NextRequest) {
@@ -18,17 +19,19 @@ export async function POST(req: NextRequest) {
     }
 
     const formData = await req.formData();
-    const sellerId = formData.get("sellerId") as string;
     const docType = formData.get("docType") as string;
     const file = formData.get("file") as File;
 
-    if (!sellerId || !docType || !file) {
+    if (!docType || !file) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const result = await uploadSellerDocument(sellerId, docType, file, user.id);
+    const ip = getClientIp(req.headers);
+
+    const result = await uploadSellerDocument(docType, file, user.id, ip);
     return NextResponse.json(result);
   } catch (error: unknown) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
+    console.error("Document upload error:", error);
+    return NextResponse.json({ error: "Failed to upload document" }, { status: 400 });
   }
 }

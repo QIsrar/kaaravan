@@ -13,6 +13,7 @@ import { WISHLIST_QUERY_KEY } from "@/lib/hooks/use-wishlist";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Image } from "@/components/ui/image";
+import { getPublicImageUrl } from "@/lib/format/image-url";
 import { Card } from "@/components/ui/card";
 import { formatPaisa } from "@/lib/format/currency";
 
@@ -181,7 +182,7 @@ export function WishlistManager({ initialItems }: WishlistManagerProps) {
                   <div className="relative aspect-square w-full bg-muted/40 border-b border-border/60 overflow-hidden">
                     <Link href={`/product/${product.slug}`}>
                       <Image
-                        src={imagePath}
+                        src={getPublicImageUrl(imagePath)}
                         alt={product.title}
                         fill
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

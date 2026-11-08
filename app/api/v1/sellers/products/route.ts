@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getApiAuthUser } from "@/lib/auth/api-auth";
 import { productUpsertSchema } from "@/lib/validators/seller-catalog";
 import { upsertSellerProduct } from "@/lib/services/seller-products";
+import { getClientIp } from "@/lib/utils";
 
 export async function POST(req: Request) {
   try {
@@ -25,7 +26,7 @@ export async function POST(req: Request) {
 
     const body = await req.json();
     const validatedData = productUpsertSchema.parse(body);
-    const ipAddress = req.headers.get("x-forwarded-for") || "unknown";
+    const ipAddress = getClientIp(req.headers);
 
     const result = await upsertSellerProduct(
       sellerId,

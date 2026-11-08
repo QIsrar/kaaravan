@@ -38,7 +38,7 @@ export default async function SellPage() {
         applicationStatus = seller.status;
         sellerId = seller.id;
         try {
-          documents = await getSellerDocumentsAction(seller.id);
+          documents = await getSellerDocumentsAction();
         } catch (e) {
           console.error("Failed to load documents", e);
         }
@@ -77,7 +77,7 @@ export default async function SellPage() {
               We will notify you once it&apos;s approved. This usually takes 1-2 business days.
             </p>
           </div>
-          {sellerId && <DocumentStatusList documents={documents} sellerId={sellerId} />}
+          {sellerId && <DocumentStatusList documents={documents} />}
         </div>
       ) : applicationStatus === "rejected" ? (
         <div className="p-8 bg-destructive/10 border-2 border-destructive/30 rounded-3xl text-center space-y-8 max-w-2xl mx-auto">
@@ -88,7 +88,7 @@ export default async function SellPage() {
               Please verify your documents and try re-uploading, or contact support for more details.
             </p>
           </div>
-          {sellerId && <DocumentStatusList documents={documents} sellerId={sellerId} />}
+          {sellerId && <DocumentStatusList documents={documents} />}
         </div>
       ) : (
         <div className="bg-card border rounded-3xl shadow-sm p-6 sm:p-10">

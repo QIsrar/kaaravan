@@ -17,3 +17,7 @@ export function getSafeRedirect(param: string | null, fallback = "/account"): st
 }
 
 // Removed formatMinorUnit in favor of formatPaisa
+
+export function getClientIp(headersList: Headers): string {
+  return headersList.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
+}

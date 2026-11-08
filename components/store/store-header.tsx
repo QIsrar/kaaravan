@@ -317,7 +317,13 @@ export function StoreHeader({ sellerPortalHref, user }: StoreHeaderProps) {
                     </DropdownMenuLinkItem>
                   )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => signOutAction()}>
+                  <DropdownMenuItem onClick={async () => {
+                    const { createClient } = await import("@/lib/supabase/client");
+                    const supabase = createClient();
+                    await supabase.auth.signOut();
+                    await signOutAction();
+                    window.location.href = "/";
+                  }}>
                     <LogOut className="w-3.5 h-3.5" />
                     <span>{tAuth("signOut")}</span>
                   </DropdownMenuItem>
@@ -583,9 +589,16 @@ export function StoreHeader({ sellerPortalHref, user }: StoreHeaderProps) {
           {user && (
             <button
               type="button"
-              onClick={() => {
+              onClick={async () => {
                 setIsMobileMenuOpen(false);
-                signOutAction();
+                const { createClient } = await import("@/lib/supabase/client");
+
+                // The query client is in context, but we can't easily grab it in an async callback without a hook.
+                // We will just do a hard reload after signing out on the client and server.
+                const supabase = createClient();
+                await supabase.auth.signOut();
+                await signOutAction();
+                window.location.href = "/";
               }}
               className="w-full text-start text-xs font-semibold py-2 px-3 rounded-xl transition-colors text-destructive hover:bg-destructive/10"
             >

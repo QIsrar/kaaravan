@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Image } from "@/components/ui/image";
+import { getPublicImageUrl } from "@/lib/format/image-url";
 import { ArrowUpRight } from "lucide-react";
 
 export interface CategoryCardData {
@@ -32,7 +33,7 @@ export function CategoryGrid({ categories }: CategoryGridProps) {
           <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-muted/50 mb-3 relative flex items-center justify-center border border-border/80 group-hover:scale-105 transition-transform duration-300">
             {cat.image ? (
               <Image
-                src={cat.image}
+                src={getPublicImageUrl(cat.image)}
                 alt={cat.name}
                 fill
                 sizes="96px"

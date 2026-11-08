@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getApiAuthUser } from "@/lib/auth/api-auth";
 import { getSellerSettings, updateSellerSettings } from "@/lib/services/seller-settings";
+import { getClientIp } from "@/lib/utils";
 
 export async function GET() {
   try {
@@ -19,7 +20,7 @@ export async function PATCH(request: Request) {
     const { user: profile } = await getApiAuthUser();
     if (!profile) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
 
-    const ipAddress = request.headers.get("x-forwarded-for") || "127.0.0.1";
+    const ipAddress = getClientIp(request.headers);
     const body = await request.json();
 
     const result = await updateSellerSettings(profile.id, ipAddress, body);

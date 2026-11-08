@@ -14,26 +14,41 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTranslations } from "next-intl";
 
-interface OrderDetailsShape {
+interface OrderItem {
+  id: string;
+  product_title: string;
+  variant_attributes: Record<string, string>;
+  unit_price_minor: number;
+  quantity: number;
+  line_total_minor: number;
+}
+
+interface ShippingAddress {
+  fullName: string;
+  city: string;
+  province: string;
+  phone?: string;
+  area?: string;
+  street?: string;
+  postalCode?: string;
+}
+
+export interface OrderDetailsShape {
   id: string;
   orderNumber: string;
   date: string;
   status: string;
-  customerName: string;
-  customerEmail: string;
-  customerPhone: string;
-  shippingAddress: Record<string, string>;
   subtotalMinor: number;
   shippingMinor: number;
   totalMinor: number;
   paymentMethod: string;
   paymentStatus: string;
   sellerBusinessName: string;
-  items: Array<Record<string, unknown>>;
+  items: OrderItem[];
+  shippingAddress: ShippingAddress;
 }
 
-export function OrderDetailsView({ order: rawOrder }: { order: Record<string, unknown> }) {
-  const order = rawOrder as unknown as OrderDetailsShape;
+export function OrderDetailsView({ order }: { order: OrderDetailsShape }) {
   const t = useTranslations("seller.order_details");
   const tOrders = useTranslations("orders");
   const router = useRouter();
@@ -68,31 +83,31 @@ export function OrderDetailsView({ order: rawOrder }: { order: Record<string, un
       {/* Non-printable header */}
       <div className="flex flex-col sm:flex-row justify-between gap-4 print:hidden">
         <div>
-          <h1 className="text-2xl font-bold font-heading">Order {order.orderNumber as string}</h1>
-          <p className="text-muted-foreground">{formatDate(order.date as string)}</p>
+          <h1 className="text-2xl font-bold font-heading">Order {order.orderNumber}</h1>
+          <p className="text-muted-foreground">{formatDate(order.date)}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handlePrint}>
-            <Printer className="w-4 h-4 mr-2" />
+            <Printer className="w-4 h-4 me-2" />
             {t("packingSlip")}
           </Button>
           
-          {(order.status as string) === "pending" && (
+          {order.status === "pending" && (
             <Button onClick={() => handleStatusChange("confirmed")} disabled={isUpdating}>
               {t("confirmOrder")}
             </Button>
           )}
-          {(order.status as string) === "confirmed" && (
+          {order.status === "confirmed" && (
             <Button onClick={() => handleStatusChange("packed")} disabled={isUpdating}>
               {t("markPacked")}
             </Button>
           )}
-          {(order.status as string) === "packed" && (
+          {order.status === "packed" && (
             <Button onClick={() => handleStatusChange("ready_to_ship")} disabled={isUpdating}>
               {t("readyToShip")}
             </Button>
           )}
-          {["awaiting_confirmation", "pending", "confirmed"].includes((order.status as string) as string) ? (
+          {["awaiting_confirmation", "pending", "confirmed"].includes(order.status) ? (
             <AlertDialog>
               <AlertDialogTrigger 
                 className={buttonVariants({ variant: "destructive" })}
@@ -142,7 +157,7 @@ export function OrderDetailsView({ order: rawOrder }: { order: Record<string, un
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-          ) : ["packed", "ready_to_ship", "shipped"].includes((order.status as string)) ? (
+          ) : ["packed", "ready_to_ship", "shipped"].includes(order.status) ? (
             <div className="text-sm text-muted-foreground self-center">
               {t("cancelSupport")}
             </div>
@@ -161,19 +176,19 @@ export function OrderDetailsView({ order: rawOrder }: { order: Record<string, un
           <div className="bg-card border rounded-xl p-6">
             <h2 className="text-xl font-bold mb-4 font-heading">{t("itemsTitle")}</h2>
             <div className="space-y-4">
-              {((order.items as Record<string, unknown>[]) || []).map((item: Record<string, unknown>) => (
-                <div key={(item.id as string)} className="flex justify-between items-center border-b pb-4 last:border-0 last:pb-0">
+              {order.items.map((item) => (
+                <div key={item.id} className="flex justify-between items-center border-b pb-4 last:border-0 last:pb-0">
                   <div>
-                    <p className="font-bold">{(item.product_title as string)}</p>
+                    <p className="font-bold">{item.product_title}</p>
                     <div className="text-sm text-muted-foreground">
-                      {Object.entries((item.variant_attributes || {}) as Record<string, unknown>).map(([k, v]) => (
-                        <span key={k} className="mr-2">{k}: {v as string}</span>
+                      {Object.entries(item.variant_attributes).map(([k, v]) => (
+                        <span key={k} className="me-2">{k}: {v}</span>
                       ))}
                     </div>
-                    <p className="text-sm mt-1">{t("qty")}: {(item.quantity as number)}</p>
+                    <p className="text-sm mt-1">{t("qty")}: {item.quantity}</p>
                   </div>
-                  <div className="text-right print:hidden">
-                    <p className="font-bold">{formatPaisa((item.line_total_minor as number))}</p>
+                  <div className="text-end print:hidden">
+                    <p className="font-bold">{formatPaisa(item.line_total_minor)}</p>
                   </div>
                 </div>
               ))}
@@ -185,15 +200,15 @@ export function OrderDetailsView({ order: rawOrder }: { order: Record<string, un
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span>{t("subtotal")}</span>
-                <span>{formatPaisa(order.subtotalMinor as number)}</span>
+                <span>{formatPaisa(order.subtotalMinor)}</span>
               </div>
               <div className="flex justify-between">
                 <span>{t("shipping")}</span>
-                <span>{formatPaisa(order.shippingMinor as number)}</span>
+                <span>{formatPaisa(order.shippingMinor)}</span>
               </div>
               <div className="flex justify-between font-bold text-lg pt-4 border-t mt-4">
                 <span>{t("total")}</span>
-                <span>{formatPaisa(order.totalMinor as number)}</span>
+                <span>{formatPaisa(order.totalMinor)}</span>
               </div>
             </div>
           </div>
@@ -203,10 +218,10 @@ export function OrderDetailsView({ order: rawOrder }: { order: Record<string, un
           <div className="bg-card border rounded-xl p-6">
             <h2 className="text-xl font-bold mb-4 font-heading">{t("statusTitle")}</h2>
             <Badge className="capitalize mb-4 text-sm px-3 py-1">
-              {tOrders(`status.${(order.status as string)}` as Parameters<typeof tOrders>[0]) || (order.status as string).replace(/_/g, " ")}
+              {tOrders(`status.${order.status}` as Parameters<typeof tOrders>[0]) || order.status.replace(/_/g, " ")}
             </Badge>
             <p className="text-sm text-muted-foreground">
-              {t("paymentLabel")}: <span className="uppercase font-bold">{(order.paymentMethod as string)} &bull; {tOrders(`payment.${(order.paymentStatus as string)}` as Parameters<typeof tOrders>[0]) || (order.paymentStatus as string)}</span>
+              {t("paymentLabel")}: <span className="uppercase font-bold">{order.paymentMethod} &bull; {tOrders(`payment.${order.paymentStatus}` as Parameters<typeof tOrders>[0]) || order.paymentStatus}</span>
             </p>
           </div>
 
@@ -239,11 +254,11 @@ export function OrderDetailsView({ order: rawOrder }: { order: Record<string, un
         <div className="flex justify-between items-start border-b-2 border-black pb-4">
           <div>
             <h1 className="text-4xl font-extrabold tracking-tighter uppercase font-heading">{t("packingSlip")}</h1>
-            <p className="text-lg mt-1 font-mono">{t("orderNumberLabel", { number: order.orderNumber as string })}</p>
+            <p className="text-lg mt-1 font-mono">{t("orderNumberLabel", { number: order.orderNumber })}</p>
           </div>
           <div className="text-end">
             <p className="font-bold text-2xl font-heading">Kaaravan — {order.sellerBusinessName}</p>
-            <p className="text-sm mt-1 text-gray-600">{t("orderDate")}: {formatDate(order.date as string)}</p>
+            <p className="text-sm mt-1 text-gray-600">{t("orderDate")}: {formatDate(order.date)}</p>
             <p className="text-sm text-gray-600">{t("printedDate")}: {formatDate(new Date().toISOString())}</p>
           </div>
         </div>
@@ -253,11 +268,11 @@ export function OrderDetailsView({ order: rawOrder }: { order: Record<string, un
             <h2 className="font-bold text-sm uppercase tracking-widest border-b border-black mb-3 pb-1 text-gray-500">{t("shipTo")}</h2>
             {order.shippingAddress.phone ? (
               <div className="space-y-1 text-lg">
-                <p className="font-bold text-xl">{order.shippingAddress.fullName as string}</p>
-                <p>{order.shippingAddress.street as string}</p>
-                <p>{order.shippingAddress.area as string}</p>
-                <p>{order.shippingAddress.city as string}, {order.shippingAddress.province as string} {order.shippingAddress.postalCode as string}</p>
-                <p className="pt-2 font-mono">Tel: {order.shippingAddress.phone as string}</p>
+                <p className="font-bold text-xl">{order.shippingAddress.fullName}</p>
+                <p>{order.shippingAddress.street}</p>
+                <p>{order.shippingAddress.area}</p>
+                <p>{order.shippingAddress.city}, {order.shippingAddress.province} {order.shippingAddress.postalCode}</p>
+                <p className="pt-2 font-mono">Tel: {order.shippingAddress.phone}</p>
               </div>
             ) : (
               <p className="italic text-gray-500">{t("addressConcealed")}</p>
@@ -277,7 +292,7 @@ export function OrderDetailsView({ order: rawOrder }: { order: Record<string, un
 
         <div className="mt-8">
           <h2 className="font-bold text-sm uppercase tracking-widest border-b border-black mb-4 pb-1 text-gray-500">{t("itemsTitle")}</h2>
-          <table className="w-full text-left">
+          <table className="w-full text-start">
             <thead>
               <tr className="border-b-2 border-black">
                 <th className="py-3 text-lg text-start">{t("itemDescription")}</th>
@@ -285,15 +300,15 @@ export function OrderDetailsView({ order: rawOrder }: { order: Record<string, un
               </tr>
             </thead>
             <tbody>
-              {((order.items as Record<string, unknown>[]) || []).map((item: Record<string, unknown>) => (
-                <tr key={(item.id as string)} className="border-b border-gray-300">
+              {order.items.map((item) => (
+                <tr key={item.id} className="border-b border-gray-300">
                   <td className="py-4">
-                    <p className="font-bold text-xl">{(item.product_title as string)}</p>
+                    <p className="font-bold text-xl">{item.product_title}</p>
                     <p className="text-sm text-gray-600 mt-1">
-                      {Object.entries((item.variant_attributes || {}) as Record<string, unknown>).map(([k, v]) => `${k}: ${v}`).join(" | ")}
+                      {Object.entries(item.variant_attributes).map(([k, v]) => `${k}: ${v}`).join(" | ")}
                     </p>
                   </td>
-                  <td className="py-4 text-center text-2xl font-bold">{(item.quantity as number)}</td>
+                  <td className="py-4 text-center text-2xl font-bold">{item.quantity}</td>
                 </tr>
               ))}
             </tbody>

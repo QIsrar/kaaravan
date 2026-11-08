@@ -16,10 +16,10 @@ const docTypeSchema = z.enum([
 ]);
 
 export async function uploadSellerDocument(
-  sellerId: string,
   docType: string,
   file: File,
-  actorId: string
+  actorId: string,
+  ip: string
 ) {
   const supabase = createAdminClient();
 
@@ -28,20 +28,22 @@ export async function uploadSellerDocument(
     throw new Error("Invalid document type");
   }
 
-  // Validate owner
+  // Find the seller by owner_profile_id
   const { data: seller, error: fetchError } = await supabase
     .from("sellers")
-    .select("owner_profile_id, status")
-    .eq("id", sellerId)
+    .select("id, owner_profile_id, status")
+    .eq("owner_profile_id", actorId)
     .single();
 
-  if (fetchError || !seller || seller.owner_profile_id !== actorId) {
+  if (fetchError || !seller) {
     throw new Error("Unauthorized to upload documents for this seller");
   }
 
   if (seller.status !== "pending" && seller.status !== "approved") {
     throw new Error("Cannot upload documents for this seller status");
   }
+  
+  const sellerId = seller.id;
 
   // Check file size (5MB)
   if (file.size > 5 * 1024 * 1024) {
@@ -76,19 +78,36 @@ export async function uploadSellerDocument(
   }
 
   // Insert seller_documents record
-  const { error: dbError } = await supabase
+  const { data: document, error: dbError } = await supabase
     .from("seller_documents")
     .insert({
       seller_id: sellerId,
       doc_type: docType,
       file_path: fullPath,
       status: "pending"
-    });
+    })
+    .select()
+    .single();
 
   if (dbError) {
     // DB error after upload, delete the uploaded file
     await supabase.storage.from(bucket).remove([objectPath]);
     throw new Error(`Failed to record document: ${dbError.message}`);
+  }
+
+  const { error: auditError } = await supabase.from("audit_logs").insert({
+    actor_id: actorId,
+    action: "SELLER_DOCUMENT_UPLOADED",
+    entity: "seller_documents",
+    entity_id: document.id,
+    before: null,
+    after: { doc_type: docType, file_path: fullPath },
+    ip: ip
+  });
+
+  if (auditError) {
+    console.error("Failed to insert audit log:", auditError.message);
+    throw new Error("Failed to record document upload audit log");
   }
 
   return { success: true, filePath: fullPath };

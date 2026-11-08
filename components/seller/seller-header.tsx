@@ -120,15 +120,20 @@ export function SellerHeader({ sellerName }: SellerHeaderProps) {
             <bdi dir="auto">{displayName}</bdi>
           </span>
         </div>
-        <form action={signOutAction}>
-          <button
-            type="submit"
-            className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-destructive transition-colors px-2.5 py-1.5 rounded-lg hover:bg-destructive/10"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">{t("signOut")}</span>
-          </button>
-        </form>
+        <button
+          type="button"
+          onClick={async () => {
+            const { createClient } = await import("@/lib/supabase/client");
+            const supabase = createClient();
+            await supabase.auth.signOut();
+            await signOutAction();
+            window.location.href = "/";
+          }}
+          className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-destructive transition-colors px-2.5 py-1.5 rounded-lg hover:bg-destructive/10"
+        >
+          <LogOut className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">{t("signOut")}</span>
+        </button>
       </div>
     </header>
   );

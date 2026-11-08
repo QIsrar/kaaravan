@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Image } from "@/components/ui/image";
+import { getPublicImageUrl } from "@/lib/format/image-url";
 import { formatPaisa } from "@/lib/format/currency";
 import { formatDate } from "@/lib/format/date";
 import {
@@ -186,7 +187,7 @@ export default async function CustomerOrdersPage() {
                                   >
                                     <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-muted border border-border shrink-0">
                                       <Image
-                                        src={imagePath}
+                                        src={getPublicImageUrl(imagePath)}
                                         alt={item.product_title}
                                         fill
                                         sizes="32px"

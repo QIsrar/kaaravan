@@ -684,3 +684,28 @@ This document outlines the REST API endpoints available under `/api/v1/` for mob
   - `401 Unauthorized`: Missing or invalid bearer token.
   - `403 Forbidden`: Seller not approved.
 
+### 7. Seller Settings
+- **Method:** GET or PATCH
+- **Path:** `/api/v1/sellers/settings`
+- **Auth:** Required (`Authorization: Bearer <token>`)
+- **GET Response:** Returns the seller profile (business details, default address) and bank settings with masked IBAN.
+- **PATCH Body:** Update settings, logo, or pickup address.
+
+### 8. Seller Orders
+- **Method:** GET
+- **Path:** `/api/v1/sellers/orders` or `/api/v1/sellers/orders/:id`
+- **Auth:** Required (`Authorization: Bearer <token>`)
+- **Description:** Retrieve sub-orders assigned to the seller.
+
+### 9. Update Sub-Order Status
+- **Method:** PATCH
+- **Path:** `/api/v1/sellers/orders/:id/status`
+- **Auth:** Required (`Authorization: Bearer <token>`)
+- **Request Body:**
+  ```json
+  {
+    "status": "packed",
+    "reason": "Optional reason"
+  }
+  ```
+- **Description:** Move order forward (e.g. pending -> confirmed -> packed -> ready_to_ship) or cancel before shipping.

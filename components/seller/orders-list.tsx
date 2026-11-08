@@ -136,7 +136,7 @@ export function OrdersList({
                       {tOrders(`status.${order.status}` as Parameters<typeof tOrders>[0]) || order.status.replace(/_/g, " ")}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-end">
                     <Link 
                       href={`/seller/orders/${order.id}`}
                       className={buttonVariants({ variant: "outline", size: "sm" })}

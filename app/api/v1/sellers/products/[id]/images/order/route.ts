@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getApiAuthUser } from "@/lib/auth/api-auth";
 import { reorderImagesSchema } from "@/lib/validators/seller-catalog";
 import { updateProductImageOrder } from "@/lib/services/seller-products";
+import { getClientIp } from "@/lib/utils";
 
 export async function PATCH(
   req: Request,
@@ -27,10 +28,7 @@ export async function PATCH(
     const body = await req.json();
     const validatedData = reorderImagesSchema.parse(body);
 
-    const ipAddress =
-      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-      req.headers.get("x-real-ip") ??
-      "unknown";
+    const ipAddress = getClientIp(req.headers);
 
     await updateProductImageOrder(
       seller.id,

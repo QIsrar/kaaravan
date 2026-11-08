@@ -16,7 +16,7 @@ export interface SellerDocument {
   url?: string | null;
 }
 
-export function DocumentStatusList({ documents, sellerId }: { documents: SellerDocument[], sellerId: string }) {
+export function DocumentStatusList({ documents }: { documents: SellerDocument[] }) {
   const t = useTranslations("seller.document_status");
   const router = useRouter();
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
@@ -33,7 +33,6 @@ export function DocumentStatusList({ documents, sellerId }: { documents: SellerD
     setUploadingDoc(docType);
     try {
       const formData = new FormData();
-      formData.append("sellerId", sellerId);
       formData.append("docType", docType);
       formData.append("file", file);
       
@@ -57,7 +56,7 @@ export function DocumentStatusList({ documents, sellerId }: { documents: SellerD
   };
 
   return (
-    <div className="space-y-4 text-left">
+    <div className="space-y-4 text-start">
       <h3 className="font-bold text-lg">{t("yourDocs")}</h3>
       
       <div className="space-y-3">

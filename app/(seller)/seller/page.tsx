@@ -22,7 +22,9 @@ export default async function SellerDashboardPage() {
   const supabase = createAdminClient();
 
   const { data: statsData, error: statsErr } = await supabase
-    .rpc("get_seller_dashboard_stats", { p_seller_id: sellerId });
+    .rpc("get_seller_dashboard_stats", { p_seller_id: sellerId })
+    .returns<SellerDashboardStats[]>()
+    .single();
 
   if (statsErr || !statsData) {
     return (
@@ -46,7 +48,7 @@ export default async function SellerDashboardPage() {
     );
   }
 
-  const stats = statsData as unknown as SellerDashboardStats;
+  const stats = statsData;
 
   return (
     <div className="space-y-6 max-w-6xl">

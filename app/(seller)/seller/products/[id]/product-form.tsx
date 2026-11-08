@@ -1519,7 +1519,7 @@ export function ProductForm({
                                 onChange={(e) =>
                                   updateVariantField(idx, "compare_at_rupees", e.target.value)
                                 }
-                                placeholder={t("optional", { defaultMessage: "optional" })}
+                                placeholder={t("optional")}
                                 className={`h-9 font-mono text-xs rounded-xl ${
                                   compareError
                                     ? "border-destructive focus-visible:ring-destructive ring-1 ring-destructive"

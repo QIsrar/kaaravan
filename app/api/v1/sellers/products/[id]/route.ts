@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getApiAuthUser } from "@/lib/auth/api-auth";
-import { productUpsertSchema } from "@/lib/validators/seller-catalog";
+import { productUpsertSchema, uuidSchema } from "@/lib/validators/seller-catalog";
 import { upsertSellerProduct } from "@/lib/services/seller-products";
+import { getClientIp } from "@/lib/utils";
 
 export async function PATCH(
   req: Request,
@@ -27,21 +28,28 @@ export async function PATCH(
     const sellerId = seller.id;
 
     const productId = (await params).id;
+    const parsedId = uuidSchema.parse(productId);
     const body = await req.json();
     const validatedData = productUpsertSchema.parse(body);
-    const ipAddress = req.headers.get("x-forwarded-for") || "unknown";
+    const ipAddress = getClientIp(req.headers);
 
     const result = await upsertSellerProduct(
       sellerId,
       profileId,
       ipAddress,
       validatedData,
-      productId
+      parsedId
     );
 
     return NextResponse.json({ success: true, data: result });
   } catch (error: unknown) {
-    const err = error as Error;
-    return NextResponse.json({ success: false, error: err.message || String(err) }, { status: 400 });
+    console.error("PATCH /sellers/products/[id] error:", error);
+    let msg = "Failed to update product";
+    if (error instanceof Error) {
+      if (error.message.includes("SKU") || error.message.includes("Stock") || error.message.includes("already in use")) {
+        msg = error.message;
+      }
+    }
+    return NextResponse.json({ success: false, error: msg }, { status: 400 });
   }
 }

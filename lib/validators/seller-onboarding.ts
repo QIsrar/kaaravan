@@ -23,7 +23,7 @@ export const sellerOnboardingSchema = z.object({
   street: z.string().min(5, "Street address is required"),
   postalCode: z.string().optional(),
   
-  agreementAccepted: z.literal(true, {
+  agreementAccepted: z.boolean().refine(val => val === true, {
     message: "You must accept the Seller Agreement"
   }),
 });

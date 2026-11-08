@@ -109,6 +109,29 @@ export async function getSellerOrderDetails(
     throw new Error("Unauthorized");
   }
 
+  type OrderDetailRow = {
+    id: string;
+    status: string;
+    subtotal_minor: number;
+    shipping_minor: number;
+    total_minor: number;
+    created_at: string;
+    orders: {
+      order_number: string;
+      shipping_address: Record<string, string>;
+      payment_method: string;
+      payment_status: string;
+    };
+    order_items: Array<{
+      id: string;
+      product_title: string;
+      variant_attributes: Record<string, string>;
+      unit_price_minor: number;
+      quantity: number;
+      line_total_minor: number;
+    }>;
+  };
+
   const { data, error } = await supabase
     .from("sub_orders")
     .select(
@@ -122,7 +145,8 @@ export async function getSellerOrderDetails(
       orders!inner(
         order_number, 
         shipping_address,
-        payment_method
+        payment_method,
+        payment_status
       ),
       order_items(
         id,
@@ -136,35 +160,14 @@ export async function getSellerOrderDetails(
     )
     .eq("id", subOrderId)
     .eq("seller_id", seller.id)
+    .returns<OrderDetailRow[]>()
     .single();
 
   if (error || !data) {
     throw new Error("Order not found or unauthorized");
   }
 
-  type OrderDetailRow = {
-    id: string;
-    status: string;
-    subtotal_minor: number;
-    shipping_minor: number;
-    total_minor: number;
-    created_at: string;
-    orders: {
-      order_number: string;
-      shipping_address: Record<string, string>;
-      payment_method: string;
-    };
-    order_items: Array<{
-      id: string;
-      product_title: string;
-      variant_attributes: Record<string, string>;
-      unit_price_minor: number;
-      quantity: number;
-      line_total_minor: number;
-    }>;
-  };
-
-  const so = data as unknown as OrderDetailRow;
+  const so = data;
   const address = so.orders.shipping_address;
 
   // Privacy rule: full shipping address & phone shown only from 'confirmed' onwards.
@@ -179,6 +182,7 @@ export async function getSellerOrderDetails(
     shippingMinor: so.shipping_minor,
     totalMinor: so.total_minor,
     paymentMethod: so.orders.payment_method,
+    paymentStatus: so.orders.payment_status,
     sellerBusinessName: seller.business_name,
     items: so.order_items,
     shippingAddress: {

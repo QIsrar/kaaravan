@@ -5,10 +5,11 @@ Unauthorised copying, disclosure, modification, distribution or use is prohibite
 */
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import type { Database } from "@/lib/types/database";
 
 export async function getSellerSettings(profileId: string) {
   const supabase = createAdminClient();
-  
+
   const { data: seller, error } = await supabase
     .from("sellers")
     .select(`
@@ -30,6 +31,18 @@ export async function getSellerSettings(profileId: string) {
 
   if (error || !seller) {
     throw new Error("Seller not found");
+  }
+
+  if (seller.status !== "approved") {
+    throw new Error("Seller not approved");
+  }
+
+  // Mask IBAN
+  if (seller.seller_bank_accounts && Array.isArray(seller.seller_bank_accounts)) {
+    seller.seller_bank_accounts = seller.seller_bank_accounts.map((acc: { bank_name: string; iban: string; [key: string]: unknown }) => ({
+      ...acc,
+      iban: typeof acc.iban === "string" ? `****${acc.iban.slice(-4)}` : acc.iban
+    })) as { bank_name: string; iban: string }[];
   }
 
   return seller;
@@ -65,19 +78,24 @@ export async function updateSellerSettings(
     throw new Error("Seller not found");
   }
 
+  const { data: statusCheck } = await supabase.from("sellers").select("status").eq("id", seller.id).single();
+  if (statusCheck?.status !== "approved") {
+    throw new Error("Seller not approved");
+  }
+
   // Update sellers table
-  const sellerUpdates: Record<string, string> = {};
+  const sellerUpdates: Database["public"]["Tables"]["sellers"]["Update"] = {};
   if (updates.description !== undefined) sellerUpdates.description = updates.description;
   if (updates.logo !== undefined) sellerUpdates.logo = updates.logo;
 
   if (Object.keys(sellerUpdates).length > 0) {
     const { error } = await supabase
       .from("sellers")
-      .update(sellerUpdates as never)
+      .update(sellerUpdates)
       .eq("id", seller.id);
     if (error) throw new Error("Failed to update seller profile");
 
-    await supabase.from("audit_logs").insert({
+    const { error: auditError } = await supabase.from("audit_logs").insert({
       actor_id: profileId,
       action: "SELLER_PROFILE_UPDATED",
       entity: "sellers",
@@ -86,6 +104,7 @@ export async function updateSellerSettings(
       after: sellerUpdates,
       ip: ipAddress
     });
+    if (auditError) console.error("Audit log error:", auditError.message);
   }
 
   // Update default pickup address
@@ -106,10 +125,10 @@ export async function updateSellerSettings(
         .from("seller_pickup_addresses")
         .update(updates.pickupAddress)
         .eq("id", oldAddress.id);
-      
+
       if (error) throw new Error("Failed to update pickup address");
 
-      await supabase.from("audit_logs").insert({
+      const { error: auditError } = await supabase.from("audit_logs").insert({
         actor_id: profileId,
         action: "SELLER_ADDRESS_UPDATED",
         entity: "seller_pickup_addresses",
@@ -118,6 +137,7 @@ export async function updateSellerSettings(
         after: updates.pickupAddress,
         ip: ipAddress
       });
+      if (auditError) console.error("Audit log error:", auditError.message);
     } else {
       const { data: newAddress, error } = await supabase
         .from("seller_pickup_addresses")
@@ -131,7 +151,7 @@ export async function updateSellerSettings(
 
       if (error) throw new Error("Failed to create pickup address");
 
-      await supabase.from("audit_logs").insert({
+      const { error: auditError } = await supabase.from("audit_logs").insert({
         actor_id: profileId,
         action: "SELLER_ADDRESS_CREATED",
         entity: "seller_pickup_addresses",
@@ -140,6 +160,7 @@ export async function updateSellerSettings(
         after: newAddress,
         ip: ipAddress
       });
+      if (auditError) console.error("Audit log error:", auditError.message);
     }
   }
 

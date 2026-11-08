@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Image } from "@/components/ui/image";
+import { getPublicImageUrl } from "@/lib/format/image-url";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Trash2, Store, ArrowRight, ShieldCheck, ShoppingBag, Sparkles } from "lucide-react";
@@ -136,7 +137,7 @@ export function CartView({ initialCart }: CartViewProps) {
                     <div className="flex items-center gap-4 flex-1">
                       <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-muted border border-border shrink-0">
                         <Image
-                          src={item.image}
+                          src={getPublicImageUrl(item.image)}
                           alt={item.productTitle}
                           fill
                           sizes="80px"

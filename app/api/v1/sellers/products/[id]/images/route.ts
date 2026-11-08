@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getApiAuthUser } from "@/lib/auth/api-auth";
 import { uploadProductImage } from "@/lib/services/seller-products";
+import { getClientIp } from "@/lib/utils";
 
 export async function POST(
   req: Request,
@@ -26,10 +27,7 @@ export async function POST(
     const sellerId = seller.id;
 
     const productId = (await params).id;
-    const ipAddress =
-      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-      req.headers.get("x-real-ip") ??
-      "unknown";
+    const ipAddress = getClientIp(req.headers);
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
 

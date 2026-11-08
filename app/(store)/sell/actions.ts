@@ -4,6 +4,7 @@ import { requireAuth } from "@/lib/auth/roles";
 import { submitSellerOnboarding } from "@/lib/services/seller-onboarding";
 import { sellerOnboardingSchema } from "@/lib/validators/seller-onboarding";
 import { headers } from "next/headers";
+import { getClientIp } from "@/lib/utils";
 
 export async function submitOnboardingAction(formData: FormData | string) {
   const profile = await requireAuth(["customer", "guest"]); // Actually, guest shouldn't be here, only customer. Wait, pending sellers are "customer".
@@ -25,7 +26,7 @@ export async function submitOnboardingAction(formData: FormData | string) {
   const validatedData = sellerOnboardingSchema.parse(parsedInput);
   
   const headersList = await headers();
-  const ip = headersList.get("x-forwarded-for") || "127.0.0.1";
+  const ip = getClientIp(headersList);
 
   const result = await submitSellerOnboarding(validatedData, profile.id, ip);
   return result;

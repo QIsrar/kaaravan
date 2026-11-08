@@ -4,6 +4,7 @@ import { requireAuth } from "@/lib/auth/roles";
 import { getSellerSettings, updateSellerSettings } from "@/lib/services/seller-settings";
 import { headers } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getClientIp } from "@/lib/utils";
 
 export async function getSellerSettingsAction() {
   const profile = await requireAuth(["seller"]);
@@ -29,7 +30,7 @@ export async function updateSellerSettingsAction(data: {
   if (!profile) throw new Error("Unauthorized");
 
   const headersList = await headers();
-  const ipAddress = headersList.get("x-forwarded-for") || "127.0.0.1";
+  const ipAddress = getClientIp(headersList);
 
   await updateSellerSettings(profile.id, ipAddress, data);
   return { success: true };
@@ -56,15 +57,10 @@ export async function uploadSellerLogoAction(formData: FormData) {
   if (seller.status !== "approved") throw new Error("Seller not approved");
 
   const headersList = await headers();
-  const ipAddress = headersList.get("x-forwarded-for") || "127.0.0.1";
+  const ipAddress = getClientIp(headersList);
 
   const randomUuid = crypto.randomUUID();
   const objectPath = `seller-branding/${seller.id}/logo-${randomUuid}.webp`;
-
-  // delete old logo
-  if (seller.logo && seller.logo.startsWith("seller-branding/")) {
-    await supabase.storage.from("seller-branding").remove([seller.logo.replace("seller-branding/", "")]);
-  }
 
   const { error: uploadError } = await supabase.storage
     .from("seller-branding")
@@ -75,7 +71,16 @@ export async function uploadSellerLogoAction(formData: FormData) {
 
   if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
 
-  await supabase.from("audit_logs").insert({
+  // delete old logo AFTER successful upload
+  if (seller.logo && seller.logo.startsWith("seller-branding/")) {
+    await supabase.storage.from("seller-branding").remove([seller.logo.replace("seller-branding/", "")]);
+  }
+
+  // Update seller logo in DB
+  const { error: dbError } = await supabase.from("sellers").update({ logo: objectPath }).eq("id", seller.id);
+  if (dbError) throw new Error("Failed to update seller logo path");
+
+  const { error: auditError } = await supabase.from("audit_logs").insert({
     actor_id: profile.id,
     action: "SELLER_LOGO_UPLOADED",
     entity: "sellers",
@@ -84,6 +89,7 @@ export async function uploadSellerLogoAction(formData: FormData) {
     after: { logo: objectPath },
     ip: ipAddress
   });
+  if (auditError) console.error("Audit log error:", auditError.message);
 
   return { success: true, logoPath: objectPath };
 }

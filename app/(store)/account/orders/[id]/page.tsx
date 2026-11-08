@@ -11,6 +11,7 @@ import { ReturnItemDialog } from "@/components/store/return-item-dialog";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Image } from "@/components/ui/image";
+import { getPublicImageUrl } from "@/lib/format/image-url";
 import { formatPaisa } from "@/lib/format/currency";
 import { formatDate } from "@/lib/format/date";
 import {
@@ -190,7 +191,7 @@ export default async function CustomerOrderDetailPage({
                     <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
                       {seller?.logo ? (
                         <Image
-                          src={seller.logo}
+                          src={getPublicImageUrl(seller.logo)}
                           alt={sellerName}
                           width={40}
                           height={40}
@@ -264,7 +265,7 @@ export default async function CustomerOrderDetailPage({
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-muted border border-border shrink-0">
                               <Image
-                                src={imagePath}
+                                src={getPublicImageUrl(imagePath)}
                                 alt={item.product_title}
                                 fill
                                 sizes="48px"

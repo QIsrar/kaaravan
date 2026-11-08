@@ -2,6 +2,7 @@ import { requireAuth } from "@/lib/auth/roles";
 import { submitSellerOnboarding } from "@/lib/services/seller-onboarding";
 import { sellerOnboardingSchema } from "@/lib/validators/seller-onboarding";
 import { NextResponse } from "next/server";
+import { getClientIp } from "@/lib/utils";
 
 export async function POST(req: Request) {
   try {
@@ -17,7 +18,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const validatedData = sellerOnboardingSchema.parse(body);
     
-    const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
+    const ip = getClientIp(req.headers);
     
     const result = await submitSellerOnboarding(validatedData, profile.id, ip);
     

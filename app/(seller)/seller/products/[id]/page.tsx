@@ -58,7 +58,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
   return (
     <div className="max-w-5xl mx-auto">
       <ProductForm 
-        product={product as unknown as ProductInitialData} 
+        product={product as ProductInitialData} 
         categories={leafCategories} 
         brands={brands || []} 
         sellerId={sellerId}

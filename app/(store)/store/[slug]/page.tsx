@@ -2,6 +2,7 @@ import React from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Image } from "@/components/ui/image";
+import { getPublicImageUrl } from "@/lib/format/image-url";
 import Link from "next/link";
 import { ShieldCheck, Star, RotateCcw, Store, Sparkles, ChevronRight } from "lucide-react";
 import { getTranslations } from "next-intl/server";
@@ -235,7 +236,7 @@ export default async function SellerStorePage({ params, searchParams }: StorePag
           <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-card border-2 border-primary/20 shadow-md relative overflow-hidden flex items-center justify-center shrink-0">
             {seller.logo ? (
               <Image
-                src={seller.logo}
+                src={getPublicImageUrl(seller.logo)}
                 alt={seller.business_name}
                 fill
                 sizes="112px"

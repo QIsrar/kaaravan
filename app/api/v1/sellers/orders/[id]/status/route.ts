@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getApiAuthUser } from "@/lib/auth/api-auth";
 import { changeSubOrderStatus, SubOrderStatus } from "@/lib/services/order-status";
+import { uuidSchema } from "@/lib/validators/seller-catalog";
+import { getClientIp } from "@/lib/utils";
 
 export async function PATCH(
   request: Request,
@@ -13,6 +15,7 @@ export async function PATCH(
     }
 
     const { id } = await params;
+    const parsedId = uuidSchema.parse(id);
     const body = await request.json();
     const newStatus = body.status as SubOrderStatus;
     const reason = body.reason;
@@ -21,12 +24,17 @@ export async function PATCH(
       return NextResponse.json({ success: false, error: "Missing status" }, { status: 400 });
     }
 
-    const ipAddress = request.headers.get("x-forwarded-for") || "127.0.0.1";
+    const ipAddress = getClientIp(request.headers);
 
-    await changeSubOrderStatus(id, newStatus, profile.id, "seller", ipAddress, reason);
+    await changeSubOrderStatus(parsedId, newStatus, profile.id, "seller", ipAddress, reason);
 
     return NextResponse.json({ success: true, message: "Status updated successfully" });
   } catch (error: unknown) {
-    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : "Unknown error" }, { status: 400 });
+    console.error("PATCH /sellers/orders/[id]/status error:", error);
+    let msg = "Failed to update order status";
+    if (error instanceof Error && (error.message.includes("Invalid state") || error.message.includes("Order status changed"))) {
+      msg = error.message;
+    }
+    return NextResponse.json({ success: false, error: msg }, { status: 400 });
   }
 }
