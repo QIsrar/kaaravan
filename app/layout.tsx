@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { BRAND_CONFIG } from "@/config/brand";
 import { Providers } from "@/components/providers";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import { cn } from "@/lib/utils";
 import "./globals.css";
 
@@ -62,7 +63,10 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background text-foreground font-sans">
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <Providers>{children}</Providers>
+          <Providers>
+            <ProgressBar />
+            {children}
+          </Providers>
         </NextIntlClientProvider>
       </body>
     </html>

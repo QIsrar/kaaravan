@@ -52,11 +52,13 @@ export function SellerHeader({ sellerName }: SellerHeaderProps) {
       <div className="flex items-center gap-2.5 sm:gap-3">
         {/* Mobile Hamburger Menu */}
         <div className="md:hidden">
-          <DropdownMenu>
+          <DropdownMenu triggerId="seller-header-mobile-trigger">
             <DropdownMenuTrigger
+              id="seller-header-mobile-trigger"
               render={
                 <button
                   type="button"
+                  id="seller-header-mobile-trigger"
                   className="w-9 h-9 rounded-xl border border-border flex items-center justify-center text-foreground hover:bg-muted"
                   aria-label="Toggle Seller Menu"
                 />
@@ -64,7 +66,7 @@ export function SellerHeader({ sellerName }: SellerHeaderProps) {
             >
               <Menu className="w-5 h-5" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56 p-1.5 space-y-0.5">
+            <DropdownMenuContent id="seller-header-mobile-popup" align="start" className="w-56 p-1.5 space-y-0.5">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = isItemActive(item.href);

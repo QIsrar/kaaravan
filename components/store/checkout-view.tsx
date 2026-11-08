@@ -16,6 +16,7 @@ import {
   ArrowRight,
   AlertCircle,
   Info,
+  Loader2,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Image } from "@/components/ui/image";
@@ -23,9 +24,10 @@ import { getPublicImageUrl } from "@/lib/format/image-url";
 import {
   checkoutSchema,
   type CheckoutInput,
-  PAKISTAN_PROVINCES,
   CITIES_BY_PROVINCE,
+  type PakistanProvince,
 } from "@/lib/validators/checkout";
+import { PhoneInput, ProvinceCitySelect } from "@/components/ui/pk-inputs";
 import { submitCheckoutAction } from "@/lib/actions/checkout";
 import type { CartDetails } from "@/lib/services/cart";
 import { formatPaisa } from "@/lib/format/currency";
@@ -75,12 +77,6 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
 
   const selectedPaymentMethod = watch("paymentMethod");
   const selectedProvince = watch("shippingAddress.province");
-  const citiesForProvince = CITIES_BY_PROVINCE[selectedProvince] ?? [];
-
-  const handleProvinceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const province = e.target.value as CheckoutInput["shippingAddress"]["province"];
-    setValue("shippingAddress.city", CITIES_BY_PROVINCE[province][0], { shouldValidate: true });
-  };
 
   const onSubmit = async (data: CheckoutInput) => {
     setSubmitting(true);
@@ -191,67 +187,33 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
               </div>
 
               {/* Mobile Phone */}
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-semibold text-foreground uppercase tracking-wider">
-                  {tCheckout("mobileNumber")}
-                </label>
-                <input
-                  type="tel"
-                  placeholder="03001234567"
-                  dir="ltr"
+              <div className="sm:col-span-2">
+                <PhoneInput
+                  label={tCheckout("mobileNumber")}
                   {...register("shippingAddress.phone")}
-                  className="w-full text-xs rounded-xl border border-border bg-background p-3 text-foreground focus:ring-1 focus:ring-primary outline-none text-start"
+                  error={errors.shippingAddress?.phone?.message}
                 />
-                {errors.shippingAddress?.phone && (
-                  <p className="text-[11px] text-destructive">
-                    {errors.shippingAddress.phone.message}
-                  </p>
-                )}
               </div>
 
-              {/* Province */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-foreground uppercase tracking-wider">
-                  {tCheckout("provinceTerritory")}
-                </label>
-                <select
-                  {...register("shippingAddress.province", { onChange: handleProvinceChange })}
-                  className="w-full text-xs rounded-xl border border-border bg-background p-3 text-foreground focus:ring-1 focus:ring-primary outline-none"
-                >
-                  {PAKISTAN_PROVINCES.map((prov) => (
-                    <option key={prov} value={prov}>
-                      {prov}
-                    </option>
-                  ))}
-                </select>
-                {errors.shippingAddress?.province && (
-                  <p className="text-[11px] text-destructive">
-                    {errors.shippingAddress.province.message}
-                  </p>
-                )}
-              </div>
-
-              {/* City */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-foreground uppercase tracking-wider">
-                  {tCheckout("city")}
-                </label>
-                <select
-                  {...register("shippingAddress.city")}
-                  className="w-full text-xs rounded-xl border border-border bg-background p-3 text-foreground focus:ring-1 focus:ring-primary outline-none"
-                >
-                  {citiesForProvince.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-                {errors.shippingAddress?.city && (
-                  <p className="text-[11px] text-destructive">
-                    {errors.shippingAddress.city.message}
-                  </p>
-                )}
-              </div>
+              {/* Province & City */}
+              <ProvinceCitySelect
+                provinceValue={selectedProvince}
+                cityValue={watch("shippingAddress.city")}
+                onProvinceChange={(p: PakistanProvince) => {
+                  setValue("shippingAddress.province", p, { shouldValidate: true });
+                  setValue("shippingAddress.city", CITIES_BY_PROVINCE[p][0], {
+                    shouldValidate: true,
+                  });
+                }}
+                onCityChange={(c: string) =>
+                  setValue("shippingAddress.city", c, { shouldValidate: true })
+                }
+                provinceLabel={tCheckout("provinceTerritory")}
+                cityLabel={tCheckout("city")}
+                provinceError={errors.shippingAddress?.province?.message}
+                cityError={errors.shippingAddress?.city?.message}
+                className="sm:col-span-2"
+              />
 
               {/* Area / Town / Sector */}
               <div className="space-y-1.5 sm:col-span-2">
@@ -534,7 +496,10 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
               className="w-full h-12 rounded-xl bg-accent text-accent-foreground hover:bg-accent/90 font-bold text-base shadow-md transition-all"
             >
               {submitting ? (
-                <span>{tCheckout("validatingOrder")}</span>
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin me-2" />
+                  <span>{tCheckout("validatingOrder")}</span>
+                </>
               ) : (
                 <>
                   <span>{tCheckout("joinKaaravanAndOrder")}</span>

@@ -259,8 +259,9 @@ export function StoreHeader({ sellerPortalHref, user }: StoreHeaderProps) {
               {tNav("sell")}
             </Link>
             {user ? (
-              <DropdownMenu>
+              <DropdownMenu triggerId="store-user-menu-trigger">
                 <DropdownMenuTrigger
+                  id="store-user-menu-trigger"
                   className={`px-3 py-1.5 rounded-full transition-all text-xs font-semibold flex items-center gap-1.5 ${
                     isAccountActive
                       ? "bg-primary text-primary-foreground shadow-2xs"
@@ -270,7 +271,7 @@ export function StoreHeader({ sellerPortalHref, user }: StoreHeaderProps) {
                   <User className="w-3.5 h-3.5" />
                   <span>{user.fullName || tNav("account")}</span>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent id="store-user-menu-popup">
                   <DropdownMenuLabel>
                     <p className="text-sm font-semibold text-foreground truncate">
                       {user.fullName || tNav("account")}
@@ -330,8 +331,9 @@ export function StoreHeader({ sellerPortalHref, user }: StoreHeaderProps) {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <DropdownMenu>
+              <DropdownMenu triggerId="store-guest-menu-trigger">
                 <DropdownMenuTrigger
+                  id="store-guest-menu-trigger"
                   className={`px-3 py-1.5 rounded-full transition-all text-xs font-semibold flex items-center gap-1.5 ${
                     isAccountActive
                       ? "bg-primary text-primary-foreground shadow-2xs"
@@ -341,7 +343,7 @@ export function StoreHeader({ sellerPortalHref, user }: StoreHeaderProps) {
                   <User className="w-3.5 h-3.5" />
                   <span>{tNav("signIn")}</span>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48 p-1.5">
+                <DropdownMenuContent id="store-guest-menu-popup" align="end" className="w-48 p-1.5">
                   <DropdownMenuLinkItem render={<Link href="/login" />}>
                     <LogIn className="w-4 h-4" />
                     <span>{tNav("signIn")}</span>

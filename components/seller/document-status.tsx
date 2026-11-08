@@ -6,7 +6,8 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { uploadSellerDocumentAction } from "@/lib/actions/seller-documents";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { formatDate } from "@/lib/format/date";
 
 export interface SellerDocument {
   id: string;
@@ -18,6 +19,7 @@ export interface SellerDocument {
 
 export function DocumentStatusList({ documents }: { documents: SellerDocument[] }) {
   const t = useTranslations("seller.document_status");
+  const locale = useLocale();
   const router = useRouter();
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
 
@@ -69,7 +71,7 @@ export function DocumentStatusList({ documents }: { documents: SellerDocument[] 
                   {doc.status}
                 </Badge>
                 <span className="text-xs text-muted-foreground">
-                  {new Date(doc.created_at).toLocaleDateString()}
+                  <bdi dir="auto">{formatDate(doc.created_at, locale)}</bdi>
                 </span>
               </div>
             </div>

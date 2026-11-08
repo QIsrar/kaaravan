@@ -40,8 +40,8 @@ export default async function SellerDashboardPage() {
         <Card className="rounded-2xl border-destructive/50 bg-destructive/5">
           <CardContent className="p-6 flex flex-col items-center justify-center text-center">
             <AlertCircle className="w-12 h-12 text-destructive mb-4" />
-            <div className="text-lg font-bold text-destructive">Failed to load dashboard statistics</div>
-            <p className="text-sm text-destructive/80 mt-1">There was an error retrieving your data. Please try refreshing the page.</p>
+            <div className="text-lg font-bold text-destructive">{t("failedToLoadStats")}</div>
+            <p className="text-sm text-destructive/80 mt-1">{t("errorRetrievingData")}</p>
           </CardContent>
         </Card>
       </div>
@@ -66,52 +66,52 @@ export default async function SellerDashboardPage() {
         <Card className="rounded-2xl border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-semibold uppercase text-muted-foreground">
-              Pending Orders
+              {t("pendingOrders")}
             </CardTitle>
             <ShoppingBag className="w-4 h-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">{stats.pending_orders}</div>
-            <p className="text-xs text-muted-foreground mt-1">Require confirmation</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("pendingOrdersDesc")}</p>
           </CardContent>
         </Card>
 
         <Card className="rounded-2xl border-border border-destructive/50 bg-destructive/5">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-semibold uppercase text-muted-foreground text-destructive">
-              Low Stock Alerts
+              {t("lowStockAlerts")}
             </CardTitle>
             <Package className="w-4 h-4 text-destructive" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-destructive">{stats.low_stock}</div>
-            <p className="text-xs text-destructive/80 mt-1">Variants below threshold</p>
+            <p className="text-xs text-destructive/80 mt-1">{t("lowStockAlertsDesc")}</p>
           </CardContent>
         </Card>
 
         <Card className="rounded-2xl border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-semibold uppercase text-muted-foreground">
-              Available Balance
+              {t("availableBalance")}
             </CardTitle>
             <Banknote className="w-4 h-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">{formatPaisa(stats.available_balance)}</div>
-            <p className="text-xs text-muted-foreground mt-1">Ready for payout</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("availableBalanceDesc")}</p>
           </CardContent>
         </Card>
 
         <Card className="rounded-2xl border-border bg-secondary/10">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-semibold uppercase text-muted-foreground">
-              Held Balance
+              {t("heldBalance")}
             </CardTitle>
             <AlertCircle className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">{formatPaisa(stats.held_balance)}</div>
-            <p className="text-xs text-muted-foreground mt-1">Pending clearance</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("heldBalanceDesc")}</p>
           </CardContent>
         </Card>
       </div>
@@ -121,20 +121,20 @@ export default async function SellerDashboardPage() {
           <CardHeader>
             <CardTitle className="text-sm font-bold flex items-center gap-2">
               <Calendar className="w-4 h-4 text-muted-foreground" />
-              Sales Performance
+              {t("salesPerformance")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex justify-between items-center border-b pb-2">
-              <span className="text-sm text-muted-foreground">Today</span>
+              <span className="text-sm text-muted-foreground">{t("today")}</span>
               <span className="font-bold">{formatPaisa(stats.sales_today)}</span>
             </div>
             <div className="flex justify-between items-center border-b pb-2">
-              <span className="text-sm text-muted-foreground">Last 7 Days</span>
+              <span className="text-sm text-muted-foreground">{t("last7Days")}</span>
               <span className="font-bold">{formatPaisa(stats.sales_7d)}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Last 30 Days</span>
+              <span className="text-sm text-muted-foreground">{t("last30Days")}</span>
               <span className="font-bold">{formatPaisa(stats.sales_30d)}</span>
             </div>
           </CardContent>

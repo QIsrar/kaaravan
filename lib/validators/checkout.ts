@@ -1,61 +1,28 @@
 import { z } from "zod";
+import {
+  PAKISTAN_PROVINCES,
+  CITIES_BY_PROVINCE,
+  PAKISTAN_CITIES,
+  type PakistanProvince,
+  phoneSchema,
+  provinceSchema,
+  citySchema,
+  isCityInProvince,
+} from "@/lib/validators/pk";
 
-export const PAKISTAN_PROVINCES = [
-  "Punjab",
-  "Sindh",
-  "Khyber Pakhtunkhwa",
-  "Balochistan",
-  "Islamabad Capital Territory",
-  "Gilgit-Baltistan",
-  "Azad Jammu & Kashmir",
-] as const;
-
-export const CITIES_BY_PROVINCE: Record<(typeof PAKISTAN_PROVINCES)[number], readonly string[]> = {
-  Punjab: [
-    "Lahore",
-    "Faisalabad",
-    "Rawalpindi",
-    "Gujranwala",
-    "Multan",
-    "Bahawalpur",
-    "Sargodha",
-    "Sialkot",
-    "Sheikhupura",
-    "Jhang",
-    "Rahim Yar Khan",
-    "Gujrat",
-    "Kasur",
-    "Dera Ghazi Khan",
-    "Sahiwal",
-    "Okara",
-    "Chiniot",
-  ],
-  Sindh: ["Karachi", "Sukkur", "Larkana", "Nawabshah"],
-  "Khyber Pakhtunkhwa": ["Peshawar", "Mardan", "Abbottabad"],
-  Balochistan: ["Quetta"],
-  "Islamabad Capital Territory": ["Islamabad"],
-  "Gilgit-Baltistan": ["Gilgit", "Skardu"],
-  "Azad Jammu & Kashmir": ["Mirpur", "Muzaffarabad"],
-} as const;
-
-export const PAKISTAN_CITIES = Object.values(CITIES_BY_PROVINCE).flat();
+export { PAKISTAN_PROVINCES, CITIES_BY_PROVINCE, PAKISTAN_CITIES, type PakistanProvince };
 
 export const addressSchema = z
   .object({
     fullName: z.string().trim().min(2, "Full name must be at least 2 characters"),
-    phone: z
-      .string()
-      .trim()
-      .regex(/^(03\d{9}|\+923\d{9})$/, "Enter a valid Pakistani mobile number (e.g. 03001234567)"),
-    province: z.enum(PAKISTAN_PROVINCES, {
-      message: "Please select a valid province/territory",
-    }),
-    city: z.string().trim().min(2, "City is required"),
+    phone: phoneSchema,
+    province: provinceSchema,
+    city: citySchema,
     area: z.string().trim().min(2, "Town / Area / Sector is required"),
     street: z.string().trim().min(5, "Complete street address is required"),
     postalCode: z.string().trim().optional(),
   })
-  .refine((data) => (CITIES_BY_PROVINCE[data.province] as readonly string[]).includes(data.city), {
+  .refine((data) => isCityInProvince(data.province, data.city), {
     message: "Select a city that belongs to the chosen province/territory",
     path: ["city"],
   });
@@ -70,6 +37,5 @@ export const checkoutSchema = z.object({
   orderNotes: z.string().max(300).optional(),
 });
 
-export type PakistanProvince = (typeof PAKISTAN_PROVINCES)[number];
 export type AddressInput = z.infer<typeof addressSchema>;
 export type CheckoutInput = z.infer<typeof checkoutSchema>;

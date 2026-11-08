@@ -10,7 +10,7 @@ import { formatPaisa } from "@/lib/format/currency";
 import { formatDate } from "@/lib/format/date";
 import Link from "next/link";
 import { Search } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 export interface OrderListItem {
   id: string;
@@ -34,6 +34,7 @@ export function OrdersList({
 }) {
   const t = useTranslations("seller.orders_list");
   const tOrders = useTranslations("orders");
+  const locale = useLocale();
   const router = useRouter();
   const [searchValue, setSearchValue] = React.useState(search);
 
@@ -124,7 +125,9 @@ export function OrdersList({
               {initialOrders.map(order => (
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">{order.orderNumber}</TableCell>
-                  <TableCell>{formatDate(order.date)}</TableCell>
+                  <TableCell>
+                    <bdi dir="auto">{formatDate(order.date, locale)}</bdi>
+                  </TableCell>
                   <TableCell>
                     {order.customerName}
                     <div className="text-xs text-muted-foreground">{order.customerCity}</div>

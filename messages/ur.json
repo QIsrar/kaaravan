@@ -610,6 +610,20 @@
     "signOut": "لاگ آؤٹ",
     "dashboardTitle": "سیلر پورٹل ڈیش بورڈ",
     "dashboardSubtitle": "اپنی دکان کی مصنوعات، آرڈرز کے مراحل اور رقوم کی ادائیگی کی نگرانی کریں۔",
+    "pendingOrders": "زیر التواء آرڈرز",
+    "pendingOrdersDesc": "تصدیق درکار ہے",
+    "lowStockAlerts": "کم اسٹاک الرٹس",
+    "lowStockAlertsDesc": "حد سے کم ویریئنٹس",
+    "availableBalance": "دستیاب رقم",
+    "availableBalanceDesc": "ادائیگی کے لیے تیار",
+    "heldBalance": "روکی گئی رقم",
+    "heldBalanceDesc": "واپسی یا کلیئرنس کے منتظر",
+    "salesPerformance": "فروخت کی کارکردگی",
+    "today": "آج",
+    "last7Days": "پچھلے 7 دن",
+    "last30Days": "پچھلے 30 دن",
+    "failedToLoadStats": "ڈیش بورڈ کے اعداد و شمار لوڈ کرنے میں ناکامی",
+    "errorRetrievingData": "آپ کا ڈیٹا حاصل کرنے میں خرابی ہوئی۔ براہ کرم صفحہ ریفریش کریں۔",
     "openOrders": "جاری آرڈرز",
     "openOrdersDesc": "ابھی تک موصول نہیں ہوئے",
     "activeProducts": "فعال مصنوعات",
@@ -769,6 +783,8 @@
       "itemDescription": "آئٹم کی تفصیل"
     },
     "settings_form": {
+      "pageTitle": "دکان کی ترتیبات",
+      "pageSubtitle": "اپنے اسٹور فرنٹ اور کاروباری تفصیلات کا انتظام کریں۔",
       "shopProfile": "دکان کی پروفائل",
       "shopLogo": "دکان کا لوگو",
       "noLogo": "لوگو موجود نہیں",
@@ -811,6 +827,7 @@
       "rejectDocument": "دستاویز مسترد کریں"
     },
     "onboarding_wizard": {
+      "agreementError": "درخواست جمع کرانے کے لیے آپ کو کاروان سیلر معاہدہ قبول کرنا ہوگا۔",
       "stepBusiness": "کاروباری تفصیلات",
       "stepKyc": "کے وائی سی دستاویزات",
       "stepBank": "بینک اکاؤنٹ",
@@ -869,5 +886,19 @@
         "all": "تمام"
       }
     }
+  },
+  "pk_inputs": {
+    "phoneLabel": "فون نمبر",
+    "phonePlaceholder": "03001234567",
+    "phoneError": "03 سے شروع ہونے والا 11 ہندسوں کا درست نمبر درج کریں (مثلاً 03001234567)",
+    "cnicLabel": "شناختی کارڈ نمبر (CNIC)",
+    "cnicPlaceholder": "12345-1234567-1",
+    "cnicError": "13 ہندسوں کا درست قومی شناختی کارڈ درج کریں (مثلاً 12345-1234567-1)",
+    "ibanLabel": "پاکستانی آئی بین (IBAN)",
+    "ibanPlaceholder": "PK36HABB0000001234567890",
+    "ibanError": "درست 24 حروف کا پاکستانی آئی بین درج کریں جو PK سے شروع ہو",
+    "provinceLabel": "صوبہ / علاقہ",
+    "cityLabel": "شہر",
+    "cityError": "منتخب کردہ صوبے سے متعلقہ شہر منتخب کریں"
   }
 }

@@ -17,7 +17,8 @@ import {
   PAKISTAN_PROVINCES,
   CITIES_BY_PROVINCE,
   type PakistanProvince,
-} from "@/lib/validators/checkout";
+} from "@/lib/validators/pk";
+import { PhoneInput, ProvinceCitySelect } from "@/components/ui/pk-inputs";
 import {
   createAddressAction,
   updateAddressAction,
@@ -374,60 +375,25 @@ export function AddressesManager({ initialAddresses }: AddressesManagerProps) {
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="font-semibold text-foreground block">
-                  {t("phone")} *
-                </label>
-                <input
-                  type="tel"
-                  required
-                  dir="ltr"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="03001234567"
-                  className="w-full text-xs rounded-xl border border-border bg-background p-2.5 text-foreground focus:ring-1 focus:ring-primary outline-none text-start"
-                  disabled={isSubmitting}
-                />
-              </div>
+              <PhoneInput
+                label={`${t("phone")} *`}
+                required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                disabled={isSubmitting}
+              />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <label className="font-semibold text-foreground block">
-                  {t("province")} *
-                </label>
-                <select
-                  value={province}
-                  onChange={(e) => handleProvinceChange(e.target.value as PakistanProvince)}
-                  className="w-full text-xs rounded-xl border border-border bg-background p-2.5 text-foreground focus:ring-1 focus:ring-primary outline-none"
-                  disabled={isSubmitting}
-                >
-                  {PAKISTAN_PROVINCES.map((prov) => (
-                    <option key={prov} value={prov}>
-                      {prov}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="font-semibold text-foreground block">
-                  {t("city")} *
-                </label>
-                <select
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  className="w-full text-xs rounded-xl border border-border bg-background p-2.5 text-foreground focus:ring-1 focus:ring-primary outline-none"
-                  disabled={isSubmitting}
-                >
-                  {(CITIES_BY_PROVINCE[province] || []).map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            <ProvinceCitySelect
+              provinceValue={province}
+              cityValue={city}
+              onProvinceChange={handleProvinceChange}
+              onCityChange={(c) => setCity(c)}
+              provinceLabel={`${t("province")} *`}
+              cityLabel={`${t("city")} *`}
+              disabled={isSubmitting}
+              className="gap-3"
+            />
 
             <div className="space-y-1.5">
               <label className="font-semibold text-foreground block">

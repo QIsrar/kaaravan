@@ -6,11 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { PhoneInput, ProvinceCitySelect } from "@/components/ui/pk-inputs";
+import { type PakistanProvince } from "@/lib/validators/pk";
 import { updateSellerSettingsAction, uploadSellerLogoAction } from "@/lib/actions/seller-settings";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { getPublicImageUrl } from "@/lib/format/image-url";
 import { useTranslations } from "next-intl";
+import { Loader2 } from "lucide-react";
 
 export interface SellerSettingsData {
   description: string | null;
@@ -42,13 +45,13 @@ export function SettingsForm({ initialData }: { initialData: SellerSettingsData 
   const defaultAddress = initialData.seller_pickup_addresses?.[0] || {};
   const defaultBank = initialData.seller_bank_accounts?.[0] || {};
 
-  const { register, handleSubmit } = useForm({
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm({
     defaultValues: {
       description: initialData.description || "",
       fullName: defaultAddress.full_name || "",
       phone: defaultAddress.phone || "",
-      province: defaultAddress.province || "",
-      city: defaultAddress.city || "",
+      province: defaultAddress.province || "Punjab",
+      city: defaultAddress.city || "Lahore",
       area: defaultAddress.area || "",
       street: defaultAddress.street || "",
       postalCode: defaultAddress.postal_code || "",
@@ -191,20 +194,28 @@ export function SettingsForm({ initialData }: { initialData: SellerSettingsData 
                 <Input id="fullName" {...register("fullName")} />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="phone">{t("phone")}</Label>
-                <Input id="phone" {...register("phone")} />
+                <PhoneInput
+                  id="phone"
+                  label={t("phone")}
+                  {...register("phone")}
+                  error={errors.phone?.message as string | undefined}
+                />
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="province">{t("province")}</Label>
-                <Input id="province" {...register("province")} />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="city">{t("city")}</Label>
-                <Input id="city" {...register("city")} />
-              </div>
-            </div>
+
+            <ProvinceCitySelect
+              provinceValue={watch("province") || "Punjab"}
+              cityValue={watch("city") || "Lahore"}
+              onProvinceChange={(p: PakistanProvince) =>
+                setValue("province", p, { shouldValidate: true })
+              }
+              onCityChange={(c: string) => setValue("city", c, { shouldValidate: true })}
+              provinceLabel={t("province")}
+              cityLabel={t("city")}
+              provinceError={errors.province?.message as string | undefined}
+              cityError={errors.city?.message as string | undefined}
+            />
+
             <div className="grid gap-2">
               <Label htmlFor="area">{t("area")}</Label>
               <Input id="area" {...register("area")} />
@@ -221,7 +232,14 @@ export function SettingsForm({ initialData }: { initialData: SellerSettingsData 
 
           <div className="flex justify-end">
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? t("saving") : t("saveChanges")}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="me-2 h-4 w-4 animate-spin" />
+                  {t("saving")}
+                </>
+              ) : (
+                t("saveChanges")
+              )}
             </Button>
           </div>
         </form>

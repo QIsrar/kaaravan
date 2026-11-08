@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { changeSellerOrderStatusAction } from "@/lib/actions/seller-orders";
 import { useRouter } from "next/navigation";
 import { SubOrderStatus } from "@/lib/services/order-status";
-import { Printer } from "lucide-react";
+import { Printer, Loader2 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -94,16 +94,19 @@ export function OrderDetailsView({ order }: { order: OrderDetailsShape }) {
           
           {order.status === "pending" && (
             <Button onClick={() => handleStatusChange("confirmed")} disabled={isUpdating}>
+              {isUpdating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
               {t("confirmOrder")}
             </Button>
           )}
           {order.status === "confirmed" && (
             <Button onClick={() => handleStatusChange("packed")} disabled={isUpdating}>
+              {isUpdating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
               {t("markPacked")}
             </Button>
           )}
           {order.status === "packed" && (
             <Button onClick={() => handleStatusChange("ready_to_ship")} disabled={isUpdating}>
+              {isUpdating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
               {t("readyToShip")}
             </Button>
           )}
@@ -152,6 +155,7 @@ export function OrderDetailsView({ order }: { order: OrderDetailsShape }) {
                       handleStatusChange("cancelled", finalReason);
                     }}
                   >
+                    {isUpdating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                     {t("confirmCancel")}
                   </AlertDialogAction>
                 </AlertDialogFooter>

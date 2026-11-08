@@ -111,7 +111,7 @@ export default async function CustomerOrdersPage() {
                           <span>{tOrders("datePlaced")}</span>
                         </span>
                         <span className="font-medium text-foreground">
-                          {placedDate}
+                          <bdi dir="auto">{placedDate}</bdi>
                         </span>
                       </div>
                       <div className="hidden sm:block w-px h-6 bg-border" />

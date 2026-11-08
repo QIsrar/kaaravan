@@ -169,7 +169,20 @@
     font-family: var(--font-urdu), var(--font-heading), sans-serif;
   }
   [dir="rtl"] {
-    line-height: 1.7;
+    line-height: 1.9;
+  }
+  [dir="rtl"] .text-\[10px\],
+  [dir="rtl"] .text-\[11px\] {
+    font-size: 0.8125rem;
+    line-height: 1.85;
+  }
+  [dir="rtl"] .text-xs {
+    font-size: 0.875rem;
+    line-height: 1.85;
+  }
+  [dir="rtl"] .text-sm {
+    font-size: 0.9375rem;
+    line-height: 1.9;
   }
   button, [role="button"], a, input[type="submit"], input[type="button"], select {
     cursor: pointer;

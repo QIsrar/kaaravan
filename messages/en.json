@@ -610,6 +610,20 @@
     "signOut": "Sign out",
     "dashboardTitle": "Seller Portal Dashboard",
     "dashboardSubtitle": "Monitor your store catalog, customer journey orders, and settlements.",
+    "pendingOrders": "Pending Orders",
+    "pendingOrdersDesc": "Require confirmation",
+    "lowStockAlerts": "Low Stock Alerts",
+    "lowStockAlertsDesc": "Variants below threshold",
+    "availableBalance": "Available Balance",
+    "availableBalanceDesc": "Ready for payout",
+    "heldBalance": "Held Balance",
+    "heldBalanceDesc": "Pending clearance",
+    "salesPerformance": "Sales Performance",
+    "today": "Today",
+    "last7Days": "Last 7 Days",
+    "last30Days": "Last 30 Days",
+    "failedToLoadStats": "Failed to load dashboard statistics",
+    "errorRetrievingData": "There was an error retrieving your data. Please try refreshing the page.",
     "openOrders": "Open Orders",
     "openOrdersDesc": "Not yet delivered",
     "activeProducts": "Active Products",
@@ -769,6 +783,8 @@
       "itemDescription": "Item Description"
     },
     "settings_form": {
+      "pageTitle": "Shop Settings",
+      "pageSubtitle": "Manage your storefront and business details.",
       "shopProfile": "Shop Profile",
       "shopLogo": "Shop Logo",
       "noLogo": "No Logo",
@@ -811,6 +827,7 @@
       "rejectDocument": "Reject Document"
     },
     "onboarding_wizard": {
+      "agreementError": "You must accept the Kaaravan Seller Agreement to submit your application.",
       "stepBusiness": "Business Info",
       "stepKyc": "KYC & Documents",
       "stepBank": "Bank Details",
@@ -869,5 +886,19 @@
         "all": "All"
       }
     }
+  },
+  "pk_inputs": {
+    "phoneLabel": "Phone Number",
+    "phonePlaceholder": "03001234567",
+    "phoneError": "Enter an 11-digit Pakistani phone number starting with 03 (e.g. 03001234567)",
+    "cnicLabel": "CNIC Number",
+    "cnicPlaceholder": "12345-1234567-1",
+    "cnicError": "Enter a valid 13-digit CNIC (e.g. 12345-1234567-1)",
+    "ibanLabel": "Pakistani IBAN",
+    "ibanPlaceholder": "PK36HABB0000001234567890",
+    "ibanError": "Enter a valid 24-character Pakistani IBAN starting with PK",
+    "provinceLabel": "Province / Territory",
+    "cityLabel": "City",
+    "cityError": "Select a city that belongs to the chosen province/territory"
   }
 }

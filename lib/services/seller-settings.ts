@@ -6,6 +6,7 @@ Unauthorised copying, disclosure, modification, distribution or use is prohibite
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Database } from "@/lib/types/database";
+import { pkPickupAddressSchema } from "@/lib/validators/pk";
 
 export async function getSellerSettings(profileId: string) {
   const supabase = createAdminClient();
@@ -107,8 +108,13 @@ export async function updateSellerSettings(
     if (auditError) console.error("Audit log error:", auditError.message);
   }
 
+  // Validate pickup address if provided
+  const validatedAddress = updates.pickupAddress
+    ? pkPickupAddressSchema.parse(updates.pickupAddress)
+    : undefined;
+
   // Update default pickup address
-  if (updates.pickupAddress) {
+  if (validatedAddress) {
     const { data: oldAddress, error: addressFetchError } = await supabase
       .from("seller_pickup_addresses")
       .select("*")
@@ -123,7 +129,7 @@ export async function updateSellerSettings(
     if (oldAddress) {
       const { error } = await supabase
         .from("seller_pickup_addresses")
-        .update(updates.pickupAddress)
+        .update(validatedAddress)
         .eq("id", oldAddress.id);
 
       if (error) throw new Error("Failed to update pickup address");
@@ -134,7 +140,7 @@ export async function updateSellerSettings(
         entity: "seller_pickup_addresses",
         entity_id: oldAddress.id,
         before: oldAddress,
-        after: updates.pickupAddress,
+        after: validatedAddress,
         ip: ipAddress
       });
       if (auditError) console.error("Audit log error:", auditError.message);
@@ -144,7 +150,7 @@ export async function updateSellerSettings(
         .insert({
           seller_id: seller.id,
           is_default: true,
-          ...updates.pickupAddress
+          ...validatedAddress
         })
         .select()
         .single();
