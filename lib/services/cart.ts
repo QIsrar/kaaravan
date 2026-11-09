@@ -21,12 +21,15 @@ export interface CartItemDetail {
   productSlug: string;
   sku: string;
   attributes: Record<string, string | number>;
+  pricePkr: number;
+  compareAtPkr: number | null;
   priceMinor: number;
   compareAtMinor: number | null;
   image: string;
   quantity: number;
   stockAvailable: number;
   isAvailable: boolean;
+  subtotalPkr: number;
   subtotalMinor: number;
 }
 
@@ -35,6 +38,8 @@ export interface SellerCartGroup {
   sellerName: string;
   sellerSlug: string;
   items: CartItemDetail[];
+  subtotalPkr: number;
+  estimatedShippingPkr: number;
   subtotalMinor: number;
   estimatedShippingMinor: number;
 }
@@ -43,6 +48,9 @@ export interface CartDetails {
   cartId: string;
   sellerGroups: SellerCartGroup[];
   totalItems: number;
+  subtotalPkr: number;
+  shippingPkr: number;
+  grandTotalPkr: number;
   subtotalMinor: number;
   shippingMinor: number;
   grandTotalMinor: number;
@@ -61,8 +69,9 @@ export interface CartOperationResult {
   cartDetails?: CartDetails;
 }
 
-// Flat estimated shipping rate per seller (PKR 250 in paisa)
-export const DEFAULT_SHIPPING_PER_SELLER_MINOR = 25000;
+// Flat estimated shipping rate per seller (PKR 250)
+export const DEFAULT_SHIPPING_PER_SELLER_PKR = 250;
+export const DEFAULT_SHIPPING_PER_SELLER_MINOR = DEFAULT_SHIPPING_PER_SELLER_PKR;
 
 /**
  * Finds or creates a cart record for either an authenticated user or a guest.
@@ -189,8 +198,8 @@ interface CartVariantRow {
   id: string;
   sku: string;
   attributes: unknown;
-  price_minor: number | bigint;
-  compare_at_minor: number | bigint | null;
+  price_pkr: number | bigint;
+  compare_at_pkr: number | bigint | null;
   stock_quantity: number;
   reserved_quantity: number;
   is_active: boolean;
@@ -212,8 +221,8 @@ interface CartItemRow {
         id,
         sku,
         attributes,
-        price_minor,
-        compare_at_minor,
+        price_pkr,
+        compare_at_pkr,
         stock_quantity,
         reserved_quantity,
         is_active,
@@ -245,7 +254,7 @@ interface CartItemRow {
   const items = (rawItems as unknown as CartItemRow[]) || [];
   const sellerGroupMap = new Map<string, SellerCartGroup>();
   let totalItemsCount = 0;
-  let cartSubtotalMinor = 0;
+  let cartSubtotalPkr = 0;
   let hasUnavailableItems = false;
 
   for (const item of items) {
@@ -272,14 +281,14 @@ interface CartItemRow {
     );
     const imagePath = sortedImages[0]?.path || "/placeholder-product.svg";
 
-    const priceMinor = Number(v.price_minor);
-    const compareAtMinor = v.compare_at_minor ? Number(v.compare_at_minor) : null;
-    const itemSubtotal = priceMinor * item.quantity;
+    const pricePkr = Number(v.price_pkr);
+    const compareAtPkr = v.compare_at_pkr ? Number(v.compare_at_pkr) : null;
+    const itemSubtotal = pricePkr * item.quantity;
 
     // Exclude unavailable items from subtotal and item count
     if (isAvailable) {
       totalItemsCount += item.quantity;
-      cartSubtotalMinor += itemSubtotal;
+      cartSubtotalPkr += itemSubtotal;
     }
 
     const parsedAttributes =
@@ -295,12 +304,15 @@ interface CartItemRow {
       productSlug: p.slug,
       sku: v.sku,
       attributes: parsedAttributes,
-      priceMinor,
-      compareAtMinor,
+      pricePkr,
+      compareAtPkr,
+      priceMinor: pricePkr,
+      compareAtMinor: compareAtPkr,
       image: imagePath,
       quantity: item.quantity,
       stockAvailable: availableStock,
       isAvailable,
+      subtotalPkr: itemSubtotal,
       subtotalMinor: itemSubtotal,
     };
 
@@ -310,6 +322,8 @@ interface CartItemRow {
         sellerName: s.business_name,
         sellerSlug: s.slug,
         items: [],
+        subtotalPkr: 0,
+        estimatedShippingPkr: 0,
         subtotalMinor: 0,
         estimatedShippingMinor: 0,
       });
@@ -318,32 +332,38 @@ interface CartItemRow {
     const group = sellerGroupMap.get(s.id)!;
     group.items.push(itemDetail);
     if (isAvailable) {
+      group.subtotalPkr += itemSubtotal;
       group.subtotalMinor += itemSubtotal;
     }
   }
 
   // Calculate shipping only for seller groups that have at least one available item
   const sellerGroups = Array.from(sellerGroupMap.values());
-  let totalShippingMinor = 0;
+  let totalShippingPkr = 0;
   for (const group of sellerGroups) {
     const hasAvailableInGroup = group.items.some((i) => i.isAvailable);
     if (hasAvailableInGroup) {
-      group.estimatedShippingMinor = DEFAULT_SHIPPING_PER_SELLER_MINOR;
-      totalShippingMinor += DEFAULT_SHIPPING_PER_SELLER_MINOR;
+      group.estimatedShippingPkr = DEFAULT_SHIPPING_PER_SELLER_PKR;
+      group.estimatedShippingMinor = DEFAULT_SHIPPING_PER_SELLER_PKR;
+      totalShippingPkr += DEFAULT_SHIPPING_PER_SELLER_PKR;
     } else {
+      group.estimatedShippingPkr = 0;
       group.estimatedShippingMinor = 0;
     }
   }
 
-  const grandTotalMinor = cartSubtotalMinor + totalShippingMinor;
+  const grandTotalPkr = cartSubtotalPkr + totalShippingPkr;
 
   return {
     cartId,
     sellerGroups,
     totalItems: totalItemsCount,
-    subtotalMinor: cartSubtotalMinor,
-    shippingMinor: totalShippingMinor,
-    grandTotalMinor,
+    subtotalPkr: cartSubtotalPkr,
+    shippingPkr: totalShippingPkr,
+    grandTotalPkr,
+    subtotalMinor: cartSubtotalPkr,
+    shippingMinor: totalShippingPkr,
+    grandTotalMinor: grandTotalPkr,
     currency: "PKR",
     hasUnavailableItems,
   };
@@ -543,6 +563,14 @@ export async function mergeGuestCart(
   // 3. Ensure user cart exists
   const userCartId = await getOrCreateCart(supabase, { profileId });
 
+  // Drop seller's own products when merging guest cart (Phase 8 requirement)
+  const { data: userSeller } = await supabase
+    .from("sellers")
+    .select("id")
+    .eq("owner_profile_id", profileId)
+    .maybeSingle();
+  const userSellerId = userSeller?.id;
+
   let mergedCount = 0;
   let skippedCount = 0;
 
@@ -572,12 +600,26 @@ export async function mergeGuestCart(
       continue;
     }
 
-    interface VariantJoinedProduct {
-      status: string;
-      seller: { status: string } | null;
+    const rawProduct = variant.product;
+    if (!rawProduct || typeof rawProduct !== "object" || Array.isArray(rawProduct)) {
+      skippedCount++;
+      continue;
     }
-    const p = variant.product as unknown as VariantJoinedProduct | null;
-    if (!p || p.status !== "active" || !p.seller || p.seller.status !== "approved") {
+
+    const productStatus = "status" in rawProduct ? String(rawProduct.status) : "";
+    const rawSeller = "seller" in rawProduct && rawProduct.seller && typeof rawProduct.seller === "object" && !Array.isArray(rawProduct.seller)
+      ? rawProduct.seller
+      : null;
+    const sellerStatus = rawSeller && "status" in rawSeller ? String(rawSeller.status) : "";
+    const sellerId = rawSeller && "id" in rawSeller ? String(rawSeller.id) : "";
+
+    if (productStatus !== "active" || sellerStatus !== "approved") {
+      skippedCount++;
+      continue;
+    }
+
+    // Drop seller's own products
+    if (userSellerId && sellerId === userSellerId) {
       skippedCount++;
       continue;
     }

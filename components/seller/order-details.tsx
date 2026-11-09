@@ -18,9 +18,11 @@ interface OrderItem {
   id: string;
   product_title: string;
   variant_attributes: Record<string, string>;
-  unit_price_minor: number;
+  unit_price_pkr?: number;
+  unit_price_minor?: number;
   quantity: number;
-  line_total_minor: number;
+  line_total_pkr?: number;
+  line_total_minor?: number;
 }
 
 interface ShippingAddress {
@@ -38,9 +40,12 @@ export interface OrderDetailsShape {
   orderNumber: string;
   date: string;
   status: string;
-  subtotalMinor: number;
-  shippingMinor: number;
-  totalMinor: number;
+  subtotalPkr?: number;
+  shippingPkr?: number;
+  totalPkr?: number;
+  subtotalMinor?: number;
+  shippingMinor?: number;
+  totalMinor?: number;
   paymentMethod: string;
   paymentStatus: string;
   sellerBusinessName: string;
@@ -204,15 +209,15 @@ export function OrderDetailsView({ order }: { order: OrderDetailsShape }) {
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span>{t("subtotal")}</span>
-                <span>{formatPaisa(order.subtotalMinor)}</span>
+                <span>{formatPaisa(order.subtotalPkr ?? order.subtotalMinor)}</span>
               </div>
               <div className="flex justify-between">
                 <span>{t("shipping")}</span>
-                <span>{formatPaisa(order.shippingMinor)}</span>
+                <span>{formatPaisa(order.shippingPkr ?? order.shippingMinor)}</span>
               </div>
               <div className="flex justify-between font-bold text-lg pt-4 border-t mt-4">
                 <span>{t("total")}</span>
-                <span>{formatPaisa(order.totalMinor)}</span>
+                <span>{formatPaisa(order.totalPkr ?? order.totalMinor)}</span>
               </div>
             </div>
           </div>

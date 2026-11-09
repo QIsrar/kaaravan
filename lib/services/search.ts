@@ -49,8 +49,10 @@ interface SearchProductRow {
     id: string;
     sku: string;
     attributes: unknown;
-    price_minor: number | bigint;
-    compare_at_minor: number | bigint | null;
+    price_pkr: number | bigint;
+    compare_at_pkr: number | bigint | null;
+    price_minor?: number | bigint;
+    compare_at_minor?: number | bigint | null;
     is_active: boolean;
   }[] | null;
   images: { path: string; sort_order: number | null }[] | null;
@@ -104,8 +106,8 @@ const PRODUCT_HYDRATION_SELECT = `
     id,
     sku,
     attributes,
-    price_minor,
-    compare_at_minor,
+    price_pkr,
+    compare_at_pkr,
     is_active
   ),
   images:product_images (
@@ -120,11 +122,13 @@ function toProductResult(p: SearchProductRow): SearchProductResult | null {
 
   const variants = (p.variants || [])
     .filter((v) => v.is_active)
-    .sort((a, b) => Number(a.price_minor) - Number(b.price_minor));
+    .sort((a, b) => Number(a.price_pkr ?? a.price_minor) - Number(b.price_pkr ?? b.price_minor));
   if (variants.length === 0) return null;
   const primaryVariant = variants[0];
 
   const images = (p.images || []).sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+  const primaryPricePkr = Number(primaryVariant.price_pkr ?? primaryVariant.price_minor);
+  const primaryCompareAtPkr = primaryVariant.compare_at_pkr ? Number(primaryVariant.compare_at_pkr) : primaryVariant.compare_at_minor ? Number(primaryVariant.compare_at_minor) : null;
 
   return {
     id: p.id,
@@ -134,8 +138,8 @@ function toProductResult(p: SearchProductRow): SearchProductResult | null {
     sellerId: s.id,
     sellerName: s.business_name,
     sellerSlug: s.slug,
-    priceMinor: Number(primaryVariant.price_minor),
-    compareAtMinor: primaryVariant.compare_at_minor ? Number(primaryVariant.compare_at_minor) : null,
+    priceMinor: primaryPricePkr,
+    compareAtMinor: primaryCompareAtPkr,
     ratingAvg: Number(p.rating_avg) || 0,
     ratingCount: Number(p.rating_count) || 0,
     primaryVariantId: primaryVariant.id,
@@ -216,7 +220,7 @@ export async function searchProductSuggestions(
       id,
       title,
       slug,
-      variants:product_variants ( price_minor, is_active ),
+      variants:product_variants ( price_pkr, is_active ),
       images:product_images ( path, sort_order )
     `)
     .in("id", ids);
@@ -229,7 +233,7 @@ export async function searchProductSuggestions(
     id: string;
     title: string;
     slug: string;
-    variants: { price_minor: number | bigint; is_active: boolean }[] | null;
+    variants: { price_pkr: number | bigint; price_minor?: number | bigint; is_active: boolean }[] | null;
     images: { path: string; sort_order: number | null }[] | null;
   }
 
@@ -244,7 +248,7 @@ export async function searchProductSuggestions(
 
     const activeVariants = (row.variants || [])
       .filter((v) => v.is_active)
-      .sort((a, b) => Number(a.price_minor) - Number(b.price_minor));
+      .sort((a, b) => Number(a.price_pkr ?? a.price_minor) - Number(b.price_pkr ?? b.price_minor));
     if (activeVariants.length === 0) continue;
 
     const images = (row.images || []).sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
@@ -254,7 +258,7 @@ export async function searchProductSuggestions(
       title: row.title,
       slug: row.slug,
       image: images[0]?.path || "/placeholder-product.svg",
-      priceMinor: Number(activeVariants[0].price_minor),
+      priceMinor: Number(activeVariants[0].price_pkr ?? activeVariants[0].price_minor),
     });
   }
 

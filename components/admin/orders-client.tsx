@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { formatPaisa } from "@/lib/format/currency";
+import { formatPkr } from "@/lib/format/currency";
 import { forceSubOrderStatusAction } from "@/lib/actions/admin";
 import type { AdminSubOrderListItem } from "@/lib/services/admin-orders";
 import type { SubOrderStatus } from "@/lib/services/order-status";
@@ -88,7 +88,7 @@ export function OrdersClient({ initialSubOrders }: OrdersClientProps) {
       header: t("total"),
       cell: (row) => (
         <span className="font-mono text-xs font-semibold text-foreground">
-          {formatPaisa(row.total_minor)}
+          {formatPkr(row.total_pkr)}
         </span>
       ),
     },
@@ -228,7 +228,7 @@ export function OrdersClient({ initialSubOrders }: OrdersClientProps) {
                   Subtotal
                 </span>
                 <p className="font-mono text-sm font-bold text-foreground mt-0.5">
-                  {formatPaisa(selectedOrder.subtotal_minor)}
+                  {formatPkr(selectedOrder.subtotal_pkr)}
                 </p>
               </div>
               <div className="p-3 rounded-xl bg-muted/40 border border-border/60">
@@ -236,7 +236,7 @@ export function OrdersClient({ initialSubOrders }: OrdersClientProps) {
                   Shipping
                 </span>
                 <p className="font-mono text-sm font-bold text-foreground mt-0.5">
-                  {formatPaisa(selectedOrder.shipping_minor)}
+                  {formatPkr(selectedOrder.shipping_pkr)}
                 </p>
               </div>
               <div className="p-3 rounded-xl bg-muted/40 border border-border/60">
@@ -244,7 +244,7 @@ export function OrdersClient({ initialSubOrders }: OrdersClientProps) {
                   Total
                 </span>
                 <p className="font-mono text-sm font-bold text-primary mt-0.5">
-                  {formatPaisa(selectedOrder.total_minor)}
+                  {formatPkr(selectedOrder.total_pkr)}
                 </p>
               </div>
             </div>
@@ -263,11 +263,11 @@ export function OrdersClient({ initialSubOrders }: OrdersClientProps) {
                     <div>
                       <p className="font-medium text-foreground">{item.product_title}</p>
                       <p className="text-[11px] text-muted-foreground font-mono">
-                        Qty: {item.quantity} × {formatPaisa(item.unit_price_minor)}
+                        Qty: {item.quantity} × {formatPkr(item.unit_price_pkr)}
                       </p>
                     </div>
                     <span className="font-mono font-semibold text-foreground">
-                      {formatPaisa(item.line_total_minor)}
+                      {formatPkr(item.line_total_pkr)}
                     </span>
                   </div>
                 ))}

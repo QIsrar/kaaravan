@@ -33,6 +33,8 @@ import {
 import {
   approveBankChangeRequest,
   rejectBankChangeRequest,
+  approveBankTransferProof,
+  rejectBankTransferProof,
 } from "@/lib/services/admin-finance";
 import {
   approveProduct,
@@ -45,7 +47,31 @@ import {
   createAdminSynonym,
   deleteAdminSynonym,
 } from "@/lib/services/admin-catalog";
-import { adminForceSubOrderStatus } from "@/lib/services/admin-orders";
+import {
+  adminForceSubOrderStatus,
+  adminCancelFullOrder,
+} from "@/lib/services/admin-orders";
+import {
+  approveReturnAndRefund,
+  rejectReturn,
+  settleRefundDue,
+} from "@/lib/services/returns";
+import {
+  approveReturnSchema,
+  rejectReturnSchema,
+  settleRefundDueSchema,
+  approvePayoutSchema,
+  rejectPayoutSchema,
+  type ApproveReturnInput,
+  type RejectReturnInput,
+  type SettleRefundDueInput,
+  type ApprovePayoutInput,
+  type RejectPayoutInput,
+} from "@/lib/validators/admin";
+import {
+  approveAdminPayout,
+  rejectAdminPayout,
+} from "@/lib/services/payouts";
 import {
   suspendCustomerProfile,
   unsuspendCustomerProfile,
@@ -200,6 +226,63 @@ export async function rejectBankChangeAction(
     await rejectBankChangeRequest(validId, validReason, user.id, user.role, ip);
     revalidatePath("/admin/bank-requests");
     return { success: true };
+  } catch (err) {
+    formatError(err);
+  }
+}
+
+// ----------------------------------------------------------------------
+// Bank Transfer Payment Proof Actions
+// ----------------------------------------------------------------------
+
+export async function approveBankTransferProofAction(
+  proofId: string,
+  note?: string
+) {
+  try {
+    const validId = uuidSchema.parse(proofId);
+    const validNote = note ? z.string().trim().max(500).parse(note) : undefined;
+    const user = await requireAdminPermission("manage_finance");
+    const ip = await getClientIp();
+    const result = await approveBankTransferProof({
+      proofId: validId,
+      adminId: user.id,
+      adminRole: user.role,
+      ipAddress: ip,
+      note: validNote,
+    });
+    revalidatePath("/admin/bank-transfers");
+    revalidatePath("/admin/orders");
+    return { success: true, orderId: result.orderId, orderNumber: result.orderNumber };
+  } catch (err) {
+    formatError(err);
+  }
+}
+
+export async function rejectBankTransferProofAction(
+  proofId: string,
+  reason: string
+) {
+  try {
+    const validId = uuidSchema.parse(proofId);
+    const validReason = z
+      .string()
+      .trim()
+      .min(5, "Rejection reason must be at least 5 characters")
+      .max(500)
+      .parse(reason);
+    const user = await requireAdminPermission("manage_finance");
+    const ip = await getClientIp();
+    const result = await rejectBankTransferProof({
+      proofId: validId,
+      reason: validReason,
+      adminId: user.id,
+      adminRole: user.role,
+      ipAddress: ip,
+    });
+    revalidatePath("/admin/bank-transfers");
+    revalidatePath("/admin/orders");
+    return { success: true, orderId: result.orderId, orderNumber: result.orderNumber };
   } catch (err) {
     formatError(err);
   }
@@ -422,6 +505,29 @@ export async function forceSubOrderStatusAction(
   }
 }
 
+export async function adminCancelFullOrderAction(
+  orderId: string,
+  reason: string
+) {
+  try {
+    const validId = uuidSchema.parse(orderId);
+    const validReason = z.string().trim().min(5, "A reason of at least 5 characters is required").max(500).parse(reason);
+    const user = await requireAdminPermission("manage_orders");
+    const ip = await getClientIp();
+    const res = await adminCancelFullOrder(
+      validId,
+      validReason,
+      user.id,
+      user.role,
+      ip
+    );
+    revalidatePath("/admin/orders");
+    return res;
+  } catch (err) {
+    formatError(err);
+  }
+}
+
 // ----------------------------------------------------------------------
 // Customer Actions
 // ----------------------------------------------------------------------
@@ -622,6 +728,134 @@ export async function promoteStaffAction(targetEmail: string) {
     const ip = await getClientIp();
     const res = await promoteToAdminStaff(validEmail, user.id, user.role, ip);
     revalidatePath("/admin/staff");
+    return res;
+  } catch (err) {
+    formatError(err);
+  }
+}
+
+export async function approveReturnAction(
+  returnId: string,
+  input?: ApproveReturnInput
+) {
+  try {
+    const validId = uuidSchema.parse(returnId);
+    const validData = approveReturnSchema.parse(input ?? {});
+    const user = await requireAdminPermission("manage_orders");
+    if (user.role !== "superadmin" && user.role !== "admin_staff") {
+      throw new Error("Unauthorized");
+    }
+    const ip = await getClientIp();
+    const res = await approveReturnAndRefund({
+      returnId: validId,
+      actorId: user.id,
+      actorRole: user.role,
+      ipAddress: ip,
+      note: validData.note,
+      customerPayoutDetails: validData.customerPayoutDetails,
+    });
+    revalidatePath("/admin/orders");
+    return res;
+  } catch (err) {
+    formatError(err);
+  }
+}
+
+export async function rejectReturnAction(
+  returnId: string,
+  input: RejectReturnInput
+) {
+  try {
+    const validId = uuidSchema.parse(returnId);
+    const validData = rejectReturnSchema.parse(input);
+    const user = await requireAdminPermission("manage_orders");
+    if (user.role !== "superadmin" && user.role !== "admin_staff") {
+      throw new Error("Unauthorized");
+    }
+    const ip = await getClientIp();
+    const res = await rejectReturn({
+      returnId: validId,
+      actorId: user.id,
+      actorRole: user.role,
+      ipAddress: ip,
+      reason: validData.reason,
+    });
+    revalidatePath("/admin/orders");
+    return res;
+  } catch (err) {
+    formatError(err);
+  }
+}
+
+export async function settleRefundDueAction(input: SettleRefundDueInput) {
+  try {
+    const validData = settleRefundDueSchema.parse(input);
+    const user = await requireAdminPermission("manage_finance");
+    if (user.role !== "superadmin" && user.role !== "admin_staff") {
+      throw new Error("Unauthorized");
+    }
+    const ip = await getClientIp();
+    const res = await settleRefundDue({
+      paymentId: validData.paymentId,
+      bankReference: validData.bankReference,
+      actorId: user.id,
+      actorRole: user.role,
+      ipAddress: ip,
+      note: validData.note,
+    });
+    revalidatePath("/admin/orders");
+    return res;
+  } catch (err) {
+    formatError(err);
+  }
+}
+
+export async function approvePayoutAction(
+  payoutId: string,
+  input?: ApprovePayoutInput
+) {
+  try {
+    const validId = uuidSchema.parse(payoutId);
+    const validData = approvePayoutSchema.parse(input ?? {});
+    const user = await requireAdminPermission("manage_finance");
+    if (user.role !== "superadmin" && user.role !== "admin_staff") {
+      throw new Error("Unauthorized");
+    }
+    const ip = await getClientIp();
+    const res = await approveAdminPayout({
+      payoutId: validId,
+      adminId: user.id,
+      adminRole: user.role,
+      bankReference: validData.bankReference,
+      ipAddress: ip,
+    });
+    revalidatePath("/admin/bank-requests");
+    return res;
+  } catch (err) {
+    formatError(err);
+  }
+}
+
+export async function rejectPayoutAction(
+  payoutId: string,
+  input: RejectPayoutInput
+) {
+  try {
+    const validId = uuidSchema.parse(payoutId);
+    const validData = rejectPayoutSchema.parse(input);
+    const user = await requireAdminPermission("manage_finance");
+    if (user.role !== "superadmin" && user.role !== "admin_staff") {
+      throw new Error("Unauthorized");
+    }
+    const ip = await getClientIp();
+    const res = await rejectAdminPayout({
+      payoutId: validId,
+      adminId: user.id,
+      adminRole: user.role,
+      reason: validData.reason,
+      ipAddress: ip,
+    });
+    revalidatePath("/admin/bank-requests");
     return res;
   } catch (err) {
     formatError(err);

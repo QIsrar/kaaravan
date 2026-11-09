@@ -4,50 +4,50 @@
  */
 
 /**
- * Formats integer paisa (minor currency unit) into formatted Pakistani Rupee string.
- * Example: 350000 paisa -> "PKR 3,500"
+ * Formats integer whole Pakistani Rupees (PKR) into formatted string.
+ * Example: 3500 -> "PKR 3,500"
  */
-export function formatPaisa(amountMinor: number | bigint | null | undefined): string {
-  if (amountMinor === null || amountMinor === undefined) return "PKR 0";
-  const num = typeof amountMinor === "bigint" ? Number(amountMinor) : amountMinor;
-  const rupees = Math.round(num / 100);
-  return `PKR ${rupees.toLocaleString("en-PK")}`;
+export function formatPkr(amountPkr: number | bigint | null | undefined): string {
+  if (amountPkr === null || amountPkr === undefined) return "PKR 0";
+  const num = typeof amountPkr === "bigint" ? Number(amountPkr) : amountPkr;
+  return `PKR ${Math.round(num).toLocaleString("en-PK")}`;
 }
 
+// Backwards-compatible alias for formatPkr
+export const formatPaisa = formatPkr;
+
 /**
- * Calculates discount percentage from original compare-at and current price.
+ * Calculates discount percentage from original compare-at and current price in PKR.
  */
 export function calculateDiscountPercent(
-  priceMinor: number | bigint,
-  compareAtMinor: number | bigint | null | undefined
+  pricePkr: number | bigint,
+  compareAtPkr: number | bigint | null | undefined
 ): number | null {
-  if (!compareAtMinor) return null;
-  const p = Number(priceMinor);
-  const c = Number(compareAtMinor);
-  if (c <= p) return null;
+  if (!compareAtPkr) return null;
+  const p = Number(pricePkr);
+  const c = Number(compareAtPkr);
+  if (c <= p || c <= 0) return null;
   return Math.round(((c - p) / c) * 100);
 }
 
-export function parseRupeesToPaisa(amount: string): number {
+/**
+ * Parses a PKR string input into a whole PKR integer.
+ * Strictly accepts integer PKR strings.
+ */
+export function parseRupeesToPkr(amount: string): number {
   if (!amount || typeof amount !== "string") throw new Error("Invalid price format");
   const trimmed = amount.trim();
-  if (!/^\d+(\.\d{1,2})?$/.test(trimmed)) {
-    throw new Error("Invalid price format. Max 2 decimal places allowed.");
+  if (!/^\d+$/.test(trimmed)) {
+    throw new Error("Invalid price format. Whole PKR integers only.");
   }
-  const parts = trimmed.split(".");
-  const rupees = parseInt(parts[0], 10);
-  let paisa = 0;
-  if (parts.length > 1) {
-    let fractionalStr = parts[1];
-    if (fractionalStr.length === 1) fractionalStr += "0";
-    paisa = parseInt(fractionalStr, 10);
-  }
-  return rupees * 100 + paisa;
+  return parseInt(trimmed, 10);
 }
 
-export function formatPaisaToRupees(paisa: number): string {
-  const rupees = Math.floor(paisa / 100);
-  const fractional = paisa % 100;
-  if (fractional === 0) return rupees.toString();
-  return `${rupees}.${fractional.toString().padStart(2, "0")}`;
+// Deprecated alias for backwards compatibility
+export const parseRupeesToPaisa = parseRupeesToPkr;
+
+export function formatPkrToString(pkr: number): string {
+  return Math.round(pkr).toString();
 }
+
+export const formatPaisaToRupees = formatPkrToString;

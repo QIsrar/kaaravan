@@ -29,6 +29,7 @@ import {
 } from "@/lib/validators/checkout";
 import { PhoneInput, ProvinceCitySelect } from "@/components/ui/pk-inputs";
 import { submitCheckoutAction } from "@/lib/actions/checkout";
+import type { CreateOrderResult } from "@/lib/services/orders";
 import type { CartDetails } from "@/lib/services/cart";
 import { formatPaisa } from "@/lib/format/currency";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,7 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
   const tCheckout = useTranslations("checkout");
   const [submitting, setSubmitting] = useState(false);
   const [isNoticeDialogOpen, setIsNoticeDialogOpen] = useState(false);
+  const [placedOrder, setPlacedOrder] = useState<CreateOrderResult | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const {
@@ -78,11 +80,24 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
   const selectedPaymentMethod = watch("paymentMethod");
   const selectedProvince = watch("shippingAddress.province");
 
+  const [idempotencyKey] = useState(() => {
+    if (typeof window !== "undefined" && window.crypto?.randomUUID) {
+      return window.crypto.randomUUID();
+    }
+    return `chk_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+  });
+
   const onSubmit = async (data: CheckoutInput) => {
     setSubmitting(true);
     setErrorMsg(null);
     try {
-      await submitCheckoutAction(data);
+      const res = await submitCheckoutAction({
+        ...data,
+        idempotencyKey: data.idempotencyKey || idempotencyKey,
+      });
+      if (res.order) {
+        setPlacedOrder(res.order);
+      }
       setIsNoticeDialogOpen(true);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Checkout submission failed.";
@@ -125,23 +140,52 @@ export function CheckoutView({ cart }: CheckoutViewProps) {
               <CheckCircle2 className="w-6 h-6 stroke-[2.5]" />
             </div>
             <AlertDialogTitle className="text-center font-heading text-lg font-bold text-foreground">
-              {tCheckout("launchNoticeTitle")}
+              {placedOrder ? tCheckout("orderSuccessTitle") : tCheckout("launchNoticeTitle")}
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-xs text-muted-foreground leading-relaxed">
-              {tCheckout("launchNoticeDesc")}
-            </AlertDialogDescription>
+            {placedOrder ? (
+              <div className="text-center space-y-3 pt-1">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/20 text-primary font-mono text-sm font-semibold">
+                  <span>{tCheckout("orderNumberLabel")}:</span>
+                  <span>{placedOrder.orderNumber}</span>
+                </div>
+                <AlertDialogDescription className="text-center text-xs text-muted-foreground leading-relaxed">
+                  {tCheckout("orderSuccessDesc", { orderNumber: placedOrder.orderNumber })}
+                </AlertDialogDescription>
+              </div>
+            ) : (
+              <AlertDialogDescription className="text-center text-xs text-muted-foreground leading-relaxed">
+                {tCheckout("launchNoticeDesc")}
+              </AlertDialogDescription>
+            )}
           </AlertDialogHeader>
           <AlertDialogFooter className="flex flex-col sm:flex-row gap-2 pt-2">
-            <Link href="/" className="w-full sm:w-auto">
-              <Button className="w-full rounded-xl bg-primary text-primary-foreground text-xs font-semibold h-9 px-4">
-                {tCheckout("continueShopping")}
-              </Button>
-            </Link>
-            <Link href="/cart" className="w-full sm:w-auto">
-              <Button variant="outline" className="w-full rounded-xl text-xs font-semibold h-9 px-4">
-                {tCheckout("backToKart")}
-              </Button>
-            </Link>
+            {placedOrder ? (
+              <>
+                <Link href={`/track-order?orderNumber=${placedOrder.orderNumber}`} className="w-full sm:w-auto">
+                  <Button className="w-full rounded-xl bg-primary text-primary-foreground text-xs font-semibold h-9 px-4">
+                    {tCheckout("trackOrder")}
+                  </Button>
+                </Link>
+                <Link href="/" className="w-full sm:w-auto">
+                  <Button variant="outline" className="w-full rounded-xl text-xs font-semibold h-9 px-4">
+                    {tCheckout("continueShopping")}
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/" className="w-full sm:w-auto">
+                  <Button className="w-full rounded-xl bg-primary text-primary-foreground text-xs font-semibold h-9 px-4">
+                    {tCheckout("continueShopping")}
+                  </Button>
+                </Link>
+                <Link href="/cart" className="w-full sm:w-auto">
+                  <Button variant="outline" className="w-full rounded-xl text-xs font-semibold h-9 px-4">
+                    {tCheckout("backToKart")}
+                  </Button>
+                </Link>
+              </>
+            )}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

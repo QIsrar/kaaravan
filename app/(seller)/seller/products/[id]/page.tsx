@@ -14,7 +14,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
     .from("products")
     .select(`
       id, title, description, category_id, brand_id, status,
-      product_variants ( id, sku, price_minor, compare_at_minor, stock_quantity, reserved_quantity, low_stock_threshold, attributes, is_active ),
+      product_variants ( id, sku, price_pkr, compare_at_pkr, stock_quantity, reserved_quantity, low_stock_threshold, attributes, is_active ),
       product_images ( id, path, sort_order )
     `)
     .eq("id", productId)

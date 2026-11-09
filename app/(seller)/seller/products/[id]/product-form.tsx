@@ -107,8 +107,10 @@ export interface ProductInitialData {
   product_variants: {
     id: string;
     sku: string;
-    price_minor: number | bigint;
-    compare_at_minor: number | bigint | null;
+    price_pkr: number | bigint;
+    compare_at_pkr: number | bigint | null;
+    price_minor?: number | bigint;
+    compare_at_minor?: number | bigint | null;
     stock_quantity: number;
     reserved_quantity: number;
     low_stock_threshold: number;
@@ -158,8 +160,10 @@ export function ProductForm({
       ? product.product_variants.map((v) => ({
           id: v.id,
           sku: v.sku,
-          price_rupees: formatPaisaToRupees(Number(v.price_minor)),
-          compare_at_rupees: v.compare_at_minor
+          price_rupees: String(v.price_pkr ?? (v.price_minor ? formatPaisaToRupees(Number(v.price_minor)) : "")),
+          compare_at_rupees: v.compare_at_pkr
+            ? String(v.compare_at_pkr)
+            : v.compare_at_minor
             ? formatPaisaToRupees(Number(v.compare_at_minor))
             : "",
           stock_quantity: String(v.stock_quantity ?? 0),

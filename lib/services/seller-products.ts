@@ -94,7 +94,7 @@ export async function upsertSellerProduct(
       }
 
       const hasActiveVariantWithPrice = input.variants.some(
-        (v) => v.is_active && v.price_minor > 0
+        (v) => v.is_active && ((v as { price_pkr?: number }).price_pkr ?? v.price_minor) > 0
       );
       if (!hasActiveVariantWithPrice) {
         throw new Error("Product must have at least one active variant with a valid price before submitting for review");
@@ -187,12 +187,15 @@ export async function upsertSellerProduct(
         throw new Error(`Stock cannot be less than reserved quantity (${existingVar.reserved_quantity}) for SKU ${variant.sku}`);
       }
 
+      const pricePkr = (variant as { price_pkr?: number }).price_pkr ?? variant.price_minor;
+      const compareAtPkr = (variant as { compare_at_pkr?: number | null }).compare_at_pkr ?? variant.compare_at_minor;
+
       const { error: updErr2 } = await supabase
         .from("product_variants")
         .update({
           sku: variant.sku,
-          price_minor: variant.price_minor,
-          compare_at_minor: variant.compare_at_minor,
+          price_pkr: pricePkr,
+          compare_at_pkr: compareAtPkr,
           stock_quantity: variant.stock_quantity,
           low_stock_threshold: variant.low_stock_threshold,
           attributes: variant.attributes,
@@ -207,13 +210,16 @@ export async function upsertSellerProduct(
         throw updErr2;
       }
     } else {
+      const pricePkr = (variant as { price_pkr?: number }).price_pkr ?? variant.price_minor;
+      const compareAtPkr = (variant as { compare_at_pkr?: number | null }).compare_at_pkr ?? variant.compare_at_minor;
+
       const { error: insErr2 } = await supabase
         .from("product_variants")
         .insert({
           product_id: dbProductId,
           sku: variant.sku,
-          price_minor: variant.price_minor,
-          compare_at_minor: variant.compare_at_minor,
+          price_pkr: pricePkr,
+          compare_at_pkr: compareAtPkr,
           stock_quantity: variant.stock_quantity,
           low_stock_threshold: variant.low_stock_threshold,
           attributes: variant.attributes,

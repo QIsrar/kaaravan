@@ -43,23 +43,23 @@ This document outlines the REST API endpoints available under `/api/v1/` for mob
               "productSlug": "multani-handcrafted-blue-pottery-vase",
               "sku": "MK-VASE-10-COBALT",
               "attributes": { "color": "Cobalt Blue" },
-              "priceMinor": 345000,
-              "compareAtMinor": 420000,
+              "pricePkr": 3450,
+              "compareAtPkr": 4200,
               "image": "/placeholder-product.svg",
               "quantity": 2,
               "stockAvailable": 18,
               "isAvailable": true,
-              "subtotalMinor": 690000
+              "subtotalPkr": 6900
             }
           ],
-          "subtotalMinor": 690000,
-          "estimatedShippingMinor": 25000
+          "subtotalPkr": 6900,
+          "estimatedShippingPkr": 250
         }
       ],
       "totalItems": 2,
-      "subtotalMinor": 690000,
-      "shippingMinor": 25000,
-      "grandTotalMinor": 715000,
+      "subtotalPkr": 6900,
+      "shippingPkr": 250,
+      "grandTotalPkr": 7150,
       "currency": "PKR"
     }
   }
@@ -183,7 +183,7 @@ This document outlines the REST API endpoints available under `/api/v1/` for mob
           "title": "Peshawari Chappal - Traditional Leather Kaptaan Edition",
           "slug": "peshawari-chappal-traditional-leather-kaptaan-edition",
           "image": "/demo/prod-1.svg",
-          "priceMinor": 345000
+          "pricePkr": 3450
         }
       ]
     }
@@ -314,9 +314,9 @@ This document outlines the REST API endpoints available under `/api/v1/` for mob
       {
         "id": "uuid",
         "order_number": "ORD-DEMO-001",
-        "subtotal_minor": 690000,
-        "shipping_minor": 25000,
-        "total_minor": 715000,
+        "subtotal_pkr": 6900,
+        "shipping_pkr": 250,
+        "total_pkr": 7150,
         "currency": "PKR",
         "payment_method": "cod",
         "payment_status": "pending",
@@ -326,9 +326,9 @@ This document outlines the REST API endpoints available under `/api/v1/` for mob
             "id": "uuid",
             "seller_id": "uuid",
             "status": "pending",
-            "subtotal_minor": 690000,
-            "shipping_minor": 25000,
-            "total_minor": 715000,
+            "subtotal_pkr": 6900,
+            "shipping_pkr": 250,
+            "total_pkr": 7150,
             "sellers": {
               "business_name": "Multan Kashikari & Crafts",
               "logo": "/demo/seller-kashikari.svg"
@@ -339,8 +339,8 @@ This document outlines the REST API endpoints available under `/api/v1/` for mob
                 "variant_id": "uuid",
                 "product_title": "Chinioti Hand-Carved Sheesham Wood Serving Tray Set",
                 "quantity": 1,
-                "unit_price_minor": 690000,
-                "line_total_minor": 690000
+                "unit_price_pkr": 6900,
+                "line_total_pkr": 6900
               }
             ]
           }
@@ -402,7 +402,7 @@ This document outlines the REST API endpoints available under `/api/v1/` for mob
     "data": {
       "id": "uuid",
       "status": "pending",
-      "refund_minor": 690000,
+      "refund_pkr": 6900,
       "evidence_paths": ["returns/.../evidence.webp"]
     }
   }
@@ -710,6 +710,130 @@ This document outlines the REST API endpoints available under `/api/v1/` for mob
   ```
 - **Description:** Move order forward (e.g. pending -> confirmed -> packed -> ready_to_ship) or cancel before shipping.
 
+### 10. Seller Financial Summary
+- **Method:** `GET`
+- **Path:** `/api/v1/sellers/finances`
+- **Auth:** Required (`Authorization: Bearer <token>`, role `seller`)
+- **Description:** Returns real-time aggregated ledger balances (`balances = sums`), separating available funds from held funds pending return window clearance.
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "data": {
+      "sellerId": "0194eb38-0000-7000-8000-000000000001",
+      "businessName": "Lahore Crafts",
+      "currency": "PKR",
+      "availableBalancePkr": 850,
+      "heldBalancePkr": 250,
+      "totalBalancePkr": 1100,
+      "totalSalesPkr": 1200,
+      "totalCommissionPkr": 60,
+      "totalShippingPkr": 40,
+      "totalPayoutsPkr": 0,
+      "totalRefundsPkr": 0,
+      "returnWindowDays": 7
+    }
+  }
+  ```
+
+### 11. Seller Transaction Ledger
+- **Method:** `GET`
+- **Path:** `/api/v1/sellers/ledger`
+- **Auth:** Required (`Authorization: Bearer <token>`, role `seller`)
+- **Query Parameters:**
+  - `page`: Integer (default `1`)
+  - `limit`: Integer (default `20`, max `100`)
+  - `entryType`: String optional (`all`, `sale`, `commission`, `shipping_fee`, `payout`, `refund`, `adjustment`)
+- **Description:** Returns paginated, chronological entries from the immutable double-entry ledger with linked sub-orders, settlement maturity dates, and running balances.
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "data": {
+      "entries": [
+        {
+          "id": "0194eb38-0000-7000-8000-000000000002",
+          "subOrderId": "0194eb38-0000-7000-8000-000000000003",
+          "orderNumber": "KV-8X2M9P",
+          "entryType": "sale",
+          "amountPkr": 3500,
+          "balanceAfterPkr": 3500,
+          "availableAt": "2026-11-16T12:00:00.000Z",
+          "isAvailable": false,
+          "createdAt": "2026-11-09T12:00:00.000Z"
+        }
+      ],
+      "totalCount": 1,
+      "page": 1,
+      "limit": 20,
+      "totalPages": 1
+    }
+  }
+  ```
+
+### 12. Request Seller Payout
+- **Method:** `POST`
+- **Path:** `/api/v1/sellers/payouts`
+- **Auth:** Required (`Authorization: Bearer <token>`, role `seller`)
+- **Description:** Requests a payout from available matured funds (`available_at <= now()`), factoring out already queued pending payouts to prevent double-draws.
+- **Request Body:**
+  ```json
+  {
+    "amountPkr": 3500
+  }
+  ```
+- **Response:** `201 Created`
+  ```json
+  {
+    "success": true,
+    "data": {
+      "payoutId": "0194eb38-0000-7000-8000-000000000004",
+      "sellerId": "0194eb38-0000-7000-8000-000000000001",
+      "amountPkr": 3500,
+      "availableBalancePkr": 3500,
+      "remainingAvailablePkr": 0,
+      "status": "requested"
+    }
+  }
+  ```
+
+### 13. List Seller Payouts
+- **Method:** `GET`
+- **Path:** `/api/v1/sellers/payouts`
+- **Auth:** Required (`Authorization: Bearer <token>`, role `seller`)
+- **Query Parameters:**
+  - `page`: Integer (default `1`)
+  - `limit`: Integer (default `20`, max `100`)
+  - `status`: String optional (`all`, `requested`, `approved`, `paid`, `failed`)
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "data": {
+      "payouts": [
+        {
+          "id": "0194eb38-0000-7000-8000-000000000004",
+          "amountPkr": 3500,
+          "status": "requested",
+          "bankSnapshot": {
+            "bank_name": "Meezan Bank",
+            "account_title": "Official Crafts",
+            "iban": "PK36MEZN0001234567890123"
+          },
+          "requestedAt": "2026-11-09T12:00:00.000Z",
+          "processedAt": null,
+          "adminReference": null,
+          "failureReason": null
+        }
+      ],
+      "totalCount": 1,
+      "page": 1,
+      "limit": 20,
+      "totalPages": 1
+    }
+  }
+  ```
+
 ---
 
 ## Admin Operations (Phase 7 Part 1)
@@ -866,9 +990,164 @@ All endpoints under `/api/v1/admin/*` require administrative privileges (`supera
   ```
 - **Response:** `200 OK`
 
----
+#### List Return Requests
+- **Method:** `GET`
+- **Path:** `/api/v1/admin/returns`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_orders` or `superadmin`)
+- **Query Parameters:** `page`, `limit`, `status`
+- **Description:** Returns paginated return requests with signed evidence URLs (valid 5 min).
 
-### 5. Banners & Content (`manage_content`)
+#### Approve Return & Execute Refund
+- **Method:** `POST`
+- **Path:** `/api/v1/admin/returns/:id/approve`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_orders` or `manage_finance` or `superadmin`)
+- **Description:** Recalculates the exact refund amount from database unit prices and quantities (never trusting stored requested amount), appends reversing entries to the seller ledger (refund debit, commission reversal adjustment credit), restocks variant inventory, dispatches an online gateway refund or logs a COD/Bank Transfer refund-due payment record.
+- **Request Body:**
+  ```json
+  {
+    "note": "Item received in acceptable condition. Approved for refund.",
+    "customerPayoutDetails": {
+      "bankName": "Meezan Bank",
+      "accountTitle": "Tariq Ali",
+      "iban": "PK36MEZN0001234567890123"
+    }
+  }
+  ```
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "data": {
+      "success": true,
+      "returnId": "uuid",
+      "recalculatedRefundPkr": 4500,
+      "reversedCommissionPkr": 450,
+      "restockedQuantity": 1,
+      "refundType": "online_processed",
+      "returnStatus": "refunded",
+      "subOrderAllReturned": false
+    }
+  }
+  ```
+
+#### Reject Return Request
+- **Method:** `POST`
+- **Path:** `/api/v1/admin/returns/:id/reject`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_orders` or `superadmin`)
+- **Request Body:**
+  ```json
+  {
+    "reason": "Evidence shows customer-induced physical damage not covered under platform return policy."
+  }
+  ```
+- **Response:** `200 OK`
+
+#### Settle COD / Bank Transfer Refund-Due
+- **Method:** `POST`
+- **Path:** `/api/v1/admin/refunds/settle`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_finance` or `superadmin`)
+- **Description:** Confirms manual bank wire or wallet transfer to customer for COD / bank transfer returns, transitioning the payment record and return to `refunded`.
+- **Request Body:**
+  ```json
+  {
+    "paymentId": "uuid",
+    "bankReference": "FT26110912345678",
+    "note": "Transferred via 1Link IBFT"
+  }
+  ```
+- **Response:** `200 OK`
+
+#### List Seller Payout Requests
+- **Method:** `GET`
+- **Path:** `/api/v1/admin/payouts`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_finance` or `superadmin`)
+- **Query Parameters:**
+  - `page`: Integer (default `1`)
+  - `limit`: Integer (default `20`, max `100`)
+  - `status`: String optional (`all`, `requested`, `approved`, `paid`, `failed`)
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "data": {
+      "payouts": [
+        {
+          "id": "uuid",
+          "sellerId": "uuid",
+          "amountPkr": 3500,
+          "status": "requested",
+          "bankSnapshot": {
+            "bank_name": "Meezan Bank",
+            "account_title": "Official Crafts",
+            "iban": "PK36MEZN0001234567890123"
+          },
+          "seller": {
+            "id": "uuid",
+            "businessName": "Multan Kashikari",
+            "email": "vendor@kaaravan.pk"
+          },
+          "requestedAt": "2026-11-09T12:00:00.000Z",
+          "processedAt": null,
+          "adminReference": null,
+          "failureReason": null
+        }
+      ],
+      "totalCount": 1,
+      "page": 1,
+      "limit": 20,
+      "totalPages": 1
+    }
+  }
+  ```
+
+#### Approve Seller Payout
+- **Method:** `POST`
+- **Path:** `/api/v1/admin/payouts/:id/approve`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_finance` or `superadmin`)
+- **Description:** Approves payout under row locks (`FOR UPDATE` on `payouts` and `sellers`), verifies seller available balance, inserts negative debit entry (`entry_type = 'payout'`, `amount_pkr = -payout.amount_pkr`), transitions payout to `paid`, and writes audit log.
+- **Request Body:**
+  ```json
+  {
+    "adminReference": "FT26110998765432"
+  }
+  ```
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "data": {
+      "payoutId": "uuid",
+      "sellerId": "uuid",
+      "amountPkr": 3500,
+      "status": "paid",
+      "ledgerEntryId": "uuid",
+      "balanceAfterPkr": 0
+    }
+  }
+  ```
+
+#### Reject Seller Payout
+- **Method:** `POST`
+- **Path:** `/api/v1/admin/payouts/:id/reject`
+- **Auth:** Required (`Authorization: Bearer <token>`, permission `manage_finance` or `superadmin`)
+- **Description:** Rejects payout request under row locks without touching ledger, marks payout as `failed` with failure reason, and writes audit log.
+- **Request Body:**
+  ```json
+  {
+    "reason": "Bank IBAN title mismatch on 1Link verification."
+  }
+  ```
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "data": {
+      "payoutId": "uuid",
+      "status": "failed",
+      "failureReason": "Bank IBAN title mismatch on 1Link verification."
+    }
+  }
+  ```
 
 #### List Banners
 - **Method:** `GET`

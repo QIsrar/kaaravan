@@ -491,28 +491,37 @@ export type Database = {
           channel: string
           confirmed_at: string | null
           created_at: string
+          expires_at: string
           id: string
           order_id: string
           status: Database["public"]["Enums"]["cod_confirmation_status"]
+          token_hash: string | null
           updated_at: string
+          verified_phone: string | null
         }
         Insert: {
           channel: string
           confirmed_at?: string | null
           created_at?: string
+          expires_at?: string
           id?: string
           order_id: string
           status?: Database["public"]["Enums"]["cod_confirmation_status"]
+          token_hash?: string | null
           updated_at?: string
+          verified_phone?: string | null
         }
         Update: {
           channel?: string
           confirmed_at?: string | null
           created_at?: string
+          expires_at?: string
           id?: string
           order_id?: string
           status?: Database["public"]["Enums"]["cod_confirmation_status"]
+          token_hash?: string | null
           updated_at?: string
+          verified_phone?: string | null
         }
         Relationships: [
           {
@@ -526,21 +535,21 @@ export type Database = {
       }
       cod_remittance_items: {
         Row: {
-          amount_minor: number
+          amount_pkr: number
           created_at: string
           id: string
           remittance_id: string
           shipment_id: string
         }
         Insert: {
-          amount_minor: number
+          amount_pkr: number
           created_at?: string
           id?: string
           remittance_id: string
           shipment_id: string
         }
         Update: {
-          amount_minor?: number
+          amount_pkr?: number
           created_at?: string
           id?: string
           remittance_id?: string
@@ -565,7 +574,7 @@ export type Database = {
       }
       cod_remittances: {
         Row: {
-          amount_minor: number
+          amount_pkr: number
           courier_code: string
           created_at: string
           id: string
@@ -575,7 +584,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          amount_minor: number
+          amount_pkr: number
           courier_code: string
           created_at?: string
           id?: string
@@ -585,7 +594,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          amount_minor?: number
+          amount_pkr?: number
           courier_code?: string
           created_at?: string
           id?: string
@@ -606,24 +615,24 @@ export type Database = {
       }
       commissions: {
         Row: {
-          base_minor: number
-          commission_minor: number
+          base_pkr: number
+          commission_pkr: number
           created_at: string
           id: string
           rate_bps: number
           sub_order_id: string
         }
         Insert: {
-          base_minor: number
-          commission_minor: number
+          base_pkr: number
+          commission_pkr: number
           created_at?: string
           id?: string
           rate_bps: number
           sub_order_id: string
         }
         Update: {
-          base_minor?: number
-          commission_minor?: number
+          base_pkr?: number
+          commission_pkr?: number
           created_at?: string
           id?: string
           rate_bps?: number
@@ -643,7 +652,7 @@ export type Database = {
         Row: {
           coupon_id: string
           created_at: string
-          discount_minor: number
+          discount_pkr: number
           id: string
           order_id: string
           profile_id: string | null
@@ -651,7 +660,7 @@ export type Database = {
         Insert: {
           coupon_id: string
           created_at?: string
-          discount_minor: number
+          discount_pkr: number
           id?: string
           order_id: string
           profile_id?: string | null
@@ -659,7 +668,7 @@ export type Database = {
         Update: {
           coupon_id?: string
           created_at?: string
-          discount_minor?: number
+          discount_pkr?: number
           id?: string
           order_id?: string
           profile_id?: string | null
@@ -694,11 +703,11 @@ export type Database = {
           created_at: string
           discount_type: Database["public"]["Enums"]["coupon_discount_type"]
           ends_at: string | null
-          fixed_minor: number | null
+          fixed_pkr: number | null
           id: string
           is_active: boolean
-          max_discount_minor: number | null
-          min_order_minor: number | null
+          max_discount_pkr: number | null
+          min_order_pkr: number | null
           percent_bps: number | null
           starts_at: string
           updated_at: string
@@ -710,13 +719,13 @@ export type Database = {
           created_at?: string
           discount_type: Database["public"]["Enums"]["coupon_discount_type"]
           ends_at?: string | null
-          fixed_minor?: number | null
+          fixed_pkr?: number | null
           id?: string
           is_active?: boolean
-          max_discount_minor?: number | null
-          min_order_minor?: number | null
+          max_discount_pkr?: number | null
+          min_order_pkr?: number | null
           percent_bps?: number | null
-          starts_at: string
+          starts_at?: string
           updated_at?: string
           usage_limit?: number | null
           used_count?: number
@@ -726,11 +735,11 @@ export type Database = {
           created_at?: string
           discount_type?: Database["public"]["Enums"]["coupon_discount_type"]
           ends_at?: string | null
-          fixed_minor?: number | null
+          fixed_pkr?: number | null
           id?: string
           is_active?: boolean
-          max_discount_minor?: number | null
-          min_order_minor?: number | null
+          max_discount_pkr?: number | null
+          min_order_pkr?: number | null
           percent_bps?: number | null
           starts_at?: string
           updated_at?: string
@@ -891,11 +900,11 @@ export type Database = {
       offers: {
         Row: {
           buyer_id: string
-          counter_minor: number | null
+          counter_pkr: number | null
           created_at: string
           expires_at: string
           id: string
-          offered_minor: number
+          offered_pkr: number
           seller_id: string
           status: Database["public"]["Enums"]["offer_status"]
           updated_at: string
@@ -903,11 +912,11 @@ export type Database = {
         }
         Insert: {
           buyer_id: string
-          counter_minor?: number | null
+          counter_pkr?: number | null
           created_at?: string
           expires_at: string
           id?: string
-          offered_minor: number
+          offered_pkr: number
           seller_id: string
           status?: Database["public"]["Enums"]["offer_status"]
           updated_at?: string
@@ -915,11 +924,11 @@ export type Database = {
         }
         Update: {
           buyer_id?: string
-          counter_minor?: number | null
+          counter_pkr?: number | null
           created_at?: string
           expires_at?: string
           id?: string
-          offered_minor?: number
+          offered_pkr?: number
           seller_id?: string
           status?: Database["public"]["Enums"]["offer_status"]
           updated_at?: string
@@ -953,11 +962,11 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          line_total_minor: number
+          line_total_pkr: number
           product_title: string
           quantity: number
           sub_order_id: string
-          unit_price_minor: number
+          unit_price_pkr: number
           updated_at: string
           variant_attributes: Json
           variant_id: string | null
@@ -965,11 +974,11 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
-          line_total_minor: number
+          line_total_pkr: number
           product_title: string
           quantity: number
           sub_order_id: string
-          unit_price_minor: number
+          unit_price_pkr: number
           updated_at?: string
           variant_attributes: Json
           variant_id?: string | null
@@ -977,11 +986,11 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
-          line_total_minor?: number
+          line_total_pkr?: number
           product_title?: string
           quantity?: number
           sub_order_id?: string
-          unit_price_minor?: number
+          unit_price_pkr?: number
           updated_at?: string
           variant_attributes?: Json
           variant_id?: string | null
@@ -1054,19 +1063,20 @@ export type Database = {
           created_at: string
           currency: string
           deleted_at: string | null
-          discount_minor: number
+          discount_pkr: number
           guest_email: string | null
           guest_phone: string | null
           id: string
+          idempotency_key: string | null
           order_number: string
           payment_method: Database["public"]["Enums"]["payment_method"]
           payment_status: Database["public"]["Enums"]["payment_status"]
           placed_at: string
           profile_id: string | null
           shipping_address: Json
-          shipping_minor: number
-          subtotal_minor: number
-          total_minor: number
+          shipping_pkr: number
+          subtotal_pkr: number
+          total_pkr: number
           updated_at: string
         }
         Insert: {
@@ -1074,19 +1084,20 @@ export type Database = {
           created_at?: string
           currency?: string
           deleted_at?: string | null
-          discount_minor?: number
+          discount_pkr?: number
           guest_email?: string | null
           guest_phone?: string | null
           id?: string
+          idempotency_key?: string | null
           order_number: string
           payment_method: Database["public"]["Enums"]["payment_method"]
           payment_status?: Database["public"]["Enums"]["payment_status"]
           placed_at?: string
           profile_id?: string | null
           shipping_address: Json
-          shipping_minor: number
-          subtotal_minor: number
-          total_minor: number
+          shipping_pkr: number
+          subtotal_pkr: number
+          total_pkr: number
           updated_at?: string
         }
         Update: {
@@ -1094,19 +1105,20 @@ export type Database = {
           created_at?: string
           currency?: string
           deleted_at?: string | null
-          discount_minor?: number
+          discount_pkr?: number
           guest_email?: string | null
           guest_phone?: string | null
           id?: string
+          idempotency_key?: string | null
           order_number?: string
           payment_method?: Database["public"]["Enums"]["payment_method"]
           payment_status?: Database["public"]["Enums"]["payment_status"]
           placed_at?: string
           profile_id?: string | null
           shipping_address?: Json
-          shipping_minor?: number
-          subtotal_minor?: number
-          total_minor?: number
+          shipping_pkr?: number
+          subtotal_pkr?: number
+          total_pkr?: number
           updated_at?: string
         }
         Relationships: [
@@ -1121,7 +1133,7 @@ export type Database = {
       }
       payments: {
         Row: {
-          amount_minor: number
+          amount_pkr: number
           created_at: string
           gateway: string
           gateway_ref: string | null
@@ -1134,7 +1146,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          amount_minor: number
+          amount_pkr: number
           created_at?: string
           gateway: string
           gateway_ref?: string | null
@@ -1147,7 +1159,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          amount_minor?: number
+          amount_pkr?: number
           created_at?: string
           gateway?: string
           gateway_ref?: string | null
@@ -1171,7 +1183,7 @@ export type Database = {
       }
       payouts: {
         Row: {
-          amount_minor: number
+          amount_pkr: number
           approved_by: string | null
           bank_reference: string | null
           created_at: string
@@ -1182,7 +1194,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          amount_minor: number
+          amount_pkr: number
           approved_by?: string | null
           bank_reference?: string | null
           created_at?: string
@@ -1193,7 +1205,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          amount_minor?: number
+          amount_pkr?: number
           approved_by?: string | null
           bank_reference?: string | null
           created_at?: string
@@ -1222,23 +1234,23 @@ export type Database = {
       }
       price_history: {
         Row: {
-          compare_at_minor: number | null
+          compare_at_pkr: number | null
           id: string
-          price_minor: number
+          price_pkr: number
           recorded_at: string
           variant_id: string
         }
         Insert: {
-          compare_at_minor?: number | null
+          compare_at_pkr?: number | null
           id?: string
-          price_minor: number
+          price_pkr: number
           recorded_at?: string
           variant_id: string
         }
         Update: {
-          compare_at_minor?: number | null
+          compare_at_pkr?: number | null
           id?: string
-          price_minor?: number
+          price_pkr?: number
           recorded_at?: string
           variant_id?: string
         }
@@ -1300,16 +1312,16 @@ export type Database = {
       product_variants: {
         Row: {
           attributes: Json
-          compare_at_minor: number | null
+          compare_at_pkr: number | null
           created_at: string
           currency: string
           deleted_at: string | null
           id: string
           is_active: boolean
           low_stock_threshold: number
-          min_offer_minor: number | null
+          min_offer_pkr: number | null
           offers_enabled: boolean
-          price_minor: number
+          price_pkr: number
           product_id: string
           reserved_quantity: number
           sku: string
@@ -1319,16 +1331,16 @@ export type Database = {
         }
         Insert: {
           attributes?: Json
-          compare_at_minor?: number | null
+          compare_at_pkr?: number | null
           created_at?: string
           currency?: string
           deleted_at?: string | null
           id?: string
           is_active?: boolean
           low_stock_threshold?: number
-          min_offer_minor?: number | null
+          min_offer_pkr?: number | null
           offers_enabled?: boolean
-          price_minor: number
+          price_pkr: number
           product_id: string
           reserved_quantity?: number
           sku: string
@@ -1338,16 +1350,16 @@ export type Database = {
         }
         Update: {
           attributes?: Json
-          compare_at_minor?: number | null
+          compare_at_pkr?: number | null
           created_at?: string
           currency?: string
           deleted_at?: string | null
           id?: string
           is_active?: boolean
           low_stock_threshold?: number
-          min_offer_minor?: number | null
+          min_offer_pkr?: number | null
           offers_enabled?: boolean
-          price_minor?: number
+          price_pkr?: number
           product_id?: string
           reserved_quantity?: number
           sku?: string
@@ -1477,7 +1489,7 @@ export type Database = {
       qafila_deals: {
         Row: {
           created_at: string
-          deal_price_minor: number
+          deal_price_pkr: number
           ends_at: string
           id: string
           status: string
@@ -1487,7 +1499,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          deal_price_minor: number
+          deal_price_pkr: number
           ends_at: string
           id?: string
           status?: string
@@ -1497,7 +1509,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          deal_price_minor?: number
+          deal_price_pkr?: number
           ends_at?: string
           id?: string
           status?: string
@@ -1567,8 +1579,9 @@ export type Database = {
           evidence_paths: string[]
           id: string
           order_item_id: string
+          quantity: number
           reason: string
-          refund_minor: number
+          refund_pkr: number
           status: Database["public"]["Enums"]["return_status"]
           sub_order_id: string
           updated_at: string
@@ -1578,8 +1591,9 @@ export type Database = {
           evidence_paths?: string[]
           id?: string
           order_item_id: string
+          quantity?: number
           reason: string
-          refund_minor: number
+          refund_pkr: number
           status?: Database["public"]["Enums"]["return_status"]
           sub_order_id: string
           updated_at?: string
@@ -1589,8 +1603,9 @@ export type Database = {
           evidence_paths?: string[]
           id?: string
           order_item_id?: string
+          quantity?: number
           reason?: string
-          refund_minor?: number
+          refund_pkr?: number
           status?: Database["public"]["Enums"]["return_status"]
           sub_order_id?: string
           updated_at?: string
@@ -1880,31 +1895,34 @@ export type Database = {
       }
       seller_ledger: {
         Row: {
-          amount_minor: number
+          amount_pkr: number
           available_at: string
-          balance_after_minor: number
+          balance_after_pkr: number
           created_at: string
           entry_type: Database["public"]["Enums"]["ledger_entry_type"]
+          event_id: string | null
           id: string
           seller_id: string
           sub_order_id: string | null
         }
         Insert: {
-          amount_minor: number
+          amount_pkr: number
           available_at: string
-          balance_after_minor: number
+          balance_after_pkr: number
           created_at?: string
           entry_type: Database["public"]["Enums"]["ledger_entry_type"]
+          event_id?: string | null
           id?: string
           seller_id: string
           sub_order_id?: string | null
         }
         Update: {
-          amount_minor?: number
+          amount_pkr?: number
           available_at?: string
-          balance_after_minor?: number
+          balance_after_pkr?: number
           created_at?: string
           entry_type?: Database["public"]["Enums"]["ledger_entry_type"]
+          event_id?: string | null
           id?: string
           seller_id?: string
           sub_order_id?: string | null
@@ -2109,7 +2127,7 @@ export type Database = {
       shipments: {
         Row: {
           booked_at: string | null
-          cod_amount_minor: number
+          cod_amount_pkr: number
           courier_code: string
           created_at: string
           delivered_at: string | null
@@ -2122,7 +2140,7 @@ export type Database = {
         }
         Insert: {
           booked_at?: string | null
-          cod_amount_minor?: number
+          cod_amount_pkr?: number
           courier_code: string
           created_at?: string
           delivered_at?: string | null
@@ -2135,7 +2153,7 @@ export type Database = {
         }
         Update: {
           booked_at?: string | null
-          cod_amount_minor?: number
+          cod_amount_pkr?: number
           courier_code?: string
           created_at?: string
           delivered_at?: string | null
@@ -2170,10 +2188,10 @@ export type Database = {
           id: string
           order_id: string
           seller_id: string
-          shipping_minor: number
+          shipping_pkr: number
           status: Database["public"]["Enums"]["sub_order_status"]
-          subtotal_minor: number
-          total_minor: number
+          subtotal_pkr: number
+          total_pkr: number
           updated_at: string
         }
         Insert: {
@@ -2182,10 +2200,10 @@ export type Database = {
           id?: string
           order_id: string
           seller_id: string
-          shipping_minor: number
+          shipping_pkr: number
           status?: Database["public"]["Enums"]["sub_order_status"]
-          subtotal_minor: number
-          total_minor: number
+          subtotal_pkr: number
+          total_pkr: number
           updated_at?: string
         }
         Update: {
@@ -2194,10 +2212,10 @@ export type Database = {
           id?: string
           order_id?: string
           seller_id?: string
-          shipping_minor?: number
+          shipping_pkr?: number
           status?: Database["public"]["Enums"]["sub_order_status"]
-          subtotal_minor?: number
-          total_minor?: number
+          subtotal_pkr?: number
+          total_pkr?: number
           updated_at?: string
         }
         Relationships: [
@@ -2258,6 +2276,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_payout: {
+        Args: {
+          p_admin_id: string
+          p_bank_reference?: string
+          p_ip_address?: string
+          p_payout_id: string
+        }
+        Returns: Json
+      }
       approve_seller: {
         Args: { p_admin_id: string; p_ip_address: string; p_seller_id: string }
         Returns: undefined
@@ -2271,8 +2298,60 @@ export type Database = {
         }
         Returns: undefined
       }
+      confirm_order_payment: {
+        Args: {
+          p_actor_id?: string
+          p_amount_pkr: number
+          p_currency: string
+          p_gateway: string
+          p_gateway_ref?: string
+          p_idempotency_key?: string
+          p_order_id: string
+          p_raw_response?: Json
+        }
+        Returns: Json
+      }
+      create_order_transaction: {
+        Args: {
+          p_billing_address?: Json
+          p_discount_pkr?: number
+          p_guest_email?: string
+          p_guest_phone?: string
+          p_idempotency_key?: string
+          p_ip_address?: string
+          p_items?: Json
+          p_order_notes?: string
+          p_payment_method?: Database["public"]["Enums"]["payment_method"]
+          p_profile_id?: string
+          p_seller_shipping?: Json
+          p_shipping_address?: Json
+        }
+        Returns: Json
+      }
+      generate_order_number: { Args: never; Returns: string }
       get_seller_dashboard_stats: {
         Args: { p_seller_id: string }
+        Returns: Json
+      }
+      reject_payout: {
+        Args: {
+          p_admin_id: string
+          p_ip_address?: string
+          p_payout_id: string
+          p_reason: string
+        }
+        Returns: Json
+      }
+      release_order_stock: {
+        Args: { p_actor_id?: string; p_order_id: string; p_reason: string }
+        Returns: Json
+      }
+      request_payout: {
+        Args: {
+          p_amount_pkr: number
+          p_ip_address?: string
+          p_seller_id: string
+        }
         Returns: Json
       }
       search_products: {
@@ -2316,13 +2395,13 @@ export type Database = {
         Returns: {
           out_adjusted: boolean
           out_cart_id: string
-          out_cart_subtotal_minor: number
-          out_grand_total_minor: number
-          out_price_minor: number
+          out_cart_subtotal_pkr: number
+          out_grand_total_pkr: number
+          out_price_pkr: number
           out_quantity: number
-          out_shipping_minor: number
+          out_shipping_pkr: number
           out_stock_available: number
-          out_subtotal_minor: number
+          out_subtotal_pkr: number
           out_total_items: number
           out_variant_id: string
         }[]

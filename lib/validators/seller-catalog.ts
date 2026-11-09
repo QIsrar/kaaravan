@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { parseRupeesToPaisa } from "@/lib/format/currency";
+import { parseRupeesToPkr } from "@/lib/format/currency";
 
 export const uuidSchema = z
   .string()
@@ -22,21 +22,21 @@ export const productVariantSchema = z.object({
   id: uuidSchema.optional(), // For updates
   sku: z.string().min(2).max(50),
   price_rupees: z.string().refine(val => {
-    try { parseRupeesToPaisa(val); return true; } catch { return false; }
-  }, "Invalid price format"),
+    try { parseRupeesToPkr(val); return true; } catch { return false; }
+  }, "Invalid price format. Whole PKR integers only."),
   compare_at_rupees: z.string().optional().nullable().refine(val => {
     if (!val) return true;
-    try { parseRupeesToPaisa(val); return true; } catch { return false; }
-  }, "Invalid price format"),
+    try { parseRupeesToPkr(val); return true; } catch { return false; }
+  }, "Invalid price format. Whole PKR integers only."),
   stock_quantity: z.number().int().min(0),
   low_stock_threshold: z.number().int().min(0).default(5),
   attributes: z.record(z.string(), z.string()).default({}),
   is_active: z.boolean().default(true)
 }).transform(data => {
-  const price_minor = parseRupeesToPaisa(data.price_rupees);
-  const compare_at_minor = data.compare_at_rupees ? parseRupeesToPaisa(data.compare_at_rupees) : null;
-  return { ...data, price_minor, compare_at_minor };
-}).refine(data => !data.compare_at_minor || data.compare_at_minor > data.price_minor, {
+  const price_pkr = parseRupeesToPkr(data.price_rupees);
+  const compare_at_pkr = data.compare_at_rupees ? parseRupeesToPkr(data.compare_at_rupees) : null;
+  return { ...data, price_pkr, compare_at_pkr, price_minor: price_pkr, compare_at_minor: compare_at_pkr };
+}).refine(data => !data.compare_at_pkr || data.compare_at_pkr > data.price_pkr, {
   message: "Original price must be greater than price",
   path: ["compare_at_rupees"]
 });

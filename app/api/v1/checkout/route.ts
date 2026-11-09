@@ -1,3 +1,9 @@
+/*
+Copyright © 2026 One Tech and AI.
+Confidential and Proprietary. All Rights Reserved.
+Unauthorised copying, disclosure, modification, distribution or use is prohibited.
+*/
+
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCartIdentifier } from "@/lib/auth/cart-session";
@@ -30,8 +36,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const rawIp = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip");
+    const ipAddress = rawIp ? rawIp.split(",")[0].trim() : "127.0.0.1";
+
     const adminClient = createAdminClient();
-    const result = await submitCheckout(adminClient, identifier, validated);
+    const result = await submitCheckout(adminClient, identifier, validated, { ipAddress });
     return NextResponse.json(result);
   } catch (error: unknown) {
     return NextResponse.json(

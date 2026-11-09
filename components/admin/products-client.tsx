@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Image } from "@/components/ui/image";
-import { formatPaisa } from "@/lib/format/currency";
+import { formatPkr } from "@/lib/format/currency";
 import {
   approveProductAction,
   rejectProductAction,
@@ -88,14 +88,14 @@ export function ProductsClient({
     {
       header: "Price",
       cell: (row) => {
-        const prices = row.product_variants.map((v) => v.price_minor);
+        const prices = row.product_variants.map((v) => Number(v.price_pkr));
         const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
         const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
         return (
           <span className="font-mono text-xs font-semibold text-foreground">
             {minPrice === maxPrice
-              ? formatPaisa(minPrice)
-              : `${formatPaisa(minPrice)} - ${formatPaisa(maxPrice)}`}
+              ? formatPkr(minPrice)
+              : `${formatPkr(minPrice)} - ${formatPkr(maxPrice)}`}
           </span>
         );
       },
@@ -355,7 +355,7 @@ export function ProductsClient({
                       <tr key={v.id} className="hover:bg-muted/20">
                         <td className="py-2 px-3 font-mono">{v.sku}</td>
                         <td className="py-2 px-3 font-mono font-medium">
-                          {formatPaisa(v.price_minor)}
+                          {formatPkr(v.price_pkr)}
                         </td>
                         <td className="py-2 px-3 font-mono">{v.stock_quantity}</td>
                       </tr>

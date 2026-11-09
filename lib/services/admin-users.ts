@@ -100,7 +100,7 @@ export async function getAdminCustomerDetail(
   // Fetch customer orders using profile_id
   const { data: orders, error: ordersErr } = await adminClient
     .from("orders")
-    .select("id, order_number, total_minor, payment_method, payment_status, placed_at, shipping_address")
+    .select("id, order_number, total_pkr, payment_method, payment_status, placed_at, shipping_address")
     .eq("profile_id", customerId)
     .order("placed_at", { ascending: false });
 

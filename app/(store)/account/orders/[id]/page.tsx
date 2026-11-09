@@ -8,11 +8,12 @@ import { getCustomerOrderDetails } from "@/lib/services/customer_orders";
 import { JourneyTracker } from "@/components/store/journey-tracker";
 import { CancelSubOrderDialog } from "@/components/store/cancel-order-dialog";
 import { ReturnItemDialog } from "@/components/store/return-item-dialog";
+import { BankTransferProofUpload } from "@/components/store/bank-transfer-proof-upload";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Image } from "@/components/ui/image";
 import { getPublicImageUrl } from "@/lib/format/image-url";
-import { formatPaisa } from "@/lib/format/currency";
+import { formatPkr } from "@/lib/format/currency";
 import { formatDate } from "@/lib/format/date";
 import {
   Package,
@@ -116,6 +117,26 @@ export default async function CustomerOrderDetailPage({
   const subOrders = order.sub_orders || [];
   const overallStatus = getOverallOrderStatus(subOrders);
 
+  let bankProof: { id: string; status: string; filePath: string; createdAt: string } | null = null;
+  if (order.payment_method === "bank_transfer") {
+    const { data: proofData } = await supabase
+      .from("bank_transfer_proofs")
+      .select("id, status, file_path, created_at")
+      .eq("order_id", order.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (proofData) {
+      bankProof = {
+        id: proofData.id,
+        status: proofData.status,
+        filePath: proofData.file_path,
+        createdAt: proofData.created_at,
+      };
+    }
+  }
+
   return (
     <div className="space-y-8">
       {/* Top Header & Breadcrumb */}
@@ -151,10 +172,21 @@ export default async function CustomerOrderDetailPage({
             {tOrders("total")}
           </span>
           <span className="font-heading font-extrabold text-xl text-primary">
-            {formatPaisa(Number(order.total_minor))}
+            {formatPkr(Number(order.total_pkr))}
           </span>
         </div>
       </div>
+
+      {/* Bank Transfer Instructions & Slip Upload */}
+      {order.payment_method === "bank_transfer" && (
+        <BankTransferProofUpload
+          orderId={order.id}
+          orderNumber={order.order_number}
+          totalPkr={Number(order.total_pkr)}
+          totalMinor={Number(order.total_pkr)}
+          initialProof={bankProof}
+        />
+      )}
 
       {/* Artisan Merchant Packages (Sub-Orders) */}
       <div className="space-y-6">
@@ -214,7 +246,7 @@ export default async function CustomerOrderDetailPage({
                       <span className="text-[11px] text-muted-foreground">
                         {tOrders("itemsCount", { count: items.length })} &bull; {tOrders("packageTotal")}{" "}
                         <strong className="text-foreground font-mono">
-                          {formatPaisa(Number(sub.total_minor))}
+                          {formatPkr(Number(sub.total_pkr))}
                         </strong>
                       </span>
                     </div>
@@ -297,14 +329,14 @@ export default async function CustomerOrderDetailPage({
                                 </p>
                               )}
                               <span className="text-[11px] text-muted-foreground">
-                                {formatPaisa(Number(item.unit_price_minor))} &times; {item.quantity}
+                                {formatPkr(Number(item.unit_price_pkr))} &times; {item.quantity}
                               </span>
                             </div>
                           </div>
 
                           <div className="flex sm:flex-col items-center sm:items-end justify-between gap-2 shrink-0">
                             <span className="font-mono font-bold text-sm text-foreground">
-                              {formatPaisa(Number(item.line_total_minor))}
+                              {formatPkr(Number(item.line_total_pkr))}
                             </span>
 
                             {/* Return Request Button / Status (Delivered Only) */}
@@ -404,19 +436,19 @@ export default async function CustomerOrderDetailPage({
             <div className="flex justify-between py-1 border-b border-border/60">
               <span className="text-muted-foreground">{tOrders("subtotal")}:</span>
               <span className="font-mono text-foreground">
-                {formatPaisa(Number(order.subtotal_minor))}
+                {formatPkr(Number(order.subtotal_pkr))}
               </span>
             </div>
             <div className="flex justify-between py-1 border-b border-border/60">
               <span className="text-muted-foreground">{tOrders("shipping")}:</span>
               <span className="font-mono text-foreground">
-                {formatPaisa(Number(order.shipping_minor))}
+                {formatPkr(Number(order.shipping_pkr))}
               </span>
             </div>
             <div className="flex justify-between pt-2 text-sm font-bold">
               <span className="text-foreground">{tOrders("total")}:</span>
               <span className="font-mono text-primary text-base">
-                {formatPaisa(Number(order.total_minor))}
+                {formatPkr(Number(order.total_pkr))}
               </span>
             </div>
           </CardContent>

@@ -15,6 +15,7 @@ import {
   UserCheck,
   Settings,
   ShieldAlert,
+  Receipt,
 } from "lucide-react";
 import type { AdminPermission } from "@/lib/validators/admin";
 import { useTranslations } from "next-intl";
@@ -48,6 +49,12 @@ export function AdminSidebar({ permissions, isSuperadmin }: AdminSidebarProps) {
       labelKey: "bankRequests",
       href: "/admin/bank-requests",
       icon: CreditCard,
+      permission: "manage_finance",
+    },
+    {
+      labelKey: "bankTransfers",
+      href: "/admin/bank-transfers",
+      icon: Receipt,
       permission: "manage_finance",
     },
     {

@@ -42,8 +42,8 @@ export async function listModerationQueue(
       product_variants (
         id,
         sku,
-        price_minor,
-        compare_at_minor,
+        price_pkr,
+        compare_at_pkr,
         stock_quantity,
         is_active
       ),

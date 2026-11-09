@@ -9,7 +9,7 @@ import { PatternDivider } from "@/components/store/pattern-divider";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatPaisa } from "@/lib/format/currency";
+import { formatPkr } from "@/lib/format/currency";
 import {
   Package,
   ShoppingBag,
@@ -331,7 +331,7 @@ export default async function AccountOverviewPage() {
                           {tOrders("total")}
                         </span>
                         <span className="font-heading font-extrabold text-base text-foreground">
-                          {formatPaisa(Number(order.total_minor))}
+                          {formatPkr(Number(order.total_pkr))}
                         </span>
                       </div>
                       <Link href={`/account/orders/${order.id}`}>

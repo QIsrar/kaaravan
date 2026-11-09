@@ -35,6 +35,8 @@ export const checkoutSchema = z.object({
     message: "Select a valid payment method",
   }),
   orderNotes: z.string().max(300).optional(),
+  guestEmail: z.string().trim().email("Enter a valid email address").optional().or(z.literal("")),
+  idempotencyKey: z.string().trim().max(100).optional(),
 });
 
 export type AddressInput = z.infer<typeof addressSchema>;

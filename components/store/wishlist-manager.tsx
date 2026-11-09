@@ -20,7 +20,9 @@ import { formatPaisa } from "@/lib/format/currency";
 interface WishlistVariant {
   id: string;
   sku: string;
-  price_minor: number | string;
+  price_pkr?: number | string;
+  compare_at_pkr?: number | string | null;
+  price_minor?: number | string;
   compare_at_minor?: number | string | null;
   stock_quantity?: number | null;
   reserved_quantity?: number | null;
@@ -86,6 +88,9 @@ export function WishlistManager({ initialItems }: WishlistManagerProps) {
 
     const imagePath = variant.products.product_images?.[0]?.path || "/placeholder-product.svg";
 
+    const itemPricePkr = Number(variant.price_pkr ?? variant.price_minor ?? 0);
+    const itemCompareAtPkr = variant.compare_at_pkr ? Number(variant.compare_at_pkr) : variant.compare_at_minor ? Number(variant.compare_at_minor) : null;
+
     addToCart.mutate(
       {
         variantId: item.variant_id,
@@ -100,8 +105,8 @@ export function WishlistManager({ initialItems }: WishlistManagerProps) {
           productSlug: variant.products.slug,
           sku: variant.sku,
           image: imagePath,
-          priceMinor: Number(variant.price_minor),
-          compareAtMinor: variant.compare_at_minor ? Number(variant.compare_at_minor) : null,
+          priceMinor: itemPricePkr,
+          compareAtMinor: itemCompareAtPkr,
           quantity: 1,
           stockAvailable: availableStock,
         },
@@ -118,7 +123,7 @@ export function WishlistManager({ initialItems }: WishlistManagerProps) {
             title: variant.products?.title || "Craft Item",
             variantLabel: variant.sku || "Standard",
             quantity: 1,
-            priceMinor: Number(variant.price_minor),
+            priceMinor: itemPricePkr,
           });
         },
       }
@@ -222,12 +227,12 @@ export function WishlistManager({ initialItems }: WishlistManagerProps) {
                     <div className="flex items-center justify-between gap-2 pt-1">
                       <div>
                         <span className="font-heading font-extrabold text-base text-foreground">
-                          {formatPaisa(Number(variant.price_minor))}
+                          {formatPaisa(Number(variant.price_pkr ?? variant.price_minor))}
                         </span>
-                        {variant.compare_at_minor &&
-                          Number(variant.compare_at_minor) > Number(variant.price_minor) && (
+                        {(variant.compare_at_pkr ?? variant.compare_at_minor) &&
+                          Number(variant.compare_at_pkr ?? variant.compare_at_minor) > Number(variant.price_pkr ?? variant.price_minor) && (
                             <span className="text-xs text-muted-foreground line-through ms-2 font-mono">
-                              {formatPaisa(Number(variant.compare_at_minor))}
+                              {formatPaisa(Number(variant.compare_at_pkr ?? variant.compare_at_minor))}
                             </span>
                           )}
                       </div>

@@ -7,8 +7,10 @@ Unauthorised copying, disclosure, modification, distribution or use is prohibite
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export interface DashboardStats {
+  gmvPkr: number;
   gmvMinor: number;
   orderCount: number;
+  commissionPkr: number;
   commissionMinor: number;
   activeSellersCount: number;
   pendingApprovals: {
@@ -18,10 +20,12 @@ export interface DashboardStats {
   };
   codPending: {
     count: number;
+    amountPkr: number;
     amountMinor: number;
   };
   chartData: {
     date: string;
+    gmvPkr: number;
     gmvMinor: number;
     orderCount: number;
   }[];
@@ -46,7 +50,7 @@ export async function getAdminDashboardStats(
   // 1. Fetch sub-orders in the date range
   const { data: subOrders, error: subOrdersErr } = await adminClient
     .from("sub_orders")
-    .select("total_minor, subtotal_minor, created_at, status")
+    .select("total_pkr, subtotal_pkr, created_at, status")
     .gte("created_at", startDateIso);
 
   if (subOrdersErr) {
@@ -57,21 +61,21 @@ export async function getAdminDashboardStats(
     (o) => o.status !== "cancelled" && o.status !== "returned"
   );
 
-  const gmvMinor = validOrders.reduce((acc, curr) => acc + (curr.total_minor || 0), 0);
+  const gmvPkr = validOrders.reduce((acc, curr) => acc + (curr.total_pkr || 0), 0);
   const orderCount = validOrders.length;
 
   // 2. Fetch commissions in the date range
   const { data: commissions, error: commErr } = await adminClient
     .from("commissions")
-    .select("commission_minor")
+    .select("commission_pkr")
     .gte("created_at", startDateIso);
 
   if (commErr) {
     console.error("Failed to fetch commissions for dashboard:", commErr.message);
   }
 
-  const commissionMinor = (commissions || []).reduce(
-    (acc, curr) => acc + (curr.commission_minor || 0),
+  const commissionPkr = (commissions || []).reduce(
+    (acc, curr) => acc + (curr.commission_pkr || 0),
     0
   );
 
@@ -108,7 +112,7 @@ export async function getAdminDashboardStats(
   // 5. COD pending remittances (unreconciled remittances)
   const { data: pendingCod, error: codErr } = await adminClient
     .from("cod_remittances")
-    .select("amount_minor")
+    .select("amount_pkr")
     .is("reconciled_by", null);
 
   if (codErr) {
@@ -116,38 +120,42 @@ export async function getAdminDashboardStats(
   }
 
   const codPendingCount = (pendingCod || []).length;
-  const codPendingAmount = (pendingCod || []).reduce(
-    (acc, curr) => acc + (curr.amount_minor || 0),
+  const codPendingAmountPkr = (pendingCod || []).reduce(
+    (acc, curr) => acc + (curr.amount_pkr || 0),
     0
   );
 
   // 6. Build daily chart series over the date window
-  const dailyMap: Record<string, { gmvMinor: number; orderCount: number }> = {};
+  const dailyMap: Record<string, { gmvPkr: number; gmvMinor: number; orderCount: number }> = {};
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date();
     d.setDate(d.getDate() - i);
     const dateStr = d.toISOString().split("T")[0];
-    dailyMap[dateStr] = { gmvMinor: 0, orderCount: 0 };
+    dailyMap[dateStr] = { gmvPkr: 0, gmvMinor: 0, orderCount: 0 };
   }
 
   for (const o of validOrders) {
     const d = o.created_at.split("T")[0];
     if (dailyMap[d]) {
-      dailyMap[d].gmvMinor += o.total_minor || 0;
+      dailyMap[d].gmvPkr += o.total_pkr || 0;
+      dailyMap[d].gmvMinor += o.total_pkr || 0;
       dailyMap[d].orderCount += 1;
     }
   }
 
   const chartData = Object.entries(dailyMap).map(([date, val]) => ({
     date,
+    gmvPkr: val.gmvPkr,
     gmvMinor: val.gmvMinor,
     orderCount: val.orderCount,
   }));
 
   return {
-    gmvMinor,
+    gmvPkr,
+    gmvMinor: gmvPkr,
     orderCount,
-    commissionMinor,
+    commissionPkr,
+    commissionMinor: commissionPkr,
     activeSellersCount: activeSellersCount ?? 0,
     pendingApprovals: {
       sellers: pendingSellers ?? 0,
@@ -156,7 +164,8 @@ export async function getAdminDashboardStats(
     },
     codPending: {
       count: codPendingCount,
-      amountMinor: codPendingAmount,
+      amountPkr: codPendingAmountPkr,
+      amountMinor: codPendingAmountPkr,
     },
     chartData,
   };

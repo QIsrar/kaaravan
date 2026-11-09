@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(63);
+SELECT plan(71);
 
 CREATE OR REPLACE FUNCTION tests_set_auth(user_id uuid, role text DEFAULT 'authenticated') RETURNS void AS $$
 BEGIN
@@ -597,7 +597,7 @@ SELECT is(
 RESET ROLE;
 SELECT tests_set_auth('77777777-7777-7777-7777-777777777777', 'authenticated');
 SELECT is(
-  (SELECT count(*) FROM public.seller_bank_change_requests),
+  (SELECT count(*) FROM public.seller_bank_change_requests WHERE id = 'a1a1a1a1-1111-1111-1111-111111111111'),
   1::bigint,
   'Superadmin can read all bank change requests'
 );
@@ -606,7 +606,7 @@ SELECT is(
 RESET ROLE;
 SELECT tests_set_auth('55555555-5555-5555-5555-555555555555', 'authenticated');
 SELECT is(
-  (SELECT count(*) FROM public.seller_bank_change_requests),
+  (SELECT count(*) FROM public.seller_bank_change_requests WHERE id = 'a1a1a1a1-1111-1111-1111-111111111111'),
   1::bigint,
   'Admin with manage_finance can read all bank change requests'
 );
@@ -615,17 +615,17 @@ SELECT is(
 RESET ROLE;
 SELECT tests_set_auth('66666666-6666-6666-6666-666666666666', 'authenticated');
 SELECT is(
-  (SELECT count(*) FROM public.seller_bank_change_requests),
+  (SELECT count(*) FROM public.seller_bank_change_requests WHERE id = 'a1a1a1a1-1111-1111-1111-111111111111'),
   0::bigint,
   'Admin without manage_finance cannot read bank change requests'
 );
 
--- 54. Admin with manage_sellers can call approve_seller function
+-- 54. service_role can call approve_seller function
 RESET ROLE;
-SELECT tests_set_auth('55555555-5555-5555-5555-555555555555', 'authenticated');
+SET local role service_role;
 SELECT lives_ok(
   $$ SELECT public.approve_seller('88888888-aaaa-aaaa-aaaa-888888888888', '55555555-5555-5555-5555-555555555555', '127.0.0.1') $$,
-  'Admin with manage_sellers can call approve_seller'
+  'service_role can call approve_seller'
 );
 
 -- 55. approve_seller sets seller status to approved
@@ -636,30 +636,28 @@ SELECT is(
 );
 
 -- 56. approve_seller sets profile role to seller
-RESET ROLE;
-SELECT tests_set_auth('88888888-8888-8888-8888-888888888888', 'authenticated');
 SELECT is(
   (SELECT role::text FROM public.profiles WHERE id = '88888888-8888-8888-8888-888888888888'),
   'seller',
   'approve_seller sets profile role to seller'
 );
 
--- 57. Customer cannot call approve_seller
+-- 57. Authenticated user cannot execute approve_seller directly
 RESET ROLE;
 SELECT tests_set_auth('33333333-3333-3333-3333-333333333333', 'authenticated');
 SELECT throws_ok(
-  $$ SELECT public.approve_seller('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '33333333-3333-3333-3333-333333333333', '127.0.0.1') $$,
-  'P0001',
-  'Access denied',
-  'Customer cannot call approve_seller'
+  $$ SELECT public.approve_seller('88888888-aaaa-aaaa-aaaa-888888888888', '33333333-3333-3333-3333-333333333333', '127.0.0.1') $$,
+  '42501',
+  NULL,
+  'Authenticated user cannot call approve_seller directly'
 );
 
--- 58. Admin with manage_finance can call approve_seller_bank_change_request
+-- 58. service_role can call approve_seller_bank_change_request
 RESET ROLE;
-SELECT tests_set_auth('55555555-5555-5555-5555-555555555555', 'authenticated');
+SET local role service_role;
 SELECT lives_ok(
   $$ SELECT public.approve_seller_bank_change_request('a1a1a1a1-1111-1111-1111-111111111111', '55555555-5555-5555-5555-555555555555', '127.0.0.1', 'Approved test note') $$,
-  'Admin with manage_finance can call approve_seller_bank_change_request'
+  'service_role can call approve_seller_bank_change_request'
 );
 
 -- 59. approve_seller_bank_change_request marks request as approved
@@ -684,6 +682,68 @@ SELECT has_column('public', 'banners', 'title_ur', 'banners has title_ur column'
 
 -- 63. Sellers table has status_reason column
 SELECT has_column('public', 'sellers', 'status_reason', 'sellers has status_reason column');
+
+-- 64. Money columns on orders cannot be updated after creation
+RESET ROLE;
+SET local role postgres;
+SELECT throws_ok(
+  $$ UPDATE public.orders SET subtotal_minor = 9999 WHERE id = 'ffffffff-ffff-ffff-ffff-ffffffffffff' $$,
+  'P0001',
+  'Financial fields on orders (subtotal, shipping, discount, total, currency) are immutable after creation.',
+  'Updating orders subtotal_minor throws exception'
+);
+
+-- 65. Money columns on sub_orders cannot be updated after creation
+SELECT throws_ok(
+  $$ UPDATE public.sub_orders SET total_minor = 9999 WHERE id = '20000000-0000-0000-0000-000000000000' $$,
+  'P0001',
+  'Financial fields on sub_orders (subtotal, shipping, total) are immutable after creation.',
+  'Updating sub_orders total_minor throws exception'
+);
+
+-- 66. Payment amount cannot be updated after creation
+INSERT INTO public.payments (id, order_id, gateway, method, amount_minor, status)
+VALUES ('e0000000-0000-0000-0000-000000000000', 'ffffffff-ffff-ffff-ffff-ffffffffffff', 'mock', 'cod', 100, 'pending');
+
+SELECT throws_ok(
+  $$ UPDATE public.payments SET amount_minor = 500 WHERE id = 'e0000000-0000-0000-0000-000000000000' $$,
+  'P0001',
+  'Payment amount, order_id, gateway and method are immutable after creation.',
+  'Updating payments amount_minor throws exception'
+);
+
+-- 67. Payment status update is allowed and logged to audit_logs
+SELECT lives_ok(
+  $$ UPDATE public.payments SET status = 'paid' WHERE id = 'e0000000-0000-0000-0000-000000000000' $$,
+  'Updating payments status is permitted'
+);
+
+SELECT is(
+  (SELECT count(*) FROM public.audit_logs WHERE entity = 'payments' AND entity_id = 'e0000000-0000-0000-0000-000000000000'),
+  1::bigint,
+  'Payment status change created an audit_log row'
+);
+
+-- 68. Payouts amount cannot be updated after creation
+INSERT INTO public.payouts (id, seller_id, amount_minor, status)
+VALUES ('d0000000-0000-0000-0000-000000000000', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 1000, 'requested');
+
+SELECT throws_ok(
+  $$ UPDATE public.payouts SET amount_minor = 5000 WHERE id = 'd0000000-0000-0000-0000-000000000000' $$,
+  'P0001',
+  'Payout amount and seller_id are immutable after creation.',
+  'Updating payouts amount_minor throws exception'
+);
+
+-- 69. Order number generator returns non-sequential KV-XXXXXX string
+SELECT matches(
+  public.generate_order_number(),
+  '^KV-[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$',
+  'generate_order_number returns valid KV-XXXXXX format'
+);
+
+-- 70. Orders table has idempotency_key column
+SELECT has_column('public', 'orders', 'idempotency_key', 'orders has idempotency_key column');
 
 SELECT * FROM finish();
 ROLLBACK;

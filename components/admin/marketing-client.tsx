@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Image } from "@/components/ui/image";
-import { formatPaisa } from "@/lib/format/currency";
+import { formatPkr } from "@/lib/format/currency";
 import {
   createCouponAction,
   toggleCouponActiveAction,
@@ -69,7 +69,7 @@ export function MarketingClient({
         }
         return (
           <span className="font-mono text-xs">
-            {formatPaisa(row.fixed_minor || 0)} OFF
+            {formatPkr(row.fixed_pkr || 0)} OFF
           </span>
         );
       },
@@ -78,7 +78,7 @@ export function MarketingClient({
       header: "Min Order",
       cell: (row) => (
         <span className="font-mono text-xs text-muted-foreground">
-          {row.min_order_minor ? formatPaisa(row.min_order_minor) : "No minimum"}
+          {row.min_order_pkr ? formatPkr(row.min_order_pkr) : "No minimum"}
         </span>
       ),
     },
@@ -375,9 +375,9 @@ export function MarketingClient({
                         code: couponCode.trim(),
                         discount_type: discountType,
                         percent_bps: discountType === "percent" ? val : null,
-                        fixed_minor: discountType === "fixed" ? val : null,
-                        min_order_minor: min ?? null,
-                        max_discount_minor: null,
+                        fixed_pkr: discountType === "fixed" ? val : null,
+                        min_order_pkr: min ?? null,
+                        max_discount_pkr: null,
                         starts_at: new Date().toISOString(),
                         ends_at: null,
                         usage_limit: limit,

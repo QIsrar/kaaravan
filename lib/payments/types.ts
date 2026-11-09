@@ -1,87 +1,129 @@
+/*
+Copyright © 2026 One Tech and AI.
+Confidential and Proprietary. All Rights Reserved.
+Unauthorised copying, disclosure, modification, distribution or use is prohibited.
+*/
+
 /**
- * Payment Gateway Adapter Types
+ * Payment Gateway Adapter Types (Phase 8 Remediation)
  *
- * NON-NEGOTIABLE RULE:
- * Money is stored and handled strictly as integer minor units (paisa in bigint/integer).
- * Never use float for money.
- * Payment gateways are accessed ONLY through this adapter interface.
+ * NON-NEGOTIABLE RULES:
+ * 1. Money is stored and handled strictly as whole Pakistani Rupees (PKR) as integer values.
+ * 2. Payment gateways are accessed ONLY through this adapter interface. No gateway-specific code outside its adapter.
+ * 3. Provider-specific wire formats (e.g. cents/paisa on external wire) are converted ONLY inside adapter boundary.
  */
 
-export type Currency = "PKR" | "USD" | string;
+import type { Json } from "@/lib/types/database";
 
-export interface PaymentCustomer {
-  id: string;
+export type PaymentMethod = "cod" | "jazzcash" | "easypaisa" | "card" | "bank_transfer" | "mock";
+
+export interface PaymentCustomerInfo {
+  id?: string;
   name: string;
-  email: string;
+  email?: string;
   phone: string;
 }
 
-export interface InitiatePaymentParams {
+export interface CreatePaymentSessionParams {
   orderId: string;
-  /** Amount in integer minor units (e.g. 150000 paisa = 1500.00 PKR) */
-  amountInPaisa: bigint;
-  currency: Currency;
-  customer: PaymentCustomer;
+  orderNumber: string;
+  /** Amount in integer whole PKR */
+  amountPkr: number;
+  amountMinor?: number;
+  currency: string;
+  method: PaymentMethod;
+  customer: PaymentCustomerInfo;
   returnUrl: string;
   cancelUrl: string;
   metadata?: Record<string, string>;
+  scenarioOverride?: "success" | "failure" | "rejected";
 }
 
-export interface PaymentInitiateResult {
-  transactionId: string;
-  redirectUrl?: string;
+export interface PaymentSessionResult {
+  sessionUrl?: string;
+  gatewayRef: string;
+  status: "pending" | "succeeded" | "failed" | "rejected";
   clientSecret?: string;
-  gatewayReference?: string;
-  status: "pending" | "action_required" | "failed";
+  rawResponse?: Json;
 }
 
-export interface VerifyPaymentParams {
-  transactionId: string;
-  gatewayReference?: string;
-  payload?: Record<string, unknown>;
-}
-
-export interface PaymentVerificationResult {
-  transactionId: string;
-  gatewayReference: string;
-  amountInPaisa: bigint;
-  currency: Currency;
-  status: "succeeded" | "failed" | "pending";
-  rawResponse?: unknown;
-}
-
-export interface RefundParams {
-  originalTransactionId: string;
-  orderId: string;
-  refundAmountInPaisa: bigint;
-  currency: Currency;
-  reason: string;
-  idempotencyKey: string;
-}
-
-export interface RefundResult {
-  refundId: string;
-  status: "succeeded" | "pending" | "failed";
-  amountInPaisa: bigint;
-  currency: Currency;
-  rawResponse?: unknown;
-}
-
-export interface WebhookProcessResult {
-  eventType: "payment.succeeded" | "payment.failed" | "refund.succeeded" | "unknown";
+export interface WebhookVerificationResult {
+  isValid: boolean;
+  gatewayRef: string;
   orderId?: string;
-  transactionId?: string;
-  amountInPaisa?: bigint;
-  currency?: Currency;
-  rawPayload: unknown;
+  orderNumber?: string;
+  amountPkr: number;
+  amountMinor?: number;
+  currency: string;
+  status: "paid" | "failed" | "rejected" | "refunded";
+  failureReason?: string;
+  rawPayload: Json;
+}
+
+export interface PaymentStatusResult {
+  gatewayRef: string;
+  orderId?: string;
+  amountPkr?: number;
+  amountMinor?: number;
+  currency: string;
+  status: "pending" | "paid" | "failed" | "rejected" | "refunded";
+  paidAt?: string;
+  method?: PaymentMethod;
+  failureReason?: string;
+  rawResponse?: Json;
+}
+
+export interface PaymentRefundParams {
+  orderId?: string;
+  paymentId?: string;
+  gatewayRef: string;
+  amountPkr?: number;
+  amountMinor?: number;
+  refundAmountPkr?: number;
+  refundAmountMinor?: number;
+  currency: string;
+  reason?: string;
+  idempotencyKey?: string;
+}
+
+export interface PaymentRefundResult {
+  success: boolean;
+  refundRef?: string;
+  refundGatewayRef?: string;
+  amountPkr?: number;
+  amountMinor?: number;
+  currency?: string;
+  status: "succeeded" | "failed" | "pending";
+  failureReason?: string;
+  rawResponse?: Json;
 }
 
 export interface PaymentGatewayAdapter {
   readonly id: string;
   readonly displayName: string;
 
-  initiatePayment(params: InitiatePaymentParams): Promise<PaymentInitiateResult>;
-  verifyPayment(params: VerifyPaymentParams): Promise<PaymentVerificationResult>;
-  handleWebhook(payload: unknown, headers: Record<string, string>): Promise<WebhookProcessResult>;
-  createRefund(params: RefundParams): Promise<RefundResult>;
+  /**
+   * Initializes a payment transaction session with the upstream rail.
+   */
+  createPaymentSession(params: CreatePaymentSessionParams): Promise<PaymentSessionResult>;
+
+  /**
+   * Verifies an incoming webhook cryptographic signature and parses the event payload.
+   */
+  verifyWebhook(
+    payload: string | Record<string, unknown>,
+    headers: Record<string, string>
+  ): Promise<WebhookVerificationResult>;
+
+  /**
+   * Queries upstream provider for current transaction status (polling / reconciliation).
+   */
+  getStatus?(gatewayRef: string, transactionId?: string): Promise<PaymentStatusResult>;
+  getPaymentStatus?(gatewayRef: string): Promise<PaymentStatusResult>;
+
+  /**
+   * Dispatches a partial or full refund request to the payment gateway.
+   */
+  refund?(params: PaymentRefundParams): Promise<PaymentRefundResult>;
+  refundPayment?(params: PaymentRefundParams): Promise<PaymentRefundResult>;
 }

@@ -18,8 +18,8 @@ Unlike traditional platforms that replicate Amazon or Daraz, Kaaravan follows a 
 
 The following core principles govern all backend and frontend implementations:
 
-1. **Integer Minor Units for Money**:
-   All monetary amounts are stored as integer minor units (`paisa`) in `bigint` Postgres columns with an ISO currency code column (default `'PKR'`). Floating-point arithmetic for currency is strictly prohibited.
+1. **Whole Pakistani Rupees (PKR) Only**:
+   All monetary amounts are stored strictly as integer whole Pakistani Rupees (PKR) in `bigint` Postgres columns (e.g. `price_pkr`, `subtotal_pkr`, `shipping_pkr`, `total_pkr`, `amount_pkr`, `commission_pkr`, `refund_pkr`, `payout_pkr`, `balance_after_pkr`) with an ISO currency code column (strictly `'PKR'`). Kaaravan does not use paisa as an application or database monetary unit. Floating-point arithmetic for currency is strictly prohibited. Commission calculations and adjustments use integer arithmetic with documented half-up rounding: `floor((amount_pkr * rate_bps + 5000) / 10000)`. External payment gateways handle provider wire conversions strictly inside adapter boundaries.
 2. **Zero-Trust Client Pricing**:
    Clients are NEVER trusted for prices, totals, taxes, stock quantities, vendor commissions, or discounts. All totals are re-fetched and computed authoritatively on the server.
 3. **Row-Level Security (RLS) Default Deny**:
@@ -141,13 +141,13 @@ Security does NOT rely solely on edge middleware:
 
 ### 1. Money & Calculations
 - Storefront client uses Zustand `useCartStore` for responsive local cart management.
-- When checkout begins, client submits only product and variant IDs with quantities.
-- Server action fetches database prices in integer paisa, computes taxes, seller commissions, and discount rules, creating the immutable order record.
+- When checkout begins, client submits only product and variant IDs with quantities and an idempotency key.
+- Server action fetches database prices in integer whole PKR, computes seller commissions, and discount rules, creating the immutable order record via atomic `create_order_transaction` RPC.
 
 ### 2. Payment Flow
 - Client initiates checkout $\rightarrow$ Server queries `PaymentGatewayAdapter` $\rightarrow$ returns gateway reference / redirect URL.
 - Customer settles payment on gateway $\rightarrow$ Gateway notifies webhook `/api/webhooks/payments`.
-- Webhook handler validates signature, utilizes server-only `createAdminClient()`, and appends transaction records to ledger.
+- Webhook handler validates signature, strictly verifies amount and PKR currency against the authoritative order, and calls atomic `confirm_order_payment` RPC (converting reserved inventory into sold stock and advancing order and sub-orders to `confirmed`).
 
 ### 3. Courier & Journey Tracking
 - Seller marks order ready $\rightarrow$ Server invokes `CourierAdapter.createShipment()`.
@@ -159,12 +159,21 @@ Security does NOT rely solely on edge middleware:
 
 ---
 
-## 6. Deferred Security Items
+## 6. Deferred Security Items & Phase 8 Remediation
 
-The following security enforcement items are tracked across platform phases:
 - **Phase 5 (Done)**: Server-built return-evidence paths; automatic rating recalculation trigger.
-- **Phase 7**: `admin_staff` access to `/admin` with per-route permission checks via `admin_permissions`.
-- **Phase 8**: Lock money columns on `orders`/`sub_orders` after creation; enforce a `sub_order` status state machine; lock `payments`/`payouts` amounts and allow only status changes via server functions, logging each change to `audit_logs`; webhook HMAC signature verification + idempotency; order numbers must be random/non-sequential (e.g. KV-7F3K9Q); cancelling must release reserved stock; guest-cart merge must drop a seller's own products; decide whether login is required before checkout; refund approval must recalculate from the database and never trust the stored refund_minor value.
+- **Phase 7 (Done)**: `admin_staff` access to `/admin` with per-route permission checks via `admin_permissions`.
+- **Phase 8 Complete Remediation (Done)**:
+  - Standardized monetary architecture on whole Pakistani Rupees (PKR) exclusively.
+  - Locked money columns on `orders`, `sub_orders`, `order_items`, `payments`, `payouts`, `commissions`, `seller_ledger` via Postgres immutability triggers.
+  - Enforced `sub_order` status state machine transitions via database trigger `enforce_sub_order_status_transition`.
+  - Added financial record deletion prevention triggers and converted foreign key cascades on financial entities to `RESTRICT`.
+  - Implemented atomic transactional RPCs: `create_order_transaction`, `confirm_order_payment`, `release_order_stock`, `request_payout`, `approve_payout`.
+  - Cryptographically secure single-use COD confirmation tokens (32-byte entropy, SHA-256 hash in DB, 24h expiration).
+  - Webhook strict amount and currency validation (CRIT-03) before processing.
+  - Partial return tracking using dedicated `returns.quantity` column and server-side recalculation.
+  - Idempotent seller ledger postings via unique `(sub_order_id, event_id)` constraints.
+  - High-risk COD buyer policy requiring online advance deposit instead of blunt rejection.
 - **Phase 10**: `audit_logs` and `order_status_history` must be immutable even for the service role; rate-limit `/track-order` and the guest-order API; check evidence file contents (magic bytes), not only the declared MIME type. Replace `as unknown as` join casts in storefront, cart, customer and search code with typed query helpers. Write audit_logs in the same database transaction as the mutation.
-- **Phase 11**: Guard triggers for offers (force pending, `seller_id` must match variant's seller, respect `min_offer_minor`) and `qafila_deals`.
+- **Phase 11**: Guard triggers for offers (force pending, `seller_id` must match variant's seller, respect `min_offer_pkr`) and `qafila_deals`.
 

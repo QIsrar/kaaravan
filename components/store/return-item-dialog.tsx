@@ -24,7 +24,7 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
-import { formatPaisa } from "@/lib/format/currency";
+import { formatPkr } from "@/lib/format/currency";
 
 interface ReturnItemDialogProps {
   subOrderId: string;
@@ -37,7 +37,8 @@ interface ReturnItemDialogProps {
   existingReturn?: {
     id: string;
     status: string;
-    refund_minor: number | string;
+    refund_pkr?: number | string;
+    refund_minor?: number | string;
     reason: string;
     evidence_paths: string[];
     created_at: string;
@@ -96,8 +97,8 @@ export function ReturnItemDialog({
         <div className="text-muted-foreground text-[11px] font-mono">
           &bull;{" "}
           {isApproved
-            ? t("refundAmount", { amount: formatPaisa(Number(existingReturn.refund_minor)) })
-            : t("requestedRefund", { amount: formatPaisa(Number(existingReturn.refund_minor)) })}
+            ? t("refundAmount", { amount: formatPkr(Number(existingReturn.refund_pkr ?? existingReturn.refund_minor)) })
+            : t("requestedRefund", { amount: formatPkr(Number(existingReturn.refund_pkr ?? existingReturn.refund_minor)) })}
         </div>
       </div>
     );

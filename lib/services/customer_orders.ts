@@ -7,18 +7,20 @@ Unauthorised copying, disclosure, modification, distribution or use is prohibite
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/types/database";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { releaseSubOrderStock } from "@/lib/services/order-status";
+import { notifyOrderCancellation } from "@/lib/services/notifications";
 
 export async function getCustomerOrders(supabase: SupabaseClient<Database>, profileId: string) {
   const { data, error } = await supabase
     .from("orders")
     .select(`
-      id, order_number, profile_id, guest_email, subtotal_minor, shipping_minor, total_minor, currency, shipping_address, billing_address, payment_method, payment_status, placed_at,
+      id, order_number, profile_id, guest_email, subtotal_pkr, shipping_pkr, total_pkr, currency, shipping_address, billing_address, payment_method, payment_status, placed_at,
       sub_orders (
-        id, order_id, seller_id, status, subtotal_minor, shipping_minor, total_minor, created_at, updated_at,
+        id, order_id, seller_id, status, subtotal_pkr, shipping_pkr, total_pkr, created_at, updated_at,
         order_items (
-          id, sub_order_id, variant_id, product_title, variant_attributes, unit_price_minor, quantity, line_total_minor, created_at,
+          id, sub_order_id, variant_id, product_title, variant_attributes, unit_price_pkr, quantity, line_total_pkr, created_at,
           product_variants (
-            id, sku, price_minor, compare_at_minor, attributes,
+            id, sku, price_pkr, compare_at_pkr, attributes,
             products (id, title, slug, product_images (path))
           )
         ),
@@ -36,19 +38,19 @@ export async function getCustomerOrderDetails(supabase: SupabaseClient<Database>
   const { data, error } = await supabase
     .from("orders")
     .select(`
-      id, order_number, profile_id, guest_email, subtotal_minor, shipping_minor, total_minor, currency, shipping_address, billing_address, payment_method, payment_status, placed_at,
+      id, order_number, profile_id, guest_email, subtotal_pkr, shipping_pkr, total_pkr, currency, shipping_address, billing_address, payment_method, payment_status, placed_at,
       sub_orders (
-        id, order_id, seller_id, status, subtotal_minor, shipping_minor, total_minor, created_at, updated_at,
+        id, order_id, seller_id, status, subtotal_pkr, shipping_pkr, total_pkr, created_at, updated_at,
         order_items (
-          id, sub_order_id, variant_id, product_title, variant_attributes, unit_price_minor, quantity, line_total_minor, created_at,
+          id, sub_order_id, variant_id, product_title, variant_attributes, unit_price_pkr, quantity, line_total_pkr, created_at,
           product_variants (
-            id, sku, price_minor, compare_at_minor, attributes,
+            id, sku, price_pkr, compare_at_pkr, attributes,
             products (id, title, slug, product_images (path))
           )
         ),
         sellers (business_name, logo, return_window_days),
         order_status_history (id, from_status, to_status, note, created_at),
-        returns (id, order_item_id, reason, status, refund_minor, evidence_paths, created_at)
+        returns (id, order_item_id, reason, status, quantity, refund_pkr, evidence_paths, created_at)
       )
     `)
     .eq("profile_id", profileId)
@@ -147,13 +149,31 @@ export async function lookupGuestOrder(
 export async function cancelSubOrder(supabase: SupabaseClient<Database>, profileId: string, subOrderId: string, reason: string) {
   const { data: subOrder, error: fetchErr } = await supabase
     .from("sub_orders")
-    .select("status, orders!inner(profile_id)")
+    .select(`
+      id,
+      seller_id,
+      status,
+      order_id,
+      orders!inner (
+        id,
+        order_number,
+        profile_id,
+        guest_email,
+        guest_phone,
+        payment_status
+      )
+    `)
     .eq("id", subOrderId)
     .single();
-  if (fetchErr) throw fetchErr;
 
-  const orderProfileId = (subOrder.orders as unknown as { profile_id: string }).profile_id;
-  if (orderProfileId !== profileId) throw new Error("Unauthorized");
+  if (fetchErr || !subOrder || !subOrder.orders) {
+    throw new Error("Sub-order not found");
+  }
+
+  const parentOrder = subOrder.orders;
+  if (parentOrder.profile_id !== profileId) {
+    throw new Error("Unauthorized");
+  }
 
   if (!["awaiting_confirmation", "pending", "confirmed"].includes(subOrder.status)) {
     throw new Error("Order cannot be cancelled after packing. Contact support.");
@@ -198,7 +218,20 @@ export async function cancelSubOrder(supabase: SupabaseClient<Database>, profile
   
   if (auditErr) throw auditErr;
 
-  // TODO (Phase 8): Cancelling must also release reserved stock once order creation reserves it.
+  // Release reserved stock back to active inventory
+  await releaseSubOrderStock(subOrderId, `Cancelled by customer: ${reason}`, profileId);
+
+  // Notify seller of cancellation
+  await notifyOrderCancellation({
+    orderNumber: parentOrder.order_number,
+    subOrderId,
+    sellerId: subOrder.seller_id,
+    customerProfileId: profileId,
+    customerEmail: parentOrder.guest_email,
+    customerPhone: parentOrder.guest_phone,
+    cancelledBy: "customer",
+    reason,
+  });
 }
 
 export async function requestReturn(
@@ -219,7 +252,7 @@ export async function requestReturn(
       orders!inner(profile_id),
       sellers!inner(return_window_days),
       order_status_history (to_status, created_at),
-      order_items (id, unit_price_minor, quantity, sub_order_id)
+      order_items (id, unit_price_pkr, quantity, sub_order_id)
     `)
     .eq("id", subOrderId)
     .single();
@@ -232,7 +265,7 @@ export async function requestReturn(
     throw new Error("Only delivered items can be returned");
   }
 
-  const orderItem = (subOrder.order_items as Array<{ id: string; unit_price_minor: number; quantity: number }>).find(item => item.id === orderItemId);
+  const orderItem = (subOrder.order_items as Array<{ id: string; unit_price_pkr: number; quantity: number }>).find(item => item.id === orderItemId);
   if (!orderItem) {
     throw new Error("Order item does not belong to this order");
   }
@@ -256,14 +289,19 @@ export async function requestReturn(
 
   const adminClient = createAdminClient();
 
-  // Check if a return already exists for that item that is not rejected
+  // Validate cumulative return quantities (HIGH-01)
   const { data: existingReturns } = await adminClient
     .from("returns")
-    .select("status")
+    .select("quantity, status")
     .eq("order_item_id", orderItemId);
   
-  if (existingReturns && existingReturns.some(r => r.status !== 'rejected')) {
-    throw new Error("A return request already exists for this item");
+  const activeReturns = (existingReturns || []).filter(r => r.status !== 'rejected');
+  const alreadyReturnedQty = activeReturns.reduce((sum, r) => sum + (r.quantity || 0), 0);
+
+  if (alreadyReturnedQty + quantity > orderItem.quantity) {
+    throw new Error(
+      `Cannot return ${quantity} items. ${alreadyReturnedQty} of ${orderItem.quantity} already requested/returned.`
+    );
   }
 
   // Handle evidence files
@@ -294,8 +332,8 @@ export async function requestReturn(
     evidencePaths.push(path);
   }
 
-  // Requested amount only. Phase 8 refund approval must recalculate from the database and never trust this stored value.
-  const refundMinor = orderItem.unit_price_minor * quantity;
+  // Authoritative recalculated PKR amount for requested snapshot
+  const refundPkr = orderItem.unit_price_pkr * quantity;
 
   const { error: insertErr } = await adminClient
     .from("returns")
@@ -305,7 +343,8 @@ export async function requestReturn(
       sub_order_id: subOrderId,
       reason,
       status: "requested",
-      refund_minor: refundMinor,
+      quantity,
+      refund_pkr: refundPkr,
       evidence_paths: evidencePaths
     });
   
@@ -316,7 +355,7 @@ export async function requestReturn(
     action: "request_return",
     entity: "returns",
     entity_id: returnId,
-    after: { order_item_id: orderItemId, quantity, refund_minor: refundMinor }
+    after: { order_item_id: orderItemId, quantity, refund_pkr: refundPkr }
   });
   if (auditErr) throw auditErr;
 }

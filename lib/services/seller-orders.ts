@@ -39,7 +39,7 @@ export async function getSellerOrders(
       id,
       status,
       created_at,
-      total_minor,
+      total_pkr,
       orders!inner(order_number, shipping_address),
       order_items(id)
     `,
@@ -70,7 +70,7 @@ export async function getSellerOrders(
     id: string;
     status: string;
     created_at: string;
-    total_minor: number;
+    total_pkr: number;
     orders: { order_number: string; shipping_address: Record<string, unknown> };
     order_items: { id: string }[];
   };
@@ -84,7 +84,8 @@ export async function getSellerOrders(
       date: so.created_at,
       status: so.status,
       itemCount: so.order_items.length,
-      totalMinor: so.total_minor,
+      totalPkr: so.total_pkr,
+      totalMinor: so.total_pkr,
       customerName: address?.full_name?.split(" ")[0] || "Customer",
       customerCity: address?.city || "Unknown",
     };
@@ -126,9 +127,11 @@ export async function getSellerOrderDetails(
       id: string;
       product_title: string;
       variant_attributes: Record<string, string>;
-      unit_price_minor: number;
+      unit_price_pkr: number;
       quantity: number;
-      line_total_minor: number;
+      line_total_pkr: number;
+      unit_price_minor?: number;
+      line_total_minor?: number;
     }>;
   };
 
@@ -138,9 +141,9 @@ export async function getSellerOrderDetails(
       `
       id,
       status,
-      subtotal_minor,
-      shipping_minor,
-      total_minor,
+      subtotal_pkr,
+      shipping_pkr,
+      total_pkr,
       created_at,
       orders!inner(
         order_number, 
@@ -152,9 +155,9 @@ export async function getSellerOrderDetails(
         id,
         product_title,
         variant_attributes,
-        unit_price_minor,
+        unit_price_pkr,
         quantity,
-        line_total_minor
+        line_total_pkr
       )
     `
     )

@@ -10,6 +10,7 @@
     "prebuild": "pnpm check:i18n",
     "check:i18n": "node scripts/check-i18n.mjs",
     "lint": "eslint",
+    "test": "vitest run",
     "gen:types": "node scripts/gen-types.mjs"
   },
   "dependencies": {
@@ -47,6 +48,7 @@
     "sharp": "^0.35.5",
     "supabase": "^2.118.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^5.1.0"
   }
 }

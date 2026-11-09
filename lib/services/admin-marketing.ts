@@ -18,7 +18,7 @@ export async function listAdminCoupons(adminId: string, adminRole: string) {
 
   const { data, error } = await adminClient
     .from("coupons")
-    .select("id, code, discount_type, percent_bps, fixed_minor, min_order_minor, max_discount_minor, starts_at, ends_at, usage_limit, used_count, is_active, created_at, updated_at")
+    .select("id, code, discount_type, percent_bps, fixed_pkr, min_order_pkr, max_discount_pkr, starts_at, ends_at, usage_limit, used_count, is_active, created_at, updated_at")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -36,7 +36,9 @@ export async function createAdminCoupon(
     code: string;
     discountType: Database["public"]["Enums"]["coupon_discount_type"];
     discountValue: number;
+    minOrderAmountPkr?: number;
     minOrderAmountMinor?: number;
+    maxDiscountPkr?: number | null;
     maxDiscountMinor?: number | null;
     startDate?: string | null;
     endDate?: string | null;
@@ -61,9 +63,9 @@ export async function createAdminCoupon(
       code: input.code.trim().toUpperCase(),
       discount_type: input.discountType,
       percent_bps: isPercent ? input.discountValue : null,
-      fixed_minor: !isPercent ? input.discountValue : null,
-      min_order_minor: input.minOrderAmountMinor ?? null,
-      max_discount_minor: input.maxDiscountMinor ?? null,
+      fixed_pkr: !isPercent ? input.discountValue : null,
+      min_order_pkr: input.minOrderAmountPkr ?? input.minOrderAmountMinor ?? null,
+      max_discount_pkr: input.maxDiscountPkr ?? input.maxDiscountMinor ?? null,
       starts_at: input.startDate || new Date().toISOString(),
       ends_at: input.endDate ?? null,
       usage_limit: input.usageLimit ?? null,

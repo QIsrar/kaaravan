@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Image } from "@/components/ui/image";
 import { getPublicImageUrl } from "@/lib/format/image-url";
-import { formatPaisa } from "@/lib/format/currency";
+import { formatPkr } from "@/lib/format/currency";
 import { formatDate } from "@/lib/format/date";
 import {
   ShoppingBag,
@@ -132,7 +132,7 @@ export default async function CustomerOrdersPage() {
                           {tOrders("total")}
                         </span>
                         <span className="font-heading font-extrabold text-base text-foreground">
-                          {formatPaisa(Number(order.total_minor))}
+                          {formatPkr(Number(order.total_pkr))}
                         </span>
                       </div>
                       <Link href={`/account/orders/${order.id}`}>
@@ -211,7 +211,7 @@ export default async function CustomerOrdersPage() {
                               {tOrders("packageSubtotal")}
                             </span>
                             <span className="font-mono font-semibold text-sm text-foreground">
-                              {formatPaisa(Number(sub.total_minor))}
+                              {formatPkr(Number(sub.total_pkr))}
                             </span>
                           </div>
                         </div>

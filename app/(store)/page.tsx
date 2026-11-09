@@ -114,8 +114,8 @@ export default async function HomePage() {
         id,
         sku,
         attributes,
-        price_minor,
-        compare_at_minor,
+        price_pkr,
+        compare_at_pkr,
         stock_quantity,
         reserved_quantity,
         is_active
@@ -140,8 +140,10 @@ interface HomeProductRow {
     id: string;
     sku: string;
     attributes: unknown;
-    price_minor: number | bigint;
-    compare_at_minor: number | bigint | null;
+    price_pkr: number | bigint;
+    compare_at_pkr: number | bigint | null;
+    price_minor?: number | bigint;
+    compare_at_minor?: number | bigint | null;
     is_active: boolean;
   }[] | null;
   images: { path: string; sort_order: number | null }[] | null;
@@ -156,7 +158,7 @@ interface HomeProductRow {
 
     const variants = (p.variants || [])
       .filter((v) => v.is_active)
-      .sort((a, b) => Number(a.price_minor) - Number(b.price_minor));
+      .sort((a, b) => Number(a.price_pkr ?? a.price_minor) - Number(b.price_pkr ?? b.price_minor));
 
     if (variants.length === 0) continue;
     const primaryVariant = variants[0];
@@ -166,6 +168,13 @@ interface HomeProductRow {
     );
     const primaryImage = images[0]?.path || "/placeholder-product.svg";
 
+    const priceVal = Number(primaryVariant.price_pkr ?? primaryVariant.price_minor);
+    const compareVal = primaryVariant.compare_at_pkr
+      ? Number(primaryVariant.compare_at_pkr)
+      : primaryVariant.compare_at_minor
+      ? Number(primaryVariant.compare_at_minor)
+      : null;
+
     productCards.push({
       id: p.id,
       title: p.title,
@@ -174,10 +183,8 @@ interface HomeProductRow {
       sellerId: s.id,
       sellerName: s.business_name,
       sellerSlug: s.slug,
-      priceMinor: Number(primaryVariant.price_minor),
-      compareAtMinor: primaryVariant.compare_at_minor
-        ? Number(primaryVariant.compare_at_minor)
-        : null,
+      priceMinor: priceVal,
+      compareAtMinor: compareVal,
       ratingAvg: Number(p.rating_avg) || 0,
       ratingCount: Number(p.rating_count) || 0,
       primaryVariantId: primaryVariant.id,

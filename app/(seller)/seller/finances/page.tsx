@@ -1,17 +1,27 @@
-import { Wallet } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import React from "react";
+import { getSellerFinancesAction, getSellerLedgerAction } from "@/lib/actions/seller-finances";
+import { FinancesClient } from "@/components/seller/finances-client";
+import type { LedgerEntryType } from "@/lib/services/seller-finances";
 
-export default async function SellerFinancesPage() {
-  const t = await getTranslations("seller");
+export default async function SellerFinancesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const params = await searchParams;
+  const page = parseInt((params.page as string) || "1", 10);
+  const entryType = (params.entryType as LedgerEntryType | "all") || "all";
+
+  const [summary, ledger] = await Promise.all([
+    getSellerFinancesAction(),
+    getSellerLedgerAction(page, 20, entryType),
+  ]);
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8 bg-card border rounded-3xl">
-      <div className="w-20 h-20 bg-secondary/50 rounded-full flex items-center justify-center mb-6">
-        <Wallet className="w-10 h-10 text-primary" />
-      </div>
-      <h1 className="text-3xl font-heading font-bold mb-4">{t("comingSoon.financesTitle")}</h1>
-      <p className="text-lg text-muted-foreground max-w-md mx-auto">
-        {t("comingSoon.financesDesc")}
-      </p>
-    </div>
+    <FinancesClient
+      summary={summary}
+      ledger={ledger}
+      currentEntryType={entryType}
+    />
   );
 }
